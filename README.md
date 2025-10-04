@@ -336,7 +336,7 @@ To add custom MCP tools to your deployment:
 
 ```bash
 # 1. Create MCP server following Heroku's specifications
-# Reference: https://github.com/heroku/mcp-server-examples
+# Reference: https://github.com/heroku/mcp-doc-reader
 
 # 2. Deploy server to Heroku
 heroku create my-mcp-server
