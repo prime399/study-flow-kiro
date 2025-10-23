@@ -58,7 +58,7 @@ Added comprehensive styles including:
 Fixed MCP tools fetch issue on Vercel:
 - Changed from hardcoded `localhost:3000` to use actual request URL
 - Gracefully skips MCP tools if endpoint not available
-- Works with production domain (e.g., https://study-mate.tech)
+- Works with production domain (e.g., https://study-flow.tech)
 
 ## Benefits
 

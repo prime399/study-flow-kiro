@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "StudyMate",
-    short_name: "StudyMate",
+    name: "StudyFlow",
+    short_name: "StudyFlow",
     description:
       "A group study app for students who want to study together and build healthy study habits",
     start_url: "/",

@@ -7,7 +7,7 @@ import "./globals.css"
 import { GeistSans } from "geist/font/sans"
 
 export const metadata: Metadata = {
-  title: "StudyMate",
+  title: "StudyFlow",
   description:
     "Compete with friends, join study groups, and track your progress to become a top student.",
 }

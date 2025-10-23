@@ -117,7 +117,7 @@ function OnboardingDialog() {
       <DialogContent className="h-[calc(100svh-100px)] max-w-xl p-0 md:h-min">
         <ScrollArea className="h-full p-4">
           <DialogHeader>
-            <DialogTitle>Welcome to StudyMate!</DialogTitle>
+            <DialogTitle>Welcome to StudyFlow!</DialogTitle>
             <DialogDescription>
               Let&apos;s set up your study preferences to help you achieve your
               goals.

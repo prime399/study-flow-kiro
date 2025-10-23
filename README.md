@@ -1,8 +1,8 @@
-# StudyMate AI 🎓
+# StudyFlow AI 🎓
 
 > Enterprise-grade study management platform powered by Heroku Managed Inference and Model Context Protocol (MCP)
 
-StudyMate AI is a comprehensive learning platform that combines advanced AI capabilities with real-time analytics to help students optimize their study habits. Built on Heroku's Managed Inference infrastructure with MCP tool integration, it features MentorMind - an intelligent AI assistant capable of processing external resources and providing context-aware study guidance.
+StudyFlow AI is a comprehensive learning platform that combines advanced AI capabilities with real-time analytics to help students optimize their study habits. Built on Heroku's Managed Inference infrastructure with MCP tool integration, it features MentorMind - an intelligent AI assistant capable of processing external resources and providing context-aware study guidance.
 
 ## ✨ Key Features
 
@@ -41,8 +41,8 @@ StudyMate AI is a comprehensive learning platform that combines advanced AI capa
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/prime399/study-mate.git
-cd study-mate
+git clone https://github.com/prime399/study-flow.git
+cd study-flow
 pnpm install
 ```
 
@@ -121,7 +121,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see your app!
 ## 📁 Project Structure
 
 ```
-StudyMate/
+StudyFlow/
 ├── app/                    # Next.js app directory
 │   ├── (protected)/       # Protected routes (dashboard, groups, etc.)
 │   │   └── dashboard/
@@ -345,7 +345,7 @@ git push heroku main
 # 3. Register with Heroku Inference
 # Contact Heroku support to register your MCP server
 
-# 4. Tools will automatically appear in StudyMate
+# 4. Tools will automatically appear in StudyFlow
 ```
 
 #### MCP Configuration Verification
@@ -367,7 +367,7 @@ curl -H "Authorization: Bearer YOUR_KEY" \
 1. Navigate to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Click "New OAuth App"
 3. Fill in application details:
-   - **Application name**: StudyMate AI
+   - **Application name**: StudyFlow AI
    - **Homepage URL**: `https://your-domain.com`
    - **Authorization callback URL**: `https://your-deployment.convex.site/api/auth/callback/github`
 4. Copy Client ID and Client Secret
@@ -395,7 +395,7 @@ curl -H "Authorization: Bearer YOUR_KEY" \
 
 ### Coin System Configuration
 
-StudyMate uses a coin-based system for AI interactions:
+StudyFlow uses a coin-based system for AI interactions:
 
 - **Earn Coins**: 1 coin per second of active study time
 - **Spend Coins**: 5 coins per AI query (configurable)
@@ -573,7 +573,7 @@ If issues persist after trying these solutions:
    - Convex Dashboard Logs
    - Vercel Deployment Logs
 
-2. **Create Issue**: [GitHub Issues](https://github.com/prime399/study-mate/issues)
+2. **Create Issue**: [GitHub Issues](https://github.com/prime399/study-flow/issues)
    - Include error messages
    - Describe steps to reproduce
    - Share environment details (OS, browser, Node version)
@@ -622,9 +622,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Resources & Links
 
 ### Application
-- **Live Demo**: [study-mate.tech](https://www.study-mate.tech)
-- **GitHub Repository**: [github.com/prime399/study-mate](https://github.com/prime399/study-mate)
-- **Report Issues**: [GitHub Issues](https://github.com/prime399/study-mate/issues)
+- **Live Demo**: [study-flow.tech](https://www.study-flow.tech)
+- **GitHub Repository**: [github.com/prime399/study-flow](https://github.com/prime399/study-flow)
+- **Report Issues**: [GitHub Issues](https://github.com/prime399/study-flow/issues)
 
 ### Documentation
 - **Convex**: [docs.convex.dev](https://docs.convex.dev)
@@ -633,8 +633,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Next.js**: [nextjs.org/docs](https://nextjs.org/docs)
 
 ### Community
-- **Discussions**: [GitHub Discussions](https://github.com/prime399/study-mate/discussions)
-- **Feature Requests**: [GitHub Issues](https://github.com/prime399/study-mate/issues/new?labels=enhancement)
+- **Discussions**: [GitHub Discussions](https://github.com/prime399/study-flow/discussions)
+- **Feature Requests**: [GitHub Issues](https://github.com/prime399/study-flow/issues/new?labels=enhancement)
 
 ## 📄 License
 
@@ -650,6 +650,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**StudyMate AI** - Enterprise-grade study management powered by Heroku Managed Inference and Model Context Protocol.
+**StudyFlow AI** - Enterprise-grade study management powered by Heroku Managed Inference and Model Context Protocol.
 
 Built for students worldwide. Transform your study habits with intelligent AI assistance. 
