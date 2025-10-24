@@ -37,11 +37,11 @@ interface ChartDataPoint extends SessionCounts {
 const chartConfig = {
   completed: {
     label: "Completed",
-    color: "hsl(var(--chart-1))", // Uses theme chart color
+    color: "oklch(var(--chart-1))",
   },
   incomplete: {
     label: "Incomplete", 
-    color: "hsl(var(--chart-2))", // Uses theme chart color
+    color: "oklch(var(--chart-2))",
   },
 } satisfies ChartConfig;
 
@@ -59,7 +59,7 @@ const GridBackgroundPattern = () => {
         <path
           d="M 20 0 L 0 0 0 20"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="oklch(var(--border))"
           strokeWidth="0.5"
           opacity="0.3"
         />
@@ -75,7 +75,7 @@ const GridBackgroundPattern = () => {
         <path
           d="M 10 0 L 0 0 0 10"
           fill="none"
-          stroke="hsl(var(--border))"
+          stroke="oklch(var(--border))"
           strokeWidth="0.25"
           opacity="0.15"
         />
@@ -285,12 +285,12 @@ export default function StudySessionDistribution({
             <defs>
               <GridBackgroundPattern />
               <linearGradient id="completedGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4} />
+                <stop offset="0%" stopColor="oklch(var(--chart-1))" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="oklch(var(--chart-1))" stopOpacity={0.4} />
               </linearGradient>
               <linearGradient id="incompleteGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4} />
+                <stop offset="0%" stopColor="oklch(var(--chart-2))" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="oklch(var(--chart-2))" stopOpacity={0.4} />
               </linearGradient>
             </defs>
             
@@ -306,7 +306,7 @@ export default function StudySessionDistribution({
             {/* Cartesian Grid for better data reading */}
             <CartesianGrid
               strokeDasharray="2 4"
-              stroke="hsl(var(--border))"
+              stroke="oklch(var(--border))"
               opacity={0.4}
               vertical={false}
             />
@@ -334,7 +334,7 @@ export default function StudySessionDistribution({
               domain={[0, 'dataMax + 1']}
             />
             <ChartTooltip
-              cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }}
+              cursor={{ fill: "oklch(var(--muted))", opacity: 0.1 }}
               content={<ChartTooltipContent 
                 indicator="dot" 
                 labelClassName="font-medium"
@@ -351,7 +351,7 @@ export default function StudySessionDistribution({
                 <Cell
                   key={`cell-completed-${index}`}
                   fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.4}
-                  stroke={activeIndex === index ? "hsl(var(--chart-1))" : "transparent"}
+                  stroke={activeIndex === index ? "oklch(var(--chart-1))" : "transparent"}
                   strokeWidth={activeIndex === index ? 2 : 0}
                   onMouseEnter={() => setActiveIndex(index)}
                   className="transition-all duration-300 ease-in-out cursor-pointer"
@@ -368,7 +368,7 @@ export default function StudySessionDistribution({
                 <Cell
                   key={`cell-incomplete-${index}`}
                   fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.4}
-                  stroke={activeIndex === index ? "hsl(var(--chart-2))" : "transparent"}
+                  stroke={activeIndex === index ? "oklch(var(--chart-2))" : "transparent"}
                   strokeWidth={activeIndex === index ? 2 : 0}
                   onMouseEnter={() => setActiveIndex(index)}
                   className="transition-all duration-300 ease-in-out cursor-pointer"

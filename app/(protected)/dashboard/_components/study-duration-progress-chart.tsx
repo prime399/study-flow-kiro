@@ -32,7 +32,7 @@ import {
 const chartConfig = {
   duration: {
     label: "Study Duration",
-    color: "hsl(var(--chart-1))",
+    color: "oklch(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
@@ -229,9 +229,9 @@ export default function StudyDurationChart({
           >
             <defs>
               <linearGradient id="durationGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                <stop offset="50%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                <stop offset="0%" stopColor="oklch(var(--chart-1))" stopOpacity={0.3} />
+                <stop offset="50%" stopColor="oklch(var(--chart-1))" stopOpacity={0.1} />
+                <stop offset="100%" stopColor="oklch(var(--chart-1))" stopOpacity={0} />
               </linearGradient>
               <filter id="glow">
                 <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -244,7 +244,7 @@ export default function StudyDurationChart({
             
             <CartesianGrid 
               strokeDasharray="2 4" 
-              stroke="hsl(var(--border))" 
+              stroke="oklch(var(--border))" 
               opacity={0.3}
               vertical={false} 
             />
@@ -292,7 +292,7 @@ export default function StudyDurationChart({
             <Area
               type="monotone"
               dataKey="duration"
-              stroke="hsl(var(--chart-1))"
+              stroke="oklch(var(--chart-1))"
               strokeWidth={3}
               fill="url(#durationGradient)"
               filter="url(#glow)"
@@ -302,19 +302,19 @@ export default function StudyDurationChart({
             <Line
               type="monotone"
               dataKey="duration"
-              stroke="hsl(var(--chart-1))"
+              stroke="oklch(var(--chart-1))"
               strokeWidth={3}
               dot={{
-                fill: "hsl(var(--chart-1))",
+                fill: "oklch(var(--chart-1))",
                 strokeWidth: 2,
-                stroke: "hsl(var(--background))",
+                stroke: "oklch(var(--background))",
                 r: 4,
               }}
               activeDot={{
                 r: 6,
-                stroke: "hsl(var(--chart-1))",
+                stroke: "oklch(var(--chart-1))",
                 strokeWidth: 2,
-                fill: "hsl(var(--background))",
+                fill: "oklch(var(--background))",
               }}
             />
           </AreaChart>
