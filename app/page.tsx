@@ -131,9 +131,9 @@ export default function Home() {
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 50% 100%, rgba(70, 85, 110, 0.5) 0%, transparent 60%),
-            radial-gradient(circle at 50% 100%, rgba(99, 102, 241, 0.4) 0%, transparent 70%),
-            radial-gradient(circle at 50% 100%, rgba(181, 184, 208, 0.3) 0%, transparent 80%)
+            radial-gradient(circle at 50% 100%, rgba(70, 85, 110, 0.15) 0%, transparent 60%),
+            radial-gradient(circle at 50% 100%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+            radial-gradient(circle at 50% 100%, rgba(181, 184, 208, 0.08) 0%, transparent 80%)
           `,
         }}
       />
@@ -165,7 +165,7 @@ export default function Home() {
             <h1 className="text-pretty text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight relative" style={{ zIndex: 10 }}>
               Study. Connect. <span className="lg:hidden"><Highlighter 
                 action="highlight" 
-                color="#6366f1" 
+                color="#2563eb" 
                 strokeWidth={1}
                 animationDuration={1200}
                 isView={true}
@@ -284,26 +284,29 @@ export default function Home() {
                 {testimonials.map((review, idx) => (
                   <div
                     key={idx}
-                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-xl border border-white/20 bg-white/[0.08] backdrop-blur-md p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-white/30"
+                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 sm:p-7 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.05] hover:-translate-y-1"
                   >
-                    <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                      <Image
-                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border-2 border-white/20 shadow-md"
-                        src={review.img}
-                        alt={`${review.name} avatar`}
-                        width={48}
-                        height={48}
-                      />
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
+                      <div className="relative">
+                        <Image
+                          className="h-11 w-11 sm:h-14 sm:w-14 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
+                          src={review.img}
+                          alt={`${review.name} avatar`}
+                          width={56}
+                          height={56}
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-green-500 border-2 border-black" />
+                      </div>
                       <div>
-                        <div className="text-sm sm:text-base font-semibold text-white">
+                        <div className="text-sm sm:text-base font-semibold text-white tracking-tight">
                           {review.name}
                         </div>
-                        <div className="text-xs sm:text-sm text-gray-400">
+                        <div className="text-xs sm:text-sm text-gray-500 font-medium">
                           {review.username}
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-200 leading-relaxed">
+                    <p className="text-sm sm:text-base text-gray-300 leading-relaxed font-light">
                       &ldquo;{review.body}&rdquo;
                     </p>
                   </div>
@@ -314,26 +317,29 @@ export default function Home() {
                 {testimonials.slice().reverse().map((review, idx) => (
                   <div
                     key={idx}
-                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-xl border border-white/20 bg-white/[0.08] backdrop-blur-md p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-white/30"
+                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 sm:p-7 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.05] hover:-translate-y-1"
                   >
-                    <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                      <Image
-                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full border-2 border-white/20 shadow-md"
-                        src={review.img}
-                        alt={`${review.name} avatar`}
-                        width={48}
-                        height={48}
-                      />
+                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
+                      <div className="relative">
+                        <Image
+                          className="h-11 w-11 sm:h-14 sm:w-14 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
+                          src={review.img}
+                          alt={`${review.name} avatar`}
+                          width={56}
+                          height={56}
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-green-500 border-2 border-black" />
+                      </div>
                       <div>
-                        <div className="text-sm sm:text-base font-semibold text-white">
+                        <div className="text-sm sm:text-base font-semibold text-white tracking-tight">
                           {review.name}
                         </div>
-                        <div className="text-xs sm:text-sm text-gray-400">
+                        <div className="text-xs sm:text-sm text-gray-500 font-medium">
                           {review.username}
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-200 leading-relaxed">
+                    <p className="text-sm sm:text-base text-gray-300 leading-relaxed font-light">
                       &ldquo;{review.body}&rdquo;
                     </p>
                   </div>
@@ -345,22 +351,26 @@ export default function Home() {
 
         <section className="py-12 sm:py-16 lg:py-20 xl:py-32">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200/50 shadow-lg">
-              <div className="absolute inset-0 h-full w-full">
-                <Meteors number={8} />
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-black via-black to-gray-900 border border-white/10 shadow-[0_20px_80px_-20px_rgba(99,102,241,0.3)]">
+              <div className="absolute inset-0 h-full w-full opacity-40">
+                <Meteors number={12} color="white" />
               </div>
-              <div className="relative z-10 p-6 sm:p-8 lg:p-12 text-center flex flex-col items-center">
-                <LineChart className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-800" />
-                <h2 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl lg:text-3xl xl:text-4xl mt-3 sm:mt-4 leading-tight">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-600/5 via-transparent to-transparent" />
+              
+              <div className="relative z-10 p-8 sm:p-12 lg:p-16 xl:p-20 text-center flex flex-col items-center">
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl xl:text-5xl leading-tight max-w-3xl">
                   Ready to Transform Your Study Habits?
                 </h2>
-                <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-sm sm:text-base lg:text-lg text-gray-600 px-4">
+                
+                <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg lg:text-xl text-gray-300 leading-relaxed font-light">
                   Join thousands of students who are already improving their
                   academic performance with StudyFlow.
                 </p>
-                <div className="mt-6 sm:mt-8 flex justify-center">
+                
+                <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <Link href="/dashboard">
-                    <InteractiveHoverButton className="rounded-full border-gray-900 bg-gray-900 text-white hover:bg-gray-800 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
+                    <InteractiveHoverButton className="rounded-full bg-blue-600 hover:bg-white text-white border-blue-600 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
                       Start Your Journey
                     </InteractiveHoverButton>
                   </Link>
@@ -375,7 +385,7 @@ export default function Home() {
           <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
               <p className="text-sm text-gray-400">
-                © 2024 StudyFlow. All rights reserved.
+                © 2025 StudyFlow. All rights reserved.
               </p>
               <Link
                 href={"https://www.study-flow.tech/#"}

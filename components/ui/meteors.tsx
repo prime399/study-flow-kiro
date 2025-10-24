@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 
 interface MeteorsProps {
   number?: number;
+  color?: string;
 }
-export const Meteors = ({ number = 20 }: MeteorsProps) => {
+export const Meteors = ({ number = 20, color = "slate-500" }: MeteorsProps) => {
   const [meteorStyles, setMeteorStyles] = useState<Array<React.CSSProperties>>(
     [],
   );
@@ -29,12 +30,15 @@ export const Meteors = ({ number = 20 }: MeteorsProps) => {
         <span
           key={idx}
           className={cn(
-            "pointer-events-none absolute left-1/2 top-1/2 size-0.5 rotate-[215deg] animate-meteor rounded-full bg-slate-500 shadow-[0_0_0_1px_#ffffff10]",
+            "pointer-events-none absolute left-1/2 top-1/2 size-0.5 rotate-[215deg] animate-meteor rounded-full shadow-[0_0_0_1px_#ffffff10]",
           )}
-          style={style}
+          style={{ ...style, backgroundColor: color }}
         >
           {/* Meteor Tail */}
-          <div className="pointer-events-none absolute top-1/2 -z-10 h-px w-[50px] -translate-y-1/2 bg-gradient-to-r from-slate-500 to-transparent" />
+          <div 
+            className="pointer-events-none absolute top-1/2 -z-10 h-px w-[50px] -translate-y-1/2 bg-gradient-to-r to-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, ${color}, transparent)` }}
+          />
         </span>
       ))}
     </>
