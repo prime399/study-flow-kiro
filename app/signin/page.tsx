@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { useAuthActions } from "@convex-dev/auth/react"
 import Logo from "@/components/logo"
-import { MagicCard } from "@/components/ui/magic-card"
+import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { Card, CardDescription, CardFooter, CardHeader } from "@/components/ui/card"
 import Image from "next/image"
 import githubLogo from "@/public/github-mark.svg"
@@ -15,14 +15,14 @@ export default function SignInPage() {
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background/90 to-muted">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.35)_0,_transparent_60%)]" />
-      <MagicCard
-        className="mx-4 w-full max-w-md rounded-3xl border border-border/60 p-[1px] shadow-2xl"
-        gradientSize={250}
-        gradientColor="#8B5CF6"
-        gradientFrom="#8B5CF6"
-        gradientTo="#EC4899"
-        gradientOpacity={0.2}
-      >
+      <div className="relative mx-4 w-full max-w-md rounded-3xl border border-border/60 p-2 shadow-2xl">
+        <GlowingEffect
+          spread={40}
+          glow={true}
+          disabled={false}
+          proximity={64}
+          inactiveZone={0.01}
+        />
         <Card className="rounded-[inherit] border border-border/20 bg-background/80 p-8 text-foreground shadow-none backdrop-blur">
           <CardHeader className="items-center space-y-4 p-0 text-center">
             <Logo />
@@ -64,7 +64,7 @@ export default function SignInPage() {
             </Button>
           </CardFooter>
         </Card>
-      </MagicCard>
+      </div>
     </div>
   )
 }
