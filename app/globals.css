@@ -38,6 +38,7 @@
     --sidebar-ring: 0.7731 0 0;
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-logo: var(--font-space-grotesk), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
     --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --radius: 0.5rem;
     --shadow-x: 0;
@@ -93,6 +94,7 @@
     --sidebar-ring: 0.8711 0.0055 286.2860;
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-logo: var(--font-space-grotesk), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
     --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --radius: 0.5rem;
     --shadow-x: 0;
@@ -148,6 +150,7 @@
 
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+  --font-logo: var(--font-logo);
   --font-mono: var(--font-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -349,6 +352,20 @@ nextjs-portal {
   
   .word-spacing-wider {
     word-spacing: 0.12em;
+  }
+  
+  /* Logo specific styling */
+  .logo-flow {
+    @apply font-logo font-bold;
+    letter-spacing: -0.03em;
+    word-spacing: 0.01em;
+    font-weight: 700;
+    font-feature-settings: "ss01" 1, "ss02" 1, "cv05" 1;
+  }
+  
+  .logo-brand {
+    @apply font-display font-semibold;
+    letter-spacing: -0.01em;
   }
 }
 

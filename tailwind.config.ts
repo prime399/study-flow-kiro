@@ -28,6 +28,7 @@ const config = {
       fontFamily: {
         sans: ["var(--font-inter)", ...fontFamily.sans],
         display: ["var(--font-jakarta)", "var(--font-inter)", ...fontFamily.sans],
+        logo: ["var(--font-space-grotesk)", "var(--font-jakarta)", ...fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...fontFamily.mono],
       },
       letterSpacing: {

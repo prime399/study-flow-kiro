@@ -6,7 +6,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Inter, Plus_Jakarta_Sans } from "next/font/google"
+import { Inter, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -19,6 +19,13 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+  weight: ["500", "600", "700"],
 })
 
 export const metadata: Metadata = {
@@ -40,6 +47,7 @@ export default function RootLayout({
             "bg-background font-sans antialiased",
             inter.variable,
             plusJakarta.variable,
+            spaceGrotesk.variable,
             GeistSans.variable,
             GeistMono.variable,
           )}
