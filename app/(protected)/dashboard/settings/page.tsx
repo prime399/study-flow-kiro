@@ -19,8 +19,9 @@ import {
   ExternalLink,
   RefreshCw
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { toast } from "sonner"
+import Image from "next/image"
 
 interface TokenInfo {
   user: {
@@ -97,11 +98,7 @@ export default function SettingsPage() {
   const [connecting, setConnecting] = useState(false)
   const [isAuth0Connected, setIsAuth0Connected] = useState(false)
 
-  useEffect(() => {
-    fetchTokenInfo()
-  }, [])
-
-  const fetchTokenInfo = async () => {
+  const fetchTokenInfo = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/token')
       
@@ -124,7 +121,11 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [scopes])
+
+  useEffect(() => {
+    fetchTokenInfo()
+  }, [fetchTokenInfo])
 
   const handleConnectAuth0 = () => {
     setConnecting(true)
@@ -227,9 +228,11 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="rounded-lg border bg-muted/50 p-4">
                   <div className="flex items-start gap-3">
-                    <img
-                      src={tokenInfo?.user.picture}
-                      alt={tokenInfo?.user.name}
+                    <Image
+                      src={tokenInfo?.user.picture || ''}
+                      alt={tokenInfo?.user.name || 'User'}
+                      width={48}
+                      height={48}
                       className="h-12 w-12 rounded-full"
                     />
                     <div className="flex-1">

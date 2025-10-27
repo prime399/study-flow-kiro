@@ -9,11 +9,12 @@ export const auth0 = new Auth0Client({
     audience: process.env.AUTH0_AUDIENCE,
   },
   session: {
-    // Store refresh tokens for long-lived access
-    storeRefreshToken: true,
     // Enable rolling sessions for better security
     rolling: true,
-    rollingDuration: 60 * 60 * 24 * 7, // 7 days
+    // Absolute duration of the session (7 days)
+    absoluteDuration: 60 * 60 * 24 * 7,
+    // Inactivity duration (1 day)
+    inactivityDuration: 60 * 60 * 24,
   },
 });
 
@@ -64,19 +65,18 @@ export const getUser = async () => {
 };
 
 // Helper to update user session with custom data
+// For App Router (Server Actions, Route Handlers)
 export const updateUserSession = async (
-  req: any,
-  res: any,
   customData: Record<string, any>
 ) => {
   try {
-    const session = await auth0.getSession(req, res);
+    const session = await auth0.getSession();
     
     if (!session) {
       throw new Error('No active session to update');
     }
 
-    await auth0.updateSession(req, res, {
+    await auth0.updateSession({
       ...session,
       user: {
         ...session.user,
