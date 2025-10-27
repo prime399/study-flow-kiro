@@ -11,6 +11,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -72,6 +73,11 @@ const menuItems = [
     name: "AI Helper",
     href: "/dashboard/ai-helper",
     icon: Bot,
+  },
+  {
+    name: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings,
   },
 ]
 

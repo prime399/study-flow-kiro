@@ -37,3 +37,6 @@ next-env.d.ts
 .env
 dev.md
 prev.md
+
+# Ignore every readme file except README.md and readme.md
+/markdown
