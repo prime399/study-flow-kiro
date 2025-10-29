@@ -60,7 +60,9 @@ interface SpotifyConnection {
   hasToken: boolean
   error?: string
   errorCode?: string
+  causeCode?: string
   reconnectRequired?: boolean
+  configurationRequired?: boolean
 }
 
 interface SpotifyPlaylist {
@@ -579,10 +581,20 @@ export default function SettingsPage() {
               <Alert variant={spotifyConnection?.reconnectRequired ? "destructive" : "default"}>
                 <Info className="h-4 w-4" />
                 <AlertTitle>
-                  {spotifyConnection?.reconnectRequired ? 'Reconnection Required' : 'Connect Spotify'}
+                  {spotifyConnection?.configurationRequired 
+                    ? 'Auth0 Configuration Required' 
+                    : spotifyConnection?.reconnectRequired 
+                      ? 'Reconnection Required' 
+                      : 'Connect Spotify'}
                 </AlertTitle>
                 <AlertDescription>
-                  {spotifyConnection?.reconnectRequired ? (
+                  {spotifyConnection?.configurationRequired ? (
+                    <>
+                      <strong>Token Exchange is not enabled in your Auth0 application.</strong><br />
+                      Please go to Auth0 Dashboard → Applications → [Your App] → Advanced Settings → Grant Types 
+                      and enable &quot;Token Exchange&quot;. See <code>AUTH0_TOKEN_EXCHANGE_SETUP.md</code> for detailed instructions.
+                    </>
+                  ) : spotifyConnection?.reconnectRequired ? (
                     <>
                       Your Spotify connection needs to be refreshed. Please click &quot;Connect Spotify&quot; below to reconnect.
                       This will ensure proper offline access for background music playback.

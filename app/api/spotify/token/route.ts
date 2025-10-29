@@ -56,6 +56,23 @@ export async function GET() {
           );
         }
 
+        // Special handling for token exchange not allowed
+        if (error.code === 'failed_to_exchange_refresh_token' && 
+            error.cause?.code === 'unauthorized_client') {
+          return NextResponse.json(
+            {
+              connected: false,
+              hasToken: false,
+              error: 'Token Exchange not enabled. Please enable Token Exchange grant type in Auth0 Dashboard. See AUTH0_TOKEN_EXCHANGE_SETUP.md',
+              errorCode: error.code,
+              causeCode: error.cause?.code,
+              reconnectRequired: true,
+              configurationRequired: true,
+            },
+            { status: 200 }
+          );
+        }
+
         return NextResponse.json(
           {
             connected: false,
