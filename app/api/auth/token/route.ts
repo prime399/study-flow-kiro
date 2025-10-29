@@ -1,12 +1,21 @@
 import { auth0 } from '@/lib/auth0';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await auth0.getSession();
 
     if (!session) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      // Return structured response instead of 401 for better error handling
+      return NextResponse.json(
+        { 
+          error: 'Not authenticated',
+          authenticated: false 
+        }, 
+        { status: 200 }
+      );
     }
 
     const { user } = session;

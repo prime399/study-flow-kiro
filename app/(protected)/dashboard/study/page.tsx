@@ -14,6 +14,8 @@ import StudyStats from "./_components/study-stats"
 import StudyTimer from "./_components/study-timer"
 import NotificationPermission from "./_components/notification-permission"
 import { formatTimeTimer } from "@/lib/utils"
+import SpotifyPlayer from "@/components/spotify-player"
+import { useSpotifyStore } from "@/store/use-spotify-store"
 
 const STUDY_TYPE_OPTIONS = [
   { value: "study", label: "Study" },
@@ -91,6 +93,8 @@ export default function StudyPage() {
   const [studyType, setStudyType] = useQueryState("studyType", {
     defaultValue: "study",
   })
+
+  const { autoplayEnabled, selectedPlaylist } = useSpotifyStore()
 
   const updateSettings = useMutation(api.study.updateSettings)
   const completeSession = useMutation(api.study.completeSession)
@@ -221,16 +225,21 @@ export default function StudyPage() {
       <PageTitle title="Study Dashboard" />
       <NotificationPermission />
       <div className="grid gap-6">
-        <StudyTimer
-          studyTime={studyTime}
-          studyDuration={studyDuration}
-          studyType={studyType}
-          studyTypeOptions={STUDY_TYPE_OPTIONS}
-          onStudyTypeChange={handleStudyTypeChange}
-          isStudying={isStudying}
-          onStartStop={handleStartStop}
-          onReset={handleReset}
-        />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <StudyTimer
+            studyTime={studyTime}
+            studyDuration={studyDuration}
+            studyType={studyType}
+            studyTypeOptions={STUDY_TYPE_OPTIONS}
+            onStudyTypeChange={handleStudyTypeChange}
+            isStudying={isStudying}
+            onStartStop={handleStartStop}
+            onReset={handleReset}
+          />
+          {autoplayEnabled && selectedPlaylist && (
+            <SpotifyPlayer autoStart={isStudying} />
+          )}
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">

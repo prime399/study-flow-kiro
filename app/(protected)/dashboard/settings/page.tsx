@@ -17,11 +17,13 @@ import {
   XCircle, 
   Info,
   ExternalLink,
-  RefreshCw
+  RefreshCw,
+  Music
 } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
+import { useSpotifyStore } from "@/store/use-spotify-store"
 
 interface TokenInfo {
   user: {
@@ -44,6 +46,29 @@ interface ConsentScope {
   description: string
   required: boolean
   granted: boolean
+}
+
+interface SpotifyConnection {
+  connected: boolean
+  profile?: {
+    id: string
+    display_name: string
+    email: string
+    images: Array<{ url: string }>
+    product: string
+  }
+  hasToken: boolean
+  error?: string
+  errorCode?: string
+}
+
+interface SpotifyPlaylist {
+  id: string
+  name: string
+  description: string
+  images: Array<{ url: string }>
+  tracks: { total: number }
+  uri: string
 }
 
 const availableScopes: ConsentScope[] = [
@@ -97,13 +122,25 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(false)
   const [isAuth0Connected, setIsAuth0Connected] = useState(false)
+  
+  const [spotifyConnection, setSpotifyConnection] = useState<SpotifyConnection | null>(null)
+  const [spotifyPlaylists, setSpotifyPlaylists] = useState<SpotifyPlaylist[]>([])
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false)
+  
+  const { 
+    autoplayEnabled, 
+    selectedPlaylist, 
+    setAutoplayEnabled, 
+    setSelectedPlaylist,
+    setIsConnected 
+  } = useSpotifyStore()
 
   const fetchTokenInfo = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/token')
+      const data = await response.json()
       
-      if (response.ok) {
-        const data: TokenInfo = await response.json()
+      if (response.ok && data.authenticated !== false) {
         setTokenInfo(data)
         setIsAuth0Connected(true)
         
@@ -123,9 +160,68 @@ export default function SettingsPage() {
     }
   }, [scopes])
 
+  const fetchSpotifyConnection = useCallback(async () => {
+    try {
+      const response = await fetch('/api/spotify/token')
+      const data: SpotifyConnection = await response.json()
+      setSpotifyConnection(data)
+      setIsConnected(data.connected)
+
+      if (!data.connected && data.errorCode) {
+        console.warn('Spotify connection error:', data.errorCode, data.error)
+      }
+
+      if (data.connected) {
+        fetchSpotifyPlaylists()
+      }
+    } catch (error) {
+      console.error('Error fetching Spotify connection:', error)
+    }
+  }, [setIsConnected])
+
   useEffect(() => {
     fetchTokenInfo()
-  }, [fetchTokenInfo])
+    fetchSpotifyConnection()
+  }, [fetchTokenInfo, fetchSpotifyConnection])
+
+  const fetchSpotifyPlaylists = async () => {
+    setLoadingPlaylists(true)
+    try {
+      const response = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
+      const data = await response.json()
+
+      if (response.ok) {
+        setSpotifyPlaylists(data.playlists || [])
+      }
+    } catch (error) {
+      console.error('Error fetching Spotify playlists:', error)
+    } finally {
+      setLoadingPlaylists(false)
+    }
+  }
+
+  const handleConnectSpotify = () => {
+    window.location.href = '/api/spotify/connect'
+  }
+
+  const handleDisconnectSpotify = async () => {
+    setAutoplayEnabled(false)
+    setSelectedPlaylist(null)
+    setIsConnected(false)
+    toast.success('Spotify disconnected')
+    
+    await handleDisconnectAuth0()
+  }
+
+  const handlePlaylistSelect = (playlist: SpotifyPlaylist) => {
+    setSelectedPlaylist({
+      id: playlist.id,
+      name: playlist.name,
+      uri: playlist.uri,
+      images: playlist.images,
+    })
+    toast.success(`Selected: ${playlist.name}`)
+  }
 
   const handleConnectAuth0 = () => {
     setConnecting(true)
@@ -376,6 +472,175 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Spotify Integration */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Music className="h-5 w-5 text-primary" />
+                <CardTitle>Spotify Integration</CardTitle>
+              </div>
+              <Badge variant={spotifyConnection?.connected ? "default" : "secondary"}>
+                {spotifyConnection?.connected ? (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <XCircle className="h-3 w-3" />
+                    Not Connected
+                  </span>
+                )}
+              </Badge>
+            </div>
+            <CardDescription>
+              Play lofi music during study sessions to enhance focus
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!spotifyConnection?.connected ? (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Connect Spotify</AlertTitle>
+                <AlertDescription>
+                  Connect your Spotify account to automatically play lofi playlists during your study sessions.
+                  Requires Spotify Premium for playback.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-4">
+                {spotifyConnection.profile && (
+                  <div className="rounded-lg border bg-muted/50 p-4">
+                    <div className="flex items-start gap-3">
+                      {spotifyConnection.profile.images?.[0] && (
+                        <Image
+                          src={spotifyConnection.profile.images[0].url}
+                          alt={spotifyConnection.profile.display_name}
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 rounded-full"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium">{spotifyConnection.profile.display_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {spotifyConnection.profile.email}
+                        </p>
+                        <Badge variant="outline" className="mt-1">
+                          {spotifyConnection.profile.product}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="spotify-autoplay" className="font-medium">
+                      Autoplay Music
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically play lofi playlist when starting study timer
+                    </p>
+                  </div>
+                  <Switch
+                    id="spotify-autoplay"
+                    checked={autoplayEnabled}
+                    onCheckedChange={setAutoplayEnabled}
+                  />
+                </div>
+
+                {spotifyPlaylists.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Label className="font-medium">Select Lofi Playlist</Label>
+                      <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                        {loadingPlaylists ? (
+                          <div className="text-center text-sm text-muted-foreground py-4">
+                            Loading playlists...
+                          </div>
+                        ) : (
+                          spotifyPlaylists.slice(0, 10).map((playlist) => (
+                            <button
+                              key={playlist.id}
+                              onClick={() => handlePlaylistSelect(playlist)}
+                              className={`flex items-center gap-3 p-2 rounded-lg border transition-colors text-left ${
+                                selectedPlaylist?.id === playlist.id
+                                  ? 'border-primary bg-primary/10'
+                                  : 'border-border hover:bg-muted/50'
+                              }`}
+                            >
+                              {playlist.images?.[0] && (
+                                <Image
+                                  src={playlist.images[0].url}
+                                  alt={playlist.name}
+                                  width={40}
+                                  height={40}
+                                  className="rounded"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{playlist.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {playlist.tracks.total} tracks
+                                </p>
+                              </div>
+                              {selectedPlaylist?.id === playlist.id && (
+                                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                              )}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                      {selectedPlaylist && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Selected: {selectedPlaylist.name}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              {!spotifyConnection?.connected ? (
+                <Button
+                  onClick={handleConnectSpotify}
+                  className="gap-2"
+                >
+                  <Music className="h-4 w-4" />
+                  Connect Spotify
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={fetchSpotifyPlaylists}
+                    variant="outline"
+                    className="gap-2"
+                    disabled={loadingPlaylists}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loadingPlaylists ? 'animate-spin' : ''}`} />
+                    Refresh Playlists
+                  </Button>
+                  <Button
+                    onClick={handleDisconnectSpotify}
+                    variant="destructive"
+                    className="gap-2"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Disconnect
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Security Information */}
         <Card>
           <CardHeader>
@@ -393,6 +658,9 @@ export default function SettingsPage() {
             </p>
             <p>
               • All API requests are made over secure HTTPS connections
+            </p>
+            <p>
+              • Spotify Premium required for music playback
             </p>
           </CardContent>
         </Card>

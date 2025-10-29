@@ -2,11 +2,19 @@ import { Auth0Client } from '@auth0/nextjs-auth0/server';
 
 // Initialize Auth0 with enhanced configuration for AI agent integration
 export const auth0 = new Auth0Client({
+  domain: process.env.AUTH0_DOMAIN || process.env.AUTH0_ISSUER_BASE_URL?.replace('https://', '') || '',
+  clientId: process.env.AUTH0_CLIENT_ID || '',
+  clientSecret: process.env.AUTH0_CLIENT_SECRET || '',
+  appBaseUrl: process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || '',
+  secret: process.env.AUTH0_SECRET || '',
   authorizationParameters: {
     // Request specific scopes for AI agent functionality
-    scope: process.env.AUTH0_SCOPE || 'openid profile email offline_access read:user update:user',
+    // CRITICAL: offline_access is required for refresh tokens
+    scope: process.env.AUTH0_SCOPE || 'openid profile email offline_access',
     // Set audience for API access (required for access tokens)
     audience: process.env.AUTH0_AUDIENCE,
+    // Force consent screen to ensure refresh token is granted
+    prompt: 'consent',
   },
   session: {
     // Enable rolling sessions for better security
@@ -15,6 +23,11 @@ export const auth0 = new Auth0Client({
     absoluteDuration: 60 * 60 * 24 * 7,
     // Inactivity duration (1 day)
     inactivityDuration: 60 * 60 * 24,
+  },
+  routes: {
+    callback: '/api/auth/callback',
+    login: '/api/auth/login',
+    logout: '/api/auth/logout',
   },
 });
 

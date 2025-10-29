@@ -4,15 +4,18 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server"
 import { NextResponse } from "next/server"
+import { NextRequest } from "next/server"
+import { auth0 } from "@/lib/auth0"
 
 const isSignInPage = createRouteMatcher(["/signin"])
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"])
 const isAuth0Route = createRouteMatcher(["/api/auth/(.*)"])
 
-export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  // Let Auth0 routes pass through (handled by SDK)
+// Create Convex middleware handler
+const convexMiddleware = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
+  // Handle Auth0 routes FIRST, completely isolated from Convex
   if (isAuth0Route(request)) {
-    return NextResponse.next()
+    return await auth0.middleware(request)
   }
 
   // Handle Convex auth routes
@@ -26,6 +29,9 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   // For all other routes, return a standard response
   return NextResponse.next()
 })
+
+// Export the middleware
+export default convexMiddleware
 
 export const config = {
   // The following matcher runs middleware on all routes
