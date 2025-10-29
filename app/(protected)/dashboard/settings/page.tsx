@@ -126,6 +126,8 @@ export default function SettingsPage() {
   const [spotifyConnection, setSpotifyConnection] = useState<SpotifyConnection | null>(null)
   const [spotifyPlaylists, setSpotifyPlaylists] = useState<SpotifyPlaylist[]>([])
   const [loadingPlaylists, setLoadingPlaylists] = useState(false)
+  const [playlistSource, setPlaylistSource] = useState<'user-lofi' | 'search'>('user-lofi')
+  const [showAllUserPlaylists, setShowAllUserPlaylists] = useState(false)
   
   const { 
     autoplayEnabled, 
@@ -172,11 +174,12 @@ export default function SettingsPage() {
       }
 
       if (data.connected) {
-        fetchSpotifyPlaylists()
+        fetchSpotifyPlaylists(false)
       }
     } catch (error) {
       console.error('Error fetching Spotify connection:', error)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsConnected])
 
   useEffect(() => {
@@ -184,20 +187,92 @@ export default function SettingsPage() {
     fetchSpotifyConnection()
   }, [fetchTokenInfo, fetchSpotifyConnection])
 
-  const fetchSpotifyPlaylists = async () => {
+  const fetchSpotifyPlaylists = async (forceSearch = false) => {
     setLoadingPlaylists(true)
     try {
-      const response = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
-      const data = await response.json()
+      if (forceSearch) {
+        // Fetch search results
+        const searchResponse = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
+        const searchData = await searchResponse.json()
 
-      if (response.ok) {
-        setSpotifyPlaylists(data.playlists || [])
+        if (searchResponse.ok) {
+          setSpotifyPlaylists(searchData.playlists || [])
+          setPlaylistSource('search')
+        }
+        return
+      }
+
+      // First, try to fetch user's own playlists
+      const userResponse = await fetch('/api/spotify/playlists?type=user')
+      const userData = await userResponse.json()
+
+      let userPlaylists: SpotifyPlaylist[] = []
+      let lofiPlaylists: SpotifyPlaylist[] = []
+
+      if (userResponse.ok && userData.playlists) {
+        userPlaylists = userData.playlists
+
+        // Filter playlists that match lofi/study/chill keywords
+        const lofiKeywords = ['lofi', 'lo-fi', 'lo fi', 'chill', 'study', 'focus', 'relax', 'beats', 'ambient']
+        lofiPlaylists = userPlaylists.filter((playlist) => {
+          const nameMatch = lofiKeywords.some(keyword => 
+            playlist.name.toLowerCase().includes(keyword)
+          )
+          const descMatch = playlist.description && lofiKeywords.some(keyword => 
+            playlist.description.toLowerCase().includes(keyword)
+          )
+          return nameMatch || descMatch
+        })
+
+        console.log(`Found ${lofiPlaylists.length} lofi playlists from user's library out of ${userPlaylists.length} total`)
+      }
+
+      // If user has lofi playlists, use those; otherwise fall back to search
+      if (lofiPlaylists.length > 0) {
+        setSpotifyPlaylists(showAllUserPlaylists ? userPlaylists : lofiPlaylists)
+        setPlaylistSource('user-lofi')
+        
+        // Auto-select first lofi playlist if none selected
+        if (!selectedPlaylist) {
+          const firstPlaylist = lofiPlaylists[0]
+          setSelectedPlaylist({
+            id: firstPlaylist.id,
+            name: firstPlaylist.name,
+            uri: firstPlaylist.uri,
+            images: firstPlaylist.images,
+          })
+          toast.success(`Auto-selected: ${firstPlaylist.name}`)
+        }
+      } else {
+        // Fall back to search if no lofi playlists found
+        console.log('No lofi playlists found in user library, falling back to search')
+        const searchResponse = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
+        const searchData = await searchResponse.json()
+
+        if (searchResponse.ok) {
+          setSpotifyPlaylists(searchData.playlists || [])
+          setPlaylistSource('search')
+        }
       }
     } catch (error) {
       console.error('Error fetching Spotify playlists:', error)
     } finally {
       setLoadingPlaylists(false)
     }
+  }
+
+  const toggleShowAllPlaylists = async () => {
+    const newValue = !showAllUserPlaylists
+    setShowAllUserPlaylists(newValue)
+    
+    if (playlistSource === 'user-lofi') {
+      // Re-fetch to update the display
+      await fetchSpotifyPlaylists()
+    }
+  }
+
+  const switchToSearchPlaylists = () => {
+    fetchSpotifyPlaylists(true)
   }
 
   const handleConnectSpotify = () => {
@@ -505,6 +580,7 @@ export default function SettingsPage() {
                 <AlertTitle>Connect Spotify</AlertTitle>
                 <AlertDescription>
                   Connect your Spotify account to automatically play lofi playlists during your study sessions.
+                  We&apos;ll search your library for lofi/study/chill playlists and auto-select one for you.
                   Requires Spotify Premium for playback.
                 </AlertDescription>
               </Alert>
@@ -557,7 +633,46 @@ export default function SettingsPage() {
                   <>
                     <Separator />
                     <div className="space-y-2">
-                      <Label className="font-medium">Select Lofi Playlist</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="font-medium">
+                          {playlistSource === 'user-lofi' ? 'Your Lofi Playlists' : 'Discover Lofi Playlists'}
+                        </Label>
+                        <div className="flex gap-2">
+                          {playlistSource === 'user-lofi' && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleShowAllPlaylists}
+                                className="text-xs"
+                              >
+                                {showAllUserPlaylists ? 'Show Lofi Only' : 'Show All'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={switchToSearchPlaylists}
+                                className="text-xs"
+                              >
+                                Discover More
+                              </Button>
+                            </>
+                          )}
+                          {playlistSource === 'search' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => fetchSpotifyPlaylists(false)}
+                              className="text-xs"
+                            >
+                              Back to My Playlists
+                            </Button>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {playlistSource === 'user-lofi' ? 'Your Library' : 'Discover'}
+                          </Badge>
+                        </div>
+                      </div>
                       <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                         {loadingPlaylists ? (
                           <div className="text-center text-sm text-muted-foreground py-4">
@@ -619,7 +734,7 @@ export default function SettingsPage() {
               ) : (
                 <>
                   <Button
-                    onClick={fetchSpotifyPlaylists}
+                    onClick={() => fetchSpotifyPlaylists(false)}
                     variant="outline"
                     className="gap-2"
                     disabled={loadingPlaylists}
@@ -661,6 +776,12 @@ export default function SettingsPage() {
             </p>
             <p>
               • Spotify Premium required for music playback
+            </p>
+            <p>
+              • We automatically detect lofi playlists from your library using keywords
+            </p>
+            <p>
+              • You can toggle between your library and discover new playlists
             </p>
           </CardContent>
         </Card>
