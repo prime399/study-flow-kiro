@@ -10,6 +10,10 @@ import { auth0 } from "@/lib/auth0"
 const isSignInPage = createRouteMatcher(["/signin"])
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"])
 const isAuth0Route = createRouteMatcher(["/api/auth/(.*)"])
+const isSpotifyOAuthRoute = createRouteMatcher([
+  "/api/spotify-direct/auth",
+  "/api/spotify-direct/callback"
+])
 
 // Create Convex middleware handler (without Auth0 logic)
 const convexMiddleware = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
@@ -25,11 +29,17 @@ const convexMiddleware = convexAuthNextjsMiddleware(async (request, { convexAuth
   return NextResponse.next()
 })
 
-// Main middleware function - handle Auth0 BEFORE Convex
+// Main middleware function - handle Auth0 and Spotify OAuth BEFORE Convex
 export default function middleware(request: NextRequest) {
   // Handle Auth0 routes FIRST, completely isolated from Convex
   if (isAuth0Route(request)) {
     return auth0.middleware(request)
+  }
+
+  // Handle Spotify OAuth routes - allow them to bypass Convex auth
+  // These routes need to work during the OAuth flow before user is fully authenticated
+  if (isSpotifyOAuthRoute(request)) {
+    return NextResponse.next()
   }
 
   // For all other routes, use Convex middleware
