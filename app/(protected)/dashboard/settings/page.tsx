@@ -60,6 +60,7 @@ interface SpotifyConnection {
   hasToken: boolean
   error?: string
   errorCode?: string
+  reconnectRequired?: boolean
 }
 
 interface SpotifyPlaylist {
@@ -575,13 +576,24 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {!spotifyConnection?.connected ? (
-              <Alert>
+              <Alert variant={spotifyConnection?.reconnectRequired ? "destructive" : "default"}>
                 <Info className="h-4 w-4" />
-                <AlertTitle>Connect Spotify</AlertTitle>
+                <AlertTitle>
+                  {spotifyConnection?.reconnectRequired ? 'Reconnection Required' : 'Connect Spotify'}
+                </AlertTitle>
                 <AlertDescription>
-                  Connect your Spotify account to automatically play lofi playlists during your study sessions.
-                  We&apos;ll search your library for lofi/study/chill playlists and auto-select one for you.
-                  Requires Spotify Premium for playback.
+                  {spotifyConnection?.reconnectRequired ? (
+                    <>
+                      Your Spotify connection needs to be refreshed. Please click &quot;Connect Spotify&quot; below to reconnect.
+                      This will ensure proper offline access for background music playback.
+                    </>
+                  ) : (
+                    <>
+                      Connect your Spotify account to automatically play lofi playlists during your study sessions.
+                      We&apos;ll search your library for lofi/study/chill playlists and auto-select one for you.
+                      Requires Spotify Premium for playback.
+                    </>
+                  )}
                 </AlertDescription>
               </Alert>
             ) : (

@@ -35,18 +35,40 @@ export async function GET() {
         hasToken: true,
       });
     } catch (error: any) {
-      console.error('Error fetching Spotify token:', error);
-
       if (error instanceof AccessTokenForConnectionError) {
+        console.error('Spotify AccessTokenForConnectionError:', {
+          code: error.code,
+          message: error.message,
+          cause: error.cause,
+        });
+
+        // Special handling for missing refresh token
+        if (error.code === 'missing_refresh_token') {
+          return NextResponse.json(
+            {
+              connected: false,
+              hasToken: false,
+              error: 'Refresh token missing. Please reconnect your Spotify account by clicking "Connect Spotify" below.',
+              errorCode: error.code,
+              reconnectRequired: true,
+            },
+            { status: 200 }
+          );
+        }
+
         return NextResponse.json(
           {
             connected: false,
+            hasToken: false,
             error: error.message,
             errorCode: error.code,
+            reconnectRequired: error.code === 'failed_to_exchange_refresh_token',
           },
           { status: 200 }
         );
       }
+
+      console.error('Error fetching Spotify token:', error);
 
       if (error.message?.includes('No connection token found')) {
         return NextResponse.json(
