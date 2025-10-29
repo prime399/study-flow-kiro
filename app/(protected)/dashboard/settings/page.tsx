@@ -167,7 +167,7 @@ export default function SettingsPage() {
 
   const fetchSpotifyConnection = useCallback(async () => {
     try {
-      const response = await fetch('/api/spotify/token')
+      const response = await fetch('/api/spotify-direct/status')
       const data: SpotifyConnection = await response.json()
       setSpotifyConnection(data)
       setIsConnected(data.connected)
@@ -188,6 +188,37 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchTokenInfo()
     fetchSpotifyConnection()
+
+    // Handle Spotify OAuth callback query parameters
+    const params = new URLSearchParams(window.location.search)
+    const spotifyConnected = params.get('spotify_connected')
+    const spotifyError = params.get('spotify_error')
+
+    if (spotifyConnected === 'true') {
+      toast.success('Spotify connected successfully!')
+      fetchSpotifyConnection()
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (spotifyError) {
+      let errorMessage = 'Failed to connect Spotify'
+      switch (spotifyError) {
+        case 'access_denied':
+          errorMessage = 'You denied access to Spotify'
+          break
+        case 'invalid_state':
+          errorMessage = 'Invalid authentication state. Please try again.'
+          break
+        case 'no_code':
+          errorMessage = 'No authorization code received from Spotify'
+          break
+        case 'callback_failed':
+          errorMessage = 'Failed to complete Spotify authentication'
+          break
+      }
+      toast.error(errorMessage)
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [fetchTokenInfo, fetchSpotifyConnection])
 
   const fetchSpotifyPlaylists = async (forceSearch = false) => {
@@ -195,7 +226,7 @@ export default function SettingsPage() {
     try {
       if (forceSearch) {
         // Fetch search results
-        const searchResponse = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
+        const searchResponse = await fetch('/api/spotify-direct/playlists?type=search&query=lofi study chill')
         const searchData = await searchResponse.json()
 
         if (searchResponse.ok) {
@@ -206,7 +237,7 @@ export default function SettingsPage() {
       }
 
       // First, try to fetch user's own playlists
-      const userResponse = await fetch('/api/spotify/playlists?type=user')
+      const userResponse = await fetch('/api/spotify-direct/playlists?type=user')
       const userData = await userResponse.json()
 
       let userPlaylists: SpotifyPlaylist[] = []
@@ -249,7 +280,7 @@ export default function SettingsPage() {
       } else {
         // Fall back to search if no lofi playlists found
         console.log('No lofi playlists found in user library, falling back to search')
-        const searchResponse = await fetch('/api/spotify/playlists?type=search&query=lofi study chill')
+        const searchResponse = await fetch('/api/spotify-direct/playlists?type=search&query=lofi study chill')
         const searchData = await searchResponse.json()
 
         if (searchResponse.ok) {
@@ -279,16 +310,29 @@ export default function SettingsPage() {
   }
 
   const handleConnectSpotify = () => {
-    window.location.href = '/api/spotify/connect'
+    window.location.href = '/api/spotify-direct/auth?returnTo=/dashboard/settings'
   }
 
   const handleDisconnectSpotify = async () => {
-    setAutoplayEnabled(false)
-    setSelectedPlaylist(null)
-    setIsConnected(false)
-    toast.success('Spotify disconnected')
-    
-    await handleDisconnectAuth0()
+    try {
+      const response = await fetch('/api/spotify-direct/disconnect', {
+        method: 'POST',
+      })
+
+      if (response.ok) {
+        setAutoplayEnabled(false)
+        setSelectedPlaylist(null)
+        setIsConnected(false)
+        setSpotifyConnection(null)
+        setSpotifyPlaylists([])
+        toast.success('Spotify disconnected successfully')
+      } else {
+        throw new Error('Failed to disconnect')
+      }
+    } catch (error) {
+      console.error('Error disconnecting Spotify:', error)
+      toast.error('Failed to disconnect Spotify')
+    }
   }
 
   const handlePlaylistSelect = (playlist: SpotifyPlaylist) => {

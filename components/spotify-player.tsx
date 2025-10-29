@@ -113,7 +113,7 @@ export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps)
 
   const getAccessToken = async (): Promise<string | null> => {
     try {
-      const response = await fetch("/api/spotify/access-token")
+      const response = await fetch("/api/spotify-direct/access-token")
       
       if (!response.ok) {
         throw new Error("Failed to get Spotify access token")

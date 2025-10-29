@@ -77,4 +77,14 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_status", ["userId", "status"]),
+  spotifyTokens: defineTable({
+    userId: v.id("users"),
+    accessToken: v.string(), // Encrypted
+    refreshToken: v.string(), // Encrypted
+    expiresAt: v.number(),
+    scope: v.string(),
+    tokenType: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
 })
