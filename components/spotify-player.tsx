@@ -238,14 +238,18 @@ export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps)
       <CardContent className="space-y-4">
         {currentTrack && (
           <div className="flex items-center gap-3">
-            {currentTrack.album?.images?.[0] && (
+            {currentTrack.album?.images?.[0] ? (
               <Image
                 src={currentTrack.album.images[0].url}
                 alt={currentTrack.name}
                 width={64}
                 height={64}
-                className="rounded"
+                className="rounded object-cover"
               />
+            ) : (
+              <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
+                <Music className="h-8 w-8 text-muted-foreground" />
+              </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{currentTrack.name}</p>
@@ -258,14 +262,18 @@ export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps)
 
         {!currentTrack && selectedPlaylist && (
           <div className="flex items-center gap-3">
-            {selectedPlaylist.images?.[0] && (
+            {selectedPlaylist.images?.[0] ? (
               <Image
                 src={selectedPlaylist.images[0].url}
                 alt={selectedPlaylist.name}
                 width={64}
                 height={64}
-                className="rounded"
+                className="rounded object-cover"
               />
+            ) : (
+              <div className="w-16 h-16 rounded bg-muted flex items-center justify-center">
+                <Music className="h-8 w-8 text-muted-foreground" />
+              </div>
             )}
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{selectedPlaylist.name}</p>

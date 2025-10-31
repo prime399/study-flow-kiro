@@ -9,21 +9,29 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { 
-  Shield, 
-  Key, 
-  Lock, 
-  CheckCircle2, 
-  XCircle, 
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Shield,
+  Key,
+  Lock,
+  CheckCircle2,
+  XCircle,
   Info,
   ExternalLink,
   RefreshCw,
-  Music
+  Music,
+  Search,
+  Library,
+  Compass,
+  Sparkles
 } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { toast } from "sonner"
 import Image from "next/image"
 import { useSpotifyStore } from "@/store/use-spotify-store"
+import { SpotifyLogo } from "@/components/logos/spotify-logo"
+import { Auth0Logo } from "@/components/logos/auth0-logo"
 
 interface TokenInfo {
   user: {
@@ -131,6 +139,8 @@ export default function SettingsPage() {
   const [loadingPlaylists, setLoadingPlaylists] = useState(false)
   const [playlistSource, setPlaylistSource] = useState<'user-lofi' | 'search'>('user-lofi')
   const [showAllUserPlaylists, setShowAllUserPlaylists] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('lofi study chill')
+  const [activeTab, setActiveTab] = useState<'library' | 'discover'>('library')
   
   const { 
     autoplayEnabled, 
@@ -230,7 +240,9 @@ export default function SettingsPage() {
         const searchData = await searchResponse.json()
 
         if (searchResponse.ok) {
-          setSpotifyPlaylists(searchData.playlists || [])
+          // Filter out null/undefined playlists
+          const validPlaylists = (searchData.playlists || []).filter((p: any) => p && p.id)
+          setSpotifyPlaylists(validPlaylists)
           setPlaylistSource('search')
         }
         return
@@ -244,7 +256,8 @@ export default function SettingsPage() {
       let lofiPlaylists: SpotifyPlaylist[] = []
 
       if (userResponse.ok && userData.playlists) {
-        userPlaylists = userData.playlists
+        // Filter out null/undefined playlists
+        userPlaylists = (userData.playlists || []).filter((p: any) => p && p.id)
 
         // Filter playlists that match lofi/study/chill keywords
         const lofiKeywords = ['lofi', 'lo-fi', 'lo fi', 'chill', 'study', 'focus', 'relax', 'beats', 'ambient']
@@ -284,7 +297,9 @@ export default function SettingsPage() {
         const searchData = await searchResponse.json()
 
         if (searchResponse.ok) {
-          setSpotifyPlaylists(searchData.playlists || [])
+          // Filter out null/undefined playlists
+          const validPlaylists = (searchData.playlists || []).filter((p: any) => p && p.id)
+          setSpotifyPlaylists(validPlaylists)
           setPlaylistSource('search')
         }
       }
@@ -305,8 +320,66 @@ export default function SettingsPage() {
     }
   }
 
-  const switchToSearchPlaylists = () => {
-    fetchSpotifyPlaylists(true)
+  const switchToSearchPlaylists = async () => {
+    await fetchSpotifyPlaylists(true)
+  }
+
+  const handleSearchPlaylists = async () => {
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search query')
+      return
+    }
+
+    setLoadingPlaylists(true)
+    try {
+      const response = await fetch(`/api/spotify-direct/playlists?type=search&query=${encodeURIComponent(searchQuery)}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        // Filter out null/undefined playlists
+        const validPlaylists = (data.playlists || []).filter((p: any) => p && p.id)
+        setSpotifyPlaylists(validPlaylists)
+        setPlaylistSource('search')
+        setActiveTab('discover')
+      }
+    } catch (error) {
+      console.error('Error searching playlists:', error)
+      toast.error('Failed to search playlists')
+    } finally {
+      setLoadingPlaylists(false)
+    }
+  }
+
+  const handleCategorySearch = async (category: string) => {
+    setSearchQuery(category)
+    setLoadingPlaylists(true)
+    try {
+      const response = await fetch(`/api/spotify-direct/playlists?type=search&query=${encodeURIComponent(category)}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        // Filter out null/undefined playlists
+        const validPlaylists = (data.playlists || []).filter((p: any) => p && p.id)
+        setSpotifyPlaylists(validPlaylists)
+        setPlaylistSource('search')
+        setActiveTab('discover')
+        toast.success(`Found ${validPlaylists.length} playlists`)
+      }
+    } catch (error) {
+      console.error('Error searching by category:', error)
+      toast.error('Failed to search playlists')
+    } finally {
+      setLoadingPlaylists(false)
+    }
+  }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'library' | 'discover')
+    if (value === 'library') {
+      fetchSpotifyPlaylists(false)
+    } else if (value === 'discover' && spotifyPlaylists.length === 0) {
+      fetchSpotifyPlaylists(true)
+    }
   }
 
   const handleConnectSpotify = () => {
@@ -410,9 +483,16 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                <CardTitle>Auth0 Integration</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Auth0Logo className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Auth0 Integration</CardTitle>
+                  <CardDescription className="mt-1">
+                    Secure authentication and authorization
+                  </CardDescription>
+                </div>
               </div>
               <Badge variant={isAuth0Connected ? "default" : "secondary"}>
                 {isAuth0Connected ? (
@@ -428,9 +508,6 @@ export default function SettingsPage() {
                 )}
               </Badge>
             </div>
-            <CardDescription>
-              Secure authentication and authorization with fine-grained user consent
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!isAuth0Connected ? (
@@ -494,7 +571,7 @@ export default function SettingsPage() {
                   disabled={connecting}
                   className="gap-2"
                 >
-                  <Shield className="h-4 w-4" />
+                  <Auth0Logo className="h-4 w-4" />
                   Connect Auth0
                 </Button>
               ) : (
@@ -598,9 +675,16 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Music className="h-5 w-5 text-primary" />
-                <CardTitle>Spotify Integration</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-[#1DB954]/10">
+                  <SpotifyLogo className="h-6 w-6 text-[#1DB954]" />
+                </div>
+                <div>
+                  <CardTitle>Spotify Integration</CardTitle>
+                  <CardDescription className="mt-1">
+                    Play lofi music during study sessions
+                  </CardDescription>
+                </div>
               </div>
               <Badge variant={spotifyConnection?.connected ? "default" : "secondary"}>
                 {spotifyConnection?.connected ? (
@@ -616,9 +700,6 @@ export default function SettingsPage() {
                 )}
               </Badge>
             </div>
-            <CardDescription>
-              Play lofi music during study sessions to enhance focus
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!spotifyConnection?.connected ? (
@@ -697,74 +778,91 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                {spotifyPlaylists.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-2">
+                <Separator />
+
+                {/* Enhanced Playlist Management Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium text-base">Music Selection</Label>
+                    {selectedPlaylist && (
+                      <Badge variant="outline" className="gap-1">
+                        <Music className="h-3 w-3" />
+                        {selectedPlaylist.name}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="library" className="gap-2">
+                        <Library className="h-4 w-4" />
+                        Your Library
+                      </TabsTrigger>
+                      <TabsTrigger value="discover" className="gap-2">
+                        <Compass className="h-4 w-4" />
+                        Discover
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="library" className="space-y-4 mt-4">
                       <div className="flex items-center justify-between">
-                        <Label className="font-medium">
-                          {playlistSource === 'user-lofi' ? 'Your Lofi Playlists' : 'Discover Lofi Playlists'}
-                        </Label>
-                        <div className="flex gap-2">
-                          {playlistSource === 'user-lofi' && (
+                        <p className="text-sm text-muted-foreground">
+                          {playlistSource === 'user-lofi' && !showAllUserPlaylists
+                            ? 'Playlists filtered by lofi/study/chill keywords'
+                            : 'All your playlists'}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={toggleShowAllPlaylists}
+                          className="text-xs gap-1"
+                        >
+                          {showAllUserPlaylists ? (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={toggleShowAllPlaylists}
-                                className="text-xs"
-                              >
-                                {showAllUserPlaylists ? 'Show Lofi Only' : 'Show All'}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={switchToSearchPlaylists}
-                                className="text-xs"
-                              >
-                                Discover More
-                              </Button>
+                              <Sparkles className="h-3 w-3" />
+                              Show Lofi Only
                             </>
+                          ) : (
+                            'Show All'
                           )}
-                          {playlistSource === 'search' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => fetchSpotifyPlaylists(false)}
-                              className="text-xs"
-                            >
-                              Back to My Playlists
-                            </Button>
-                          )}
-                          <Badge variant="outline" className="text-xs">
-                            {playlistSource === 'user-lofi' ? 'Your Library' : 'Discover'}
-                          </Badge>
-                        </div>
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+
+                      <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
                         {loadingPlaylists ? (
-                          <div className="text-center text-sm text-muted-foreground py-4">
-                            Loading playlists...
+                          <div className="text-center text-sm text-muted-foreground py-8">
+                            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+                            Loading your playlists...
+                          </div>
+                        ) : spotifyPlaylists.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Library className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p className="font-medium">No playlists found</p>
+                            <p className="text-sm mt-1">Try switching to Discover mode</p>
                           </div>
                         ) : (
-                          spotifyPlaylists.slice(0, 10).map((playlist) => (
+                          spotifyPlaylists.filter(playlist => playlist && playlist.id).map((playlist) => (
                             <button
                               key={playlist.id}
                               onClick={() => handlePlaylistSelect(playlist)}
-                              className={`flex items-center gap-3 p-2 rounded-lg border transition-colors text-left ${
+                              className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                                 selectedPlaylist?.id === playlist.id
-                                  ? 'border-primary bg-primary/10'
-                                  : 'border-border hover:bg-muted/50'
+                                  ? 'border-primary bg-primary/10 shadow-sm'
+                                  : 'border-border hover:bg-muted/50 hover:border-primary/50'
                               }`}
                             >
-                              {playlist.images?.[0] && (
+                              {playlist.images?.[0] ? (
                                 <Image
                                   src={playlist.images[0].url}
                                   alt={playlist.name}
-                                  width={40}
-                                  height={40}
-                                  className="rounded"
+                                  width={48}
+                                  height={48}
+                                  className="rounded object-cover"
                                 />
+                              ) : (
+                                <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                                  <Music className="h-6 w-6 text-muted-foreground" />
+                                </div>
                               )}
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-sm truncate">{playlist.name}</p>
@@ -773,42 +871,167 @@ export default function SettingsPage() {
                                 </p>
                               </div>
                               {selectedPlaylist?.id === playlist.id && (
-                                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
+                                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                               )}
                             </button>
                           ))
                         )}
                       </div>
-                      {selectedPlaylist && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Selected: {selectedPlaylist.name}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                )}
+                    </TabsContent>
+
+                    <TabsContent value="discover" className="space-y-4 mt-4">
+                      {/* Search Input */}
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearchPlaylists()}
+                            placeholder="Search for playlists..."
+                            className="pl-9"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleSearchPlaylists}
+                          disabled={loadingPlaylists}
+                          className="gap-2"
+                        >
+                          {loadingPlaylists ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Search className="h-4 w-4" />
+                          )}
+                          Search
+                        </Button>
+                      </div>
+
+                      {/* Category Quick Search */}
+                      <div className="space-y-2">
+                        <Label className="text-sm text-muted-foreground">Popular Categories</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { label: 'Lofi Hip Hop', query: 'lofi hip hop beats', icon: '🎧' },
+                            { label: 'Study Music', query: 'study focus concentration', icon: '📚' },
+                            { label: 'Chill Vibes', query: 'chill lofi vibes', icon: '🌊' },
+                            { label: 'Jazz Lofi', query: 'lofi jazz chill', icon: '🎷' },
+                            { label: 'Ambient', query: 'ambient lofi study', icon: '🌌' },
+                            { label: 'Piano Lofi', query: 'lofi piano peaceful', icon: '🎹' },
+                          ].map((category) => (
+                            <Button
+                              key={category.query}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCategorySearch(category.query)}
+                              disabled={loadingPlaylists}
+                              className="gap-1 text-xs"
+                            >
+                              <span>{category.icon}</span>
+                              {category.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Discover Results */}
+                      <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
+                        {loadingPlaylists ? (
+                          <div className="text-center text-sm text-muted-foreground py-8">
+                            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+                            Searching playlists...
+                          </div>
+                        ) : spotifyPlaylists.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Compass className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p className="font-medium">Ready to discover</p>
+                            <p className="text-sm mt-1">Search or pick a category to find playlists</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-muted-foreground">
+                                Found {spotifyPlaylists.filter(p => p && p.id).length} playlists
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setActiveTab('library')
+                                  fetchSpotifyPlaylists(false)
+                                }}
+                                className="text-xs"
+                              >
+                                Back to Library
+                              </Button>
+                            </div>
+                            {spotifyPlaylists.filter(playlist => playlist && playlist.id).map((playlist) => (
+                              <button
+                                key={playlist.id}
+                                onClick={() => handlePlaylistSelect(playlist)}
+                                className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                                  selectedPlaylist?.id === playlist.id
+                                    ? 'border-primary bg-primary/10 shadow-sm'
+                                    : 'border-border hover:bg-muted/50 hover:border-primary/50'
+                                }`}
+                              >
+                                {playlist.images?.[0] ? (
+                                  <Image
+                                    src={playlist.images[0].url}
+                                    alt={playlist.name}
+                                    width={48}
+                                    height={48}
+                                    className="rounded object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                                    <Music className="h-6 w-6 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm truncate">{playlist.name}</p>
+                                  <p className="text-xs text-muted-foreground line-clamp-1">
+                                    {playlist.description || `${playlist.tracks.total} tracks`}
+                                  </p>
+                                </div>
+                                {selectedPlaylist?.id === playlist.id && (
+                                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                                )}
+                              </button>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-2">
               {!spotifyConnection?.connected ? (
                 <Button
                   onClick={handleConnectSpotify}
-                  className="gap-2"
+                  className="gap-2 bg-[#1DB954] hover:bg-[#1DB954]/90"
                 >
-                  <Music className="h-4 w-4" />
+                  <SpotifyLogo className="h-4 w-4" />
                   Connect Spotify
                 </Button>
               ) : (
                 <>
                   <Button
-                    onClick={() => fetchSpotifyPlaylists(false)}
+                    onClick={() => {
+                      if (activeTab === 'library') {
+                        fetchSpotifyPlaylists(false)
+                      } else {
+                        handleSearchPlaylists()
+                      }
+                    }}
                     variant="outline"
                     className="gap-2"
                     disabled={loadingPlaylists}
                   >
                     <RefreshCw className={`h-4 w-4 ${loadingPlaylists ? 'animate-spin' : ''}`} />
-                    Refresh Playlists
+                    Refresh
                   </Button>
                   <Button
                     onClick={handleDisconnectSpotify}
@@ -824,33 +1047,33 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Security Information */}
+        {/* Security & Features Information */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Security & Privacy</CardTitle>
+            <CardTitle className="text-base">Music Features & Privacy</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              • Your Auth0 credentials are securely stored and encrypted
-            </p>
-            <p>
-              • Access tokens are automatically refreshed when needed
-            </p>
-            <p>
-              • You can revoke permissions at any time
-            </p>
-            <p>
-              • All API requests are made over secure HTTPS connections
-            </p>
-            <p>
-              • Spotify Premium required for music playback
-            </p>
-            <p>
-              • We automatically detect lofi playlists from your library using keywords
-            </p>
-            <p>
-              • You can toggle between your library and discover new playlists
-            </p>
+          <CardContent className="space-y-3">
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">🎵 Music Features:</p>
+              <p>• Browse your Spotify library with smart lofi/study filtering</p>
+              <p>• Discover new playlists with custom search and categories</p>
+              <p>• One-click playlist selection for study sessions</p>
+              <p>• Automatic playback when starting study timer</p>
+            </div>
+            <Separator />
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">🔒 Security & Privacy:</p>
+              <p>• All credentials securely stored and encrypted</p>
+              <p>• Tokens automatically refreshed when needed</p>
+              <p>• Secure HTTPS connections for all API requests</p>
+              <p>• Revoke access anytime from settings</p>
+            </div>
+            <Separator />
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">ℹ️ Requirements:</p>
+              <p>• Spotify Premium account required for playback</p>
+              <p>• Active Spotify session on any device</p>
+            </div>
           </CardContent>
         </Card>
       </div>
