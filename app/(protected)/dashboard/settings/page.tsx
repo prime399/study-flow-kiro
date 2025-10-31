@@ -3,1110 +3,189 @@
 import PageTitle from "@/components/page-title"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Shield,
-  Key,
-  Lock,
-  CheckCircle2,
-  XCircle,
-  Info,
-  ExternalLink,
-  RefreshCw,
   Music,
-  Search,
-  Library,
-  Compass,
-  Sparkles
+  Calendar,
+  Key,
+  BookOpen,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react"
-import { useEffect, useState, useCallback } from "react"
-import { toast } from "sonner"
-import Image from "next/image"
-import { useSpotifyStore } from "@/store/use-spotify-store"
-import { SpotifyLogo } from "@/components/logos/spotify-logo"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 import { Auth0Logo } from "@/components/logos/auth0-logo"
+import { SpotifyLogo } from "@/components/logos/spotify-logo"
 
-interface TokenInfo {
-  user: {
-    sub: string
-    name: string
-    email: string
-    picture: string
-  }
-  tokens: {
-    accessToken: string | null
-    idToken: string | null
-    refreshToken: string | null
-  }
-  scopes: string[]
-}
-
-interface ConsentScope {
+interface IntegrationStatus {
   id: string
   name: string
   description: string
-  required: boolean
-  granted: boolean
+  icon: React.ReactNode
+  href: string
+  connected?: boolean
+  status?: "connected" | "disconnected" | "pending" | "error"
 }
 
-interface SpotifyConnection {
-  connected: boolean
-  profile?: {
-    id: string
-    display_name: string
-    email: string
-    images: Array<{ url: string }>
-    product: string
-  }
-  hasToken: boolean
-  error?: string
-  errorCode?: string
-  causeCode?: string
-  reconnectRequired?: boolean
-  configurationRequired?: boolean
-}
-
-interface SpotifyPlaylist {
-  id: string
-  name: string
-  description: string
-  images: Array<{ url: string }>
-  tracks: { total: number }
-  uri: string
-}
-
-const availableScopes: ConsentScope[] = [
+const integrations: IntegrationStatus[] = [
   {
-    id: 'openid',
-    name: 'OpenID',
-    description: 'Basic authentication',
-    required: true,
-    granted: true,
+    id: "auth0",
+    name: "Auth0",
+    description: "Secure authentication and authorization",
+    icon: <Auth0Logo className="h-8 w-8 text-primary" />,
+    href: "/dashboard/settings/auth0",
+    status: "connected",
   },
   {
-    id: 'profile',
-    name: 'Profile Information',
-    description: 'Access to your profile information',
-    required: true,
-    granted: true,
+    id: "spotify",
+    name: "Spotify",
+    description: "Play lofi music during study sessions",
+    icon: <SpotifyLogo className="h-8 w-8 text-[#1DB954]" />,
+    href: "/dashboard/settings/spotify",
+    status: "disconnected",
   },
   {
-    id: 'email',
-    name: 'Email Address',
-    description: 'Access to your email address',
-    required: true,
-    granted: true,
+    id: "google-calendar",
+    name: "Google Calendar",
+    description: "Sync your study schedule with Google Calendar",
+    icon: <Calendar className="h-8 w-8 text-red-500" />,
+    href: "/dashboard/settings/google-calendar",
+    status: "disconnected",
   },
   {
-    id: 'read:user',
-    name: 'Read User Data',
-    description: 'Read your user data and preferences',
-    required: false,
-    granted: false,
+    id: "byok",
+    name: "Bring Your Own Key",
+    description: "Use your own API keys for AI models",
+    icon: <Key className="h-8 w-8 text-amber-500" />,
+    href: "/dashboard/settings/byok",
+    status: "pending",
   },
   {
-    id: 'update:user',
-    name: 'Update User Data',
-    description: 'Update your user profile and settings',
-    required: false,
-    granted: false,
-  },
-  {
-    id: 'offline_access',
-    name: 'Offline Access',
-    description: 'Access data when you are offline',
-    required: false,
-    granted: false,
+    id: "notion",
+    name: "Notion",
+    description: "Sync study data with your Notion workspace",
+    icon: <BookOpen className="h-8 w-8 text-slate-700" />,
+    href: "/dashboard/settings/notion",
+    status: "disconnected",
   },
 ]
 
+const getStatusBadge = (status?: string) => {
+  switch (status) {
+    case "connected":
+      return (
+        <Badge className="bg-green-500/10 text-green-700 hover:bg-green-500/10">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Connected
+        </Badge>
+      )
+    case "disconnected":
+      return (
+        <Badge variant="secondary">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Not Connected
+        </Badge>
+      )
+    case "pending":
+      return (
+        <Badge variant="outline">
+          Coming Soon
+        </Badge>
+      )
+    case "error":
+      return (
+        <Badge className="bg-red-500/10 text-red-700 hover:bg-red-500/10">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Error
+        </Badge>
+      )
+    default:
+      return null
+  }
+}
+
 export default function SettingsPage() {
-  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null)
-  const [scopes, setScopes] = useState<ConsentScope[]>(availableScopes)
+  const [integrationStatuses, setIntegrationStatuses] = useState<Record<string, string | undefined>>({})
   const [loading, setLoading] = useState(true)
-  const [connecting, setConnecting] = useState(false)
-  const [isAuth0Connected, setIsAuth0Connected] = useState(false)
-  
-  const [spotifyConnection, setSpotifyConnection] = useState<SpotifyConnection | null>(null)
-  const [spotifyPlaylists, setSpotifyPlaylists] = useState<SpotifyPlaylist[]>([])
-  const [loadingPlaylists, setLoadingPlaylists] = useState(false)
-  const [playlistSource, setPlaylistSource] = useState<'user-lofi' | 'search'>('user-lofi')
-  const [showAllUserPlaylists, setShowAllUserPlaylists] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('lofi study chill')
-  const [activeTab, setActiveTab] = useState<'library' | 'discover'>('library')
-  
-  const { 
-    autoplayEnabled, 
-    selectedPlaylist, 
-    setAutoplayEnabled, 
-    setSelectedPlaylist,
-    setIsConnected 
-  } = useSpotifyStore()
-
-  const fetchTokenInfo = useCallback(async () => {
-    try {
-      const response = await fetch('/api/auth/token')
-      const data = await response.json()
-      
-      if (response.ok && data.authenticated !== false) {
-        setTokenInfo(data)
-        setIsAuth0Connected(true)
-        
-        const updatedScopes = scopes.map(scope => ({
-          ...scope,
-          granted: data.scopes.includes(scope.id) || scope.required,
-        }))
-        setScopes(updatedScopes)
-      } else {
-        setIsAuth0Connected(false)
-      }
-    } catch (error) {
-      console.error('Error fetching token info:', error)
-      setIsAuth0Connected(false)
-    } finally {
-      setLoading(false)
-    }
-  }, [scopes])
-
-  const fetchSpotifyConnection = useCallback(async () => {
-    try {
-      const response = await fetch('/api/spotify-direct/status')
-      const data: SpotifyConnection = await response.json()
-      setSpotifyConnection(data)
-      setIsConnected(data.connected)
-
-      if (!data.connected && data.errorCode) {
-        console.warn('Spotify connection error:', data.errorCode, data.error)
-      }
-
-      if (data.connected) {
-        fetchSpotifyPlaylists(false)
-      }
-    } catch (error) {
-      console.error('Error fetching Spotify connection:', error)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIsConnected])
 
   useEffect(() => {
-    fetchTokenInfo()
-    fetchSpotifyConnection()
-
-    // Handle Spotify OAuth callback query parameters
-    const params = new URLSearchParams(window.location.search)
-    const spotifyConnected = params.get('spotify_connected')
-    const spotifyError = params.get('spotify_error')
-
-    if (spotifyConnected === 'true') {
-      toast.success('Spotify connected successfully!')
-      fetchSpotifyConnection()
-      // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname)
-    } else if (spotifyError) {
-      let errorMessage = 'Failed to connect Spotify'
-      switch (spotifyError) {
-        case 'access_denied':
-          errorMessage = 'You denied access to Spotify'
-          break
-        case 'invalid_state':
-          errorMessage = 'Invalid authentication state. Please try again.'
-          break
-        case 'no_code':
-          errorMessage = 'No authorization code received from Spotify'
-          break
-        case 'callback_failed':
-          errorMessage = 'Failed to complete Spotify authentication'
-          break
-      }
-      toast.error(errorMessage)
-      // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname)
-    }
-  }, [fetchTokenInfo, fetchSpotifyConnection])
-
-  const fetchSpotifyPlaylists = async (forceSearch = false) => {
-    setLoadingPlaylists(true)
-    try {
-      if (forceSearch) {
-        // Fetch search results
-        const searchResponse = await fetch('/api/spotify-direct/playlists?type=search&query=lofi study chill')
-        const searchData = await searchResponse.json()
-
-        if (searchResponse.ok) {
-          // Filter out null/undefined playlists
-          const validPlaylists = (searchData.playlists || []).filter((p: any) => p && p.id)
-          setSpotifyPlaylists(validPlaylists)
-          setPlaylistSource('search')
-        }
-        return
-      }
-
-      // First, try to fetch user's own playlists
-      const userResponse = await fetch('/api/spotify-direct/playlists?type=user')
-      const userData = await userResponse.json()
-
-      let userPlaylists: SpotifyPlaylist[] = []
-      let lofiPlaylists: SpotifyPlaylist[] = []
-
-      if (userResponse.ok && userData.playlists) {
-        // Filter out null/undefined playlists
-        userPlaylists = (userData.playlists || []).filter((p: any) => p && p.id)
-
-        // Filter playlists that match lofi/study/chill keywords
-        const lofiKeywords = ['lofi', 'lo-fi', 'lo fi', 'chill', 'study', 'focus', 'relax', 'beats', 'ambient']
-        lofiPlaylists = userPlaylists.filter((playlist) => {
-          const nameMatch = lofiKeywords.some(keyword => 
-            playlist.name.toLowerCase().includes(keyword)
-          )
-          const descMatch = playlist.description && lofiKeywords.some(keyword => 
-            playlist.description.toLowerCase().includes(keyword)
-          )
-          return nameMatch || descMatch
-        })
-
-        console.log(`Found ${lofiPlaylists.length} lofi playlists from user's library out of ${userPlaylists.length} total`)
-      }
-
-      // If user has lofi playlists, use those; otherwise fall back to search
-      if (lofiPlaylists.length > 0) {
-        setSpotifyPlaylists(showAllUserPlaylists ? userPlaylists : lofiPlaylists)
-        setPlaylistSource('user-lofi')
-        
-        // Auto-select first lofi playlist if none selected
-        if (!selectedPlaylist) {
-          const firstPlaylist = lofiPlaylists[0]
-          setSelectedPlaylist({
-            id: firstPlaylist.id,
-            name: firstPlaylist.name,
-            uri: firstPlaylist.uri,
-            images: firstPlaylist.images,
-          })
-          toast.success(`Auto-selected: ${firstPlaylist.name}`)
-        }
-      } else {
-        // Fall back to search if no lofi playlists found
-        console.log('No lofi playlists found in user library, falling back to search')
-        const searchResponse = await fetch('/api/spotify-direct/playlists?type=search&query=lofi study chill')
-        const searchData = await searchResponse.json()
-
-        if (searchResponse.ok) {
-          // Filter out null/undefined playlists
-          const validPlaylists = (searchData.playlists || []).filter((p: any) => p && p.id)
-          setSpotifyPlaylists(validPlaylists)
-          setPlaylistSource('search')
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching Spotify playlists:', error)
-    } finally {
-      setLoadingPlaylists(false)
-    }
-  }
-
-  const toggleShowAllPlaylists = async () => {
-    const newValue = !showAllUserPlaylists
-    setShowAllUserPlaylists(newValue)
-    
-    if (playlistSource === 'user-lofi') {
-      // Re-fetch to update the display
-      await fetchSpotifyPlaylists()
-    }
-  }
-
-  const switchToSearchPlaylists = async () => {
-    await fetchSpotifyPlaylists(true)
-  }
-
-  const handleSearchPlaylists = async () => {
-    if (!searchQuery.trim()) {
-      toast.error('Please enter a search query')
-      return
-    }
-
-    setLoadingPlaylists(true)
-    try {
-      const response = await fetch(`/api/spotify-direct/playlists?type=search&query=${encodeURIComponent(searchQuery)}`)
-      const data = await response.json()
-
-      if (response.ok) {
-        // Filter out null/undefined playlists
-        const validPlaylists = (data.playlists || []).filter((p: any) => p && p.id)
-        setSpotifyPlaylists(validPlaylists)
-        setPlaylistSource('search')
-        setActiveTab('discover')
-      }
-    } catch (error) {
-      console.error('Error searching playlists:', error)
-      toast.error('Failed to search playlists')
-    } finally {
-      setLoadingPlaylists(false)
-    }
-  }
-
-  const handleCategorySearch = async (category: string) => {
-    setSearchQuery(category)
-    setLoadingPlaylists(true)
-    try {
-      const response = await fetch(`/api/spotify-direct/playlists?type=search&query=${encodeURIComponent(category)}`)
-      const data = await response.json()
-
-      if (response.ok) {
-        // Filter out null/undefined playlists
-        const validPlaylists = (data.playlists || []).filter((p: any) => p && p.id)
-        setSpotifyPlaylists(validPlaylists)
-        setPlaylistSource('search')
-        setActiveTab('discover')
-        toast.success(`Found ${validPlaylists.length} playlists`)
-      }
-    } catch (error) {
-      console.error('Error searching by category:', error)
-      toast.error('Failed to search playlists')
-    } finally {
-      setLoadingPlaylists(false)
-    }
-  }
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value as 'library' | 'discover')
-    if (value === 'library') {
-      fetchSpotifyPlaylists(false)
-    } else if (value === 'discover' && spotifyPlaylists.length === 0) {
-      fetchSpotifyPlaylists(true)
-    }
-  }
-
-  const handleConnectSpotify = () => {
-    window.location.href = '/api/spotify-direct/auth?returnTo=/dashboard/settings'
-  }
-
-  const handleDisconnectSpotify = async () => {
-    try {
-      const response = await fetch('/api/spotify-direct/disconnect', {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        setAutoplayEnabled(false)
-        setSelectedPlaylist(null)
-        setIsConnected(false)
-        setSpotifyConnection(null)
-        setSpotifyPlaylists([])
-        toast.success('Spotify disconnected successfully')
-      } else {
-        throw new Error('Failed to disconnect')
-      }
-    } catch (error) {
-      console.error('Error disconnecting Spotify:', error)
-      toast.error('Failed to disconnect Spotify')
-    }
-  }
-
-  const handlePlaylistSelect = (playlist: SpotifyPlaylist) => {
-    setSelectedPlaylist({
-      id: playlist.id,
-      name: playlist.name,
-      uri: playlist.uri,
-      images: playlist.images,
-    })
-    toast.success(`Selected: ${playlist.name}`)
-  }
-
-  const handleConnectAuth0 = () => {
-    setConnecting(true)
-    window.location.href = '/api/auth/login'
-  }
-
-  const handleDisconnectAuth0 = async () => {
-    try {
-      window.location.href = '/api/auth/logout'
-    } catch (error) {
-      console.error('Error disconnecting Auth0:', error)
-      toast.error('Failed to disconnect Auth0')
-    }
-  }
-
-  const handleScopeToggle = async (scopeId: string, granted: boolean) => {
-    const scope = scopes.find(s => s.id === scopeId)
-    
-    if (!scope || scope.required) {
-      return
-    }
-
-    const updatedScopes = scopes.map(s =>
-      s.id === scopeId ? { ...s, granted } : s
-    )
-    setScopes(updatedScopes)
-
-    if (granted && isAuth0Connected) {
-      const grantedScopeIds = updatedScopes
-        .filter(s => s.granted)
-        .map(s => s.id)
-
+    const fetchStatuses = async () => {
       try {
-        const response = await fetch('/api/auth/consent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scopes: grantedScopeIds }),
-        })
+        // Fetch Spotify status
+        const spotifyResponse = await fetch("/api/spotify-direct/status")
+        const spotifyData = await spotifyResponse.json()
 
-        if (response.ok) {
-          const data = await response.json()
-          window.location.href = data.authorizationUrl
-        } else {
-          throw new Error('Failed to create consent URL')
-        }
+        setIntegrationStatuses(prev => ({
+          ...prev,
+          spotify: spotifyData.connected ? "connected" : "disconnected",
+        }))
       } catch (error) {
-        console.error('Error updating consent:', error)
-        toast.error('Failed to update permissions')
-        setScopes(scopes)
+        console.error("Error fetching integration statuses:", error)
+      } finally {
+        setLoading(false)
       }
     }
-  }
 
-  if (loading) {
-    return <LoadingSkeleton />
-  }
+    fetchStatuses()
+  }, [])
 
   return (
-    <div className="space-y-6">
+    <div>
       <PageTitle title="Settings" />
 
       <div className="space-y-6">
-        {/* Auth0 Connection Status */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Auth0Logo className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Auth0 Integration</CardTitle>
-                  <CardDescription className="mt-1">
-                    Secure authentication and authorization
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant={isAuth0Connected ? "default" : "secondary"}>
-                {isAuth0Connected ? (
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Connected
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <XCircle className="h-3 w-3" />
-                    Not Connected
-                  </span>
-                )}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!isAuth0Connected ? (
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Connect Auth0</AlertTitle>
-                <AlertDescription>
-                  Connect your Auth0 account to enable advanced authentication features,
-                  secure delegation, and fine-grained access control.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="space-y-4">
-                <div className="rounded-lg border bg-muted/50 p-4">
-                  <div className="flex items-start gap-3">
-                    <Image
-                      src={tokenInfo?.user.picture || ''}
-                      alt={tokenInfo?.user.name || 'User'}
-                      width={48}
-                      height={48}
-                      className="h-12 w-12 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium">{tokenInfo?.user.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tokenInfo?.user.email}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        ID: {tokenInfo?.user.sub}
-                      </p>
+        <div>
+          <h2 className="text-lg font-semibold mb-2">Integrations</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage your connected services and integrations
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {integrations.map((integration) => (
+            <Link
+              key={integration.id}
+              href={integration.href}
+              className="group"
+            >
+              <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
+                <CardHeader>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="p-2 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors">
+                      {integration.icon}
                     </div>
+                    {getStatusBadge(integrationStatuses[integration.id] || integration.status)}
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Key className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Access Token</span>
-                  </div>
-                  <Badge variant="outline">
-                    {tokenInfo?.tokens.accessToken ? 'Active' : 'Not Available'}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Refresh Token</span>
-                  </div>
-                  <Badge variant="outline">
-                    {tokenInfo?.tokens.refreshToken ? 'Active' : 'Not Available'}
-                  </Badge>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              {!isAuth0Connected ? (
-                <Button
-                  onClick={handleConnectAuth0}
-                  disabled={connecting}
-                  className="gap-2"
-                >
-                  <Auth0Logo className="h-4 w-4" />
-                  Connect Auth0
-                </Button>
-              ) : (
-                <>
+                  <CardTitle className="text-lg">{integration.name}</CardTitle>
+                  <CardDescription>{integration.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <Button
-                    onClick={fetchTokenInfo}
-                    variant="outline"
-                    className="gap-2"
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 group-hover:translate-x-1 transition-transform"
                   >
-                    <RefreshCw className="h-4 w-4" />
-                    Refresh Status
+                    Configure
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
-                  <Button
-                    onClick={handleDisconnectAuth0}
-                    variant="destructive"
-                    className="gap-2"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Disconnect
-                  </Button>
-                </>
-              )}
-              <Button
-                variant="outline"
-                asChild
-                className="gap-2"
-              >
-                <a
-                  href="https://auth0.com/docs"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Learn More
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
 
-        {/* Fine-Grained Permissions */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-primary" />
-              <CardTitle>Permission Management</CardTitle>
-            </div>
-            <CardDescription>
-              Control what data and actions the application can access on your behalf
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {scopes.map((scope, index) => (
-              <div key={scope.id}>
-                {index > 0 && <Separator className="my-4" />}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={scope.id} className="font-medium">
-                        {scope.name}
-                      </Label>
-                      {scope.required && (
-                        <Badge variant="secondary" className="text-xs">
-                          Required
-                        </Badge>
-                      )}
-                      {scope.granted && !scope.required && (
-                        <Badge variant="default" className="text-xs">
-                          Granted
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {scope.description}
-                    </p>
-                  </div>
-                  <Switch
-                    id={scope.id}
-                    checked={scope.granted}
-                    disabled={scope.required || !isAuth0Connected}
-                    onCheckedChange={(checked) =>
-                      handleScopeToggle(scope.id, checked)
-                    }
-                  />
-                </div>
-              </div>
-            ))}
-
-            {!isAuth0Connected && (
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  Connect Auth0 to manage your permissions
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Spotify Integration */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-[#1DB954]/10">
-                  <SpotifyLogo className="h-6 w-6 text-[#1DB954]" />
-                </div>
-                <div>
-                  <CardTitle>Spotify Integration</CardTitle>
-                  <CardDescription className="mt-1">
-                    Play lofi music during study sessions
-                  </CardDescription>
-                </div>
-              </div>
-              <Badge variant={spotifyConnection?.connected ? "default" : "secondary"}>
-                {spotifyConnection?.connected ? (
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Connected
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <XCircle className="h-3 w-3" />
-                    Not Connected
-                  </span>
-                )}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!spotifyConnection?.connected ? (
-              <Alert variant={spotifyConnection?.reconnectRequired ? "destructive" : "default"}>
-                <Info className="h-4 w-4" />
-                <AlertTitle>
-                  {spotifyConnection?.configurationRequired 
-                    ? 'Auth0 Configuration Required' 
-                    : spotifyConnection?.reconnectRequired 
-                      ? 'Reconnection Required' 
-                      : 'Connect Spotify'}
-                </AlertTitle>
-                <AlertDescription>
-                  {spotifyConnection?.configurationRequired ? (
-                    <>
-                      <strong>Token Exchange is not enabled in your Auth0 application.</strong><br />
-                      Please go to Auth0 Dashboard → Applications → [Your App] → Advanced Settings → Grant Types 
-                      and enable &quot;Token Exchange&quot;. See <code>AUTH0_TOKEN_EXCHANGE_SETUP.md</code> for detailed instructions.
-                    </>
-                  ) : spotifyConnection?.reconnectRequired ? (
-                    <>
-                      Your Spotify connection needs to be refreshed. Please click &quot;Connect Spotify&quot; below to reconnect.
-                      This will ensure proper offline access for background music playback.
-                    </>
-                  ) : (
-                    <>
-                      Connect your Spotify account to automatically play lofi playlists during your study sessions.
-                      We&apos;ll search your library for lofi/study/chill playlists and auto-select one for you.
-                      Requires Spotify Premium for playback.
-                    </>
-                  )}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="space-y-4">
-                {spotifyConnection.profile && (
-                  <div className="rounded-lg border bg-muted/50 p-4">
-                    <div className="flex items-start gap-3">
-                      {spotifyConnection.profile.images?.[0] && (
-                        <Image
-                          src={spotifyConnection.profile.images[0].url}
-                          alt={spotifyConnection.profile.display_name}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 rounded-full"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium">{spotifyConnection.profile.display_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {spotifyConnection.profile.email}
-                        </p>
-                        <Badge variant="outline" className="mt-1">
-                          {spotifyConnection.profile.product}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="spotify-autoplay" className="font-medium">
-                      Autoplay Music
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically play lofi playlist when starting study timer
-                    </p>
-                  </div>
-                  <Switch
-                    id="spotify-autoplay"
-                    checked={autoplayEnabled}
-                    onCheckedChange={setAutoplayEnabled}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Enhanced Playlist Management Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="font-medium text-base">Music Selection</Label>
-                    {selectedPlaylist && (
-                      <Badge variant="outline" className="gap-1">
-                        <Music className="h-3 w-3" />
-                        {selectedPlaylist.name}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="library" className="gap-2">
-                        <Library className="h-4 w-4" />
-                        Your Library
-                      </TabsTrigger>
-                      <TabsTrigger value="discover" className="gap-2">
-                        <Compass className="h-4 w-4" />
-                        Discover
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="library" className="space-y-4 mt-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          {playlistSource === 'user-lofi' && !showAllUserPlaylists
-                            ? 'Playlists filtered by lofi/study/chill keywords'
-                            : 'All your playlists'}
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={toggleShowAllPlaylists}
-                          className="text-xs gap-1"
-                        >
-                          {showAllUserPlaylists ? (
-                            <>
-                              <Sparkles className="h-3 w-3" />
-                              Show Lofi Only
-                            </>
-                          ) : (
-                            'Show All'
-                          )}
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
-                        {loadingPlaylists ? (
-                          <div className="text-center text-sm text-muted-foreground py-8">
-                            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-                            Loading your playlists...
-                          </div>
-                        ) : spotifyPlaylists.length === 0 ? (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Library className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p className="font-medium">No playlists found</p>
-                            <p className="text-sm mt-1">Try switching to Discover mode</p>
-                          </div>
-                        ) : (
-                          spotifyPlaylists.filter(playlist => playlist && playlist.id).map((playlist) => (
-                            <button
-                              key={playlist.id}
-                              onClick={() => handlePlaylistSelect(playlist)}
-                              className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
-                                selectedPlaylist?.id === playlist.id
-                                  ? 'border-primary bg-primary/10 shadow-sm'
-                                  : 'border-border hover:bg-muted/50 hover:border-primary/50'
-                              }`}
-                            >
-                              {playlist.images?.[0] ? (
-                                <Image
-                                  src={playlist.images[0].url}
-                                  alt={playlist.name}
-                                  width={48}
-                                  height={48}
-                                  className="rounded object-cover"
-                                />
-                              ) : (
-                                <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                                  <Music className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">{playlist.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {playlist.tracks.total} tracks
-                                </p>
-                              </div>
-                              {selectedPlaylist?.id === playlist.id && (
-                                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                              )}
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="discover" className="space-y-4 mt-4">
-                      {/* Search Input */}
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearchPlaylists()}
-                            placeholder="Search for playlists..."
-                            className="pl-9"
-                          />
-                        </div>
-                        <Button
-                          onClick={handleSearchPlaylists}
-                          disabled={loadingPlaylists}
-                          className="gap-2"
-                        >
-                          {loadingPlaylists ? (
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Search className="h-4 w-4" />
-                          )}
-                          Search
-                        </Button>
-                      </div>
-
-                      {/* Category Quick Search */}
-                      <div className="space-y-2">
-                        <Label className="text-sm text-muted-foreground">Popular Categories</Label>
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { label: 'Lofi Hip Hop', query: 'lofi hip hop beats', icon: '🎧' },
-                            { label: 'Study Music', query: 'study focus concentration', icon: '📚' },
-                            { label: 'Chill Vibes', query: 'chill lofi vibes', icon: '🌊' },
-                            { label: 'Jazz Lofi', query: 'lofi jazz chill', icon: '🎷' },
-                            { label: 'Ambient', query: 'ambient lofi study', icon: '🌌' },
-                            { label: 'Piano Lofi', query: 'lofi piano peaceful', icon: '🎹' },
-                          ].map((category) => (
-                            <Button
-                              key={category.query}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCategorySearch(category.query)}
-                              disabled={loadingPlaylists}
-                              className="gap-1 text-xs"
-                            >
-                              <span>{category.icon}</span>
-                              {category.label}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Discover Results */}
-                      <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-2">
-                        {loadingPlaylists ? (
-                          <div className="text-center text-sm text-muted-foreground py-8">
-                            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-                            Searching playlists...
-                          </div>
-                        ) : spotifyPlaylists.length === 0 ? (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Compass className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p className="font-medium">Ready to discover</p>
-                            <p className="text-sm mt-1">Search or pick a category to find playlists</p>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm text-muted-foreground">
-                                Found {spotifyPlaylists.filter(p => p && p.id).length} playlists
-                              </p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setActiveTab('library')
-                                  fetchSpotifyPlaylists(false)
-                                }}
-                                className="text-xs"
-                              >
-                                Back to Library
-                              </Button>
-                            </div>
-                            {spotifyPlaylists.filter(playlist => playlist && playlist.id).map((playlist) => (
-                              <button
-                                key={playlist.id}
-                                onClick={() => handlePlaylistSelect(playlist)}
-                                className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
-                                  selectedPlaylist?.id === playlist.id
-                                    ? 'border-primary bg-primary/10 shadow-sm'
-                                    : 'border-border hover:bg-muted/50 hover:border-primary/50'
-                                }`}
-                              >
-                                {playlist.images?.[0] ? (
-                                  <Image
-                                    src={playlist.images[0].url}
-                                    alt={playlist.name}
-                                    width={48}
-                                    height={48}
-                                    className="rounded object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                                    <Music className="h-6 w-6 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm truncate">{playlist.name}</p>
-                                  <p className="text-xs text-muted-foreground line-clamp-1">
-                                    {playlist.description || `${playlist.tracks.total} tracks`}
-                                  </p>
-                                </div>
-                                {selectedPlaylist?.id === playlist.id && (
-                                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                                )}
-                              </button>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-2">
-              {!spotifyConnection?.connected ? (
-                <Button
-                  onClick={handleConnectSpotify}
-                  className="gap-2 bg-[#1DB954] hover:bg-[#1DB954]/90"
-                >
-                  <SpotifyLogo className="h-4 w-4" />
-                  Connect Spotify
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => {
-                      if (activeTab === 'library') {
-                        fetchSpotifyPlaylists(false)
-                      } else {
-                        handleSearchPlaylists()
-                      }
-                    }}
-                    variant="outline"
-                    className="gap-2"
-                    disabled={loadingPlaylists}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${loadingPlaylists ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </Button>
-                  <Button
-                    onClick={handleDisconnectSpotify}
-                    variant="destructive"
-                    className="gap-2"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Disconnect
-                  </Button>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security & Features Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Music Features & Privacy</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">🎵 Music Features:</p>
-              <p>• Browse your Spotify library with smart lofi/study filtering</p>
-              <p>• Discover new playlists with custom search and categories</p>
-              <p>• One-click playlist selection for study sessions</p>
-              <p>• Automatic playback when starting study timer</p>
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">🔒 Security & Privacy:</p>
-              <p>• All credentials securely stored and encrypted</p>
-              <p>• Tokens automatically refreshed when needed</p>
-              <p>• Secure HTTPS connections for all API requests</p>
-              <p>• Revoke access anytime from settings</p>
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">ℹ️ Requirements:</p>
-              <p>• Spotify Premium account required for playback</p>
-              <p>• Active Spotify session on any device</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-12 p-6 rounded-lg bg-muted/50">
+          <h3 className="font-semibold mb-2">Need Help?</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Check out our documentation for detailed setup guides for each integration.
+          </p>
+          <Button variant="outline" size="sm">
+            View Documentation
+          </Button>
+        </div>
       </div>
-    </div>
-  )
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-8 w-[200px]" />
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-[250px]" />
-          <Skeleton className="h-4 w-full" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-10 w-[150px]" />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-[200px]" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
