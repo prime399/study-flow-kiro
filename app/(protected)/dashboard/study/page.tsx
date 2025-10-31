@@ -225,7 +225,7 @@ export default function StudyPage() {
       <PageTitle title="Study Dashboard" />
       <NotificationPermission />
       <div className="grid gap-6">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className={`grid gap-6 ${autoplayEnabled && selectedPlaylist ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
           <StudyTimer
             studyTime={studyTime}
             studyDuration={studyDuration}
