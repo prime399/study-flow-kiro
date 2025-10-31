@@ -1,13 +1,35 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { api } from '@/convex/_generated/api';
-import { fetchQuery } from 'convex/nextjs';
+import { ConvexHttpClient } from 'convex/browser';
 import { decryptToken, getCurrentUserProfileDirect } from '@/lib/spotify-direct';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const tokens = await fetchQuery(api.spotify.getTokens);
+    // Get Convex auth token from cookies
+    const cookieStore = await cookies();
+    const convexAuthToken = cookieStore.get('__convexAuthJWT')?.value;
+
+    if (!convexAuthToken) {
+      return NextResponse.json({
+        connected: false,
+        hasToken: false,
+        authenticated: false,
+      });
+    }
+
+    // Create authenticated Convex client
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+      throw new Error('NEXT_PUBLIC_CONVEX_URL not configured');
+    }
+
+    const convexClient = new ConvexHttpClient(convexUrl);
+    convexClient.setAuth(convexAuthToken);
+
+    const tokens = await convexClient.query(api.spotify.getTokens);
 
     if (!tokens) {
       return NextResponse.json({

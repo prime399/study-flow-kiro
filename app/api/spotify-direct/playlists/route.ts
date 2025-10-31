@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { api } from '@/convex/_generated/api';
-import { fetchQuery, fetchAction, fetchMutation } from 'convex/nextjs';
+import { ConvexHttpClient } from 'convex/browser';
 import {
   decryptToken,
   encryptToken,
@@ -16,8 +17,28 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'search';
     const query = searchParams.get('query') || 'lofi study chill';
 
+    // Get Convex auth token from cookies
+    const cookieStore = await cookies();
+    const convexAuthToken = cookieStore.get('__convexAuthJWT')?.value;
+
+    if (!convexAuthToken) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    // Create authenticated Convex client
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+      throw new Error('NEXT_PUBLIC_CONVEX_URL not configured');
+    }
+
+    const convexClient = new ConvexHttpClient(convexUrl);
+    convexClient.setAuth(convexAuthToken);
+
     // Get tokens from Convex
-    const tokens = await fetchQuery(api.spotify.getTokens);
+    const tokens = await convexClient.query(api.spotify.getTokens);
 
     if (!tokens) {
       return NextResponse.json(
@@ -35,12 +56,12 @@ export async function GET(request: NextRequest) {
 
     if (isExpired) {
       // Refresh the token
-      const refreshed = await fetchAction(api.spotify.refreshAccessToken, {
+      const refreshed = await convexClient.action(api.spotify.refreshAccessToken, {
         refreshToken,
       });
 
       // Encrypt and update tokens in Convex
-      await fetchMutation(api.spotify.updateAccessToken, {
+      await convexClient.mutation(api.spotify.updateAccessToken, {
         accessToken: encryptToken(refreshed.accessToken),
         refreshToken: encryptToken(refreshed.refreshToken),
         expiresAt: refreshed.expiresAt,

@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { exchangeCodeForTokens, encryptToken } from '@/lib/spotify-direct';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '@/convex/_generated/api';
-import { fetchMutation } from 'convex/nextjs';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,9 +73,30 @@ export async function GET(request: NextRequest) {
 
     console.log('Tokens encrypted, storing in Convex...');
 
-    // Store in Convex using fetchMutation
+    // Get Convex auth token from cookies (reuse cookieStore from above)
+    const convexAuthToken = cookieStore.get('__convexAuthJWT')?.value;
+
+    if (!convexAuthToken) {
+      console.error('No Convex auth token found in cookies');
+      throw new Error('Not authenticated - please log in first');
+    }
+
+    console.log('Convex auth token found, creating authenticated client');
+
+    // Create authenticated Convex client
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+      throw new Error('NEXT_PUBLIC_CONVEX_URL not configured');
+    }
+
+    const convexClient = new ConvexHttpClient(convexUrl);
+    convexClient.setAuth(convexAuthToken);
+
+    console.log('Calling Convex mutation with authenticated client');
+
+    // Store in Convex using authenticated client
     try {
-      await fetchMutation(api.spotify.storeTokens, encryptedTokens);
+      await convexClient.mutation(api.spotify.storeTokens, encryptedTokens);
       console.log('Tokens stored successfully in Convex');
     } catch (convexError: any) {
       console.error('Convex error:', convexError);
