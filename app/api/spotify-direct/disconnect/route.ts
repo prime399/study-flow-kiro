@@ -5,11 +5,13 @@ import { ConvexHttpClient } from 'convex/browser';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     // Get Convex auth token from cookies
     const cookieStore = await cookies();
-    const convexAuthToken = cookieStore.get('__convexAuthJWT')?.value;
+    const isLocalhost = request.headers.get('host')?.includes('localhost');
+    const cookieName = isLocalhost ? '__convexAuthJWT' : '__Host-__convexAuthJWT';
+    const convexAuthToken = cookieStore.get(cookieName)?.value;
 
     if (!convexAuthToken) {
       return NextResponse.json(

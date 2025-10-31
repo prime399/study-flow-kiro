@@ -74,10 +74,16 @@ export async function GET(request: NextRequest) {
     console.log('Tokens encrypted, storing in Convex...');
 
     // Get Convex auth token from cookies (reuse cookieStore from above)
-    const convexAuthToken = cookieStore.get('__convexAuthJWT')?.value;
+    // Cookie name depends on environment: localhost uses no prefix, production uses __Host- prefix
+    const isLocalhost = request.headers.get('host')?.includes('localhost');
+    const cookieName = isLocalhost ? '__convexAuthJWT' : '__Host-__convexAuthJWT';
+    const convexAuthToken = cookieStore.get(cookieName)?.value;
+
+    console.log('Looking for auth cookie:', cookieName, 'Found:', !!convexAuthToken);
 
     if (!convexAuthToken) {
       console.error('No Convex auth token found in cookies');
+      console.error('Available cookies:', cookieStore.getAll().map(c => c.name));
       throw new Error('Not authenticated - please log in first');
     }
 
