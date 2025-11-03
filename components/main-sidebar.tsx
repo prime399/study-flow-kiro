@@ -12,9 +12,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  Sparkles,
+  BarChart3,
+  LayoutGrid,
+  ChevronDown,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 import { CommandMenu } from "./command-menu"
 import Logo from "./logo"
 import { Button } from "./ui/button"
@@ -34,8 +39,10 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "./ui/sidebar"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
 import { UserMenu } from "./user-menu"
 import { TopsDisplay } from "./tops-display"
+import { cn } from "@/lib/utils"
 
 const menuItems = [
   {
@@ -57,6 +64,29 @@ const menuItems = [
     name: "Calendar",
     href: "/dashboard/calendar",
     icon: Calendar,
+    hasCalendarSubMenu: true,
+    subItems: [
+      {
+        name: "Overview",
+        href: "/dashboard/calendar/overview",
+        icon: LayoutGrid,
+      },
+      {
+        name: "Calendar View",
+        href: "/dashboard/calendar",
+        icon: Calendar,
+      },
+      {
+        name: "Analytics",
+        href: "/dashboard/calendar/analytics",
+        icon: BarChart3,
+      },
+      {
+        name: "AI Recommendations",
+        href: "/dashboard/calendar/recommendations",
+        icon: Sparkles,
+      },
+    ],
   },
   {
     name: "Groups",
@@ -98,6 +128,10 @@ export default function MainSidebar() {
   const groups = useQuery(api.groups.listMyGroups)
   const pathname = usePathname()
   const { state, toggleSidebar } = useSidebar()
+  const [calendarOpen, setCalendarOpen] = useState(
+    pathname.startsWith("/dashboard/calendar")
+  )
+  const [groupsOpen, setGroupsOpen] = useState(false)
 
   if (!viewer || !groups) {
     return (
@@ -128,22 +162,101 @@ export default function MainSidebar() {
         <SidebarSeparator />
         <SidebarContent className="bg-background p-2">
           <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.name}
-                  className="gap-3"
-                  isActive={pathname === item.href}
-                >
-                  <Link href={item.href}>
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    <span>{item.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-                {item.hasSubMenu && <NavGroupsSkeleton />}
-              </SidebarMenuItem>
-            ))}
+            {menuItems.map((item) => {
+              if (item.hasCalendarSubMenu && item.subItems) {
+                return (
+                  <Collapsible
+                    key={item.name}
+                    open={calendarOpen}
+                    onOpenChange={setCalendarOpen}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          tooltip={item.name}
+                          className="gap-3"
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span>{item.name}</span>
+                          <ChevronDown
+                            className={cn(
+                              "ml-auto h-4 w-4 transition-transform duration-200",
+                              calendarOpen && "rotate-180"
+                            )}
+                          />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.subItems.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.href}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={pathname === subItem.href}
+                              >
+                                <Link href={subItem.href}>
+                                  <subItem.icon className="h-3 w-3 shrink-0" />
+                                  <span>{subItem.name}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                )
+              }
+
+              if (item.hasSubMenu) {
+                return (
+                  <Collapsible
+                    key={item.name}
+                    open={groupsOpen}
+                    onOpenChange={setGroupsOpen}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          tooltip={item.name}
+                          className="gap-3"
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span>{item.name}</span>
+                          <ChevronDown
+                            className={cn(
+                              "ml-auto h-4 w-4 transition-transform duration-200",
+                              groupsOpen && "rotate-180"
+                            )}
+                          />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <NavGroupsSkeleton />
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                )
+              }
+
+              return (
+                <SidebarMenuItem key={item.name}>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip={item.name}
+                    className="gap-3"
+                    isActive={pathname === item.href}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
           </SidebarMenu>
         </SidebarContent>
         <SidebarSeparator />
@@ -184,37 +297,116 @@ export default function MainSidebar() {
       <SidebarSeparator />
       <SidebarContent className="bg-background p-2">
         <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton
-                asChild
-                tooltip={item.name}
-                className="gap-3"
-                isActive={pathname === item.href}
-              >
-                <Link href={item.href}>
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  <span>{item.name}</span>
-                </Link>
-              </SidebarMenuButton>
-              {item.hasSubMenu && groups && (
-                <SidebarMenuSub>
-                  {groups.map((group) => (
-                    <SidebarMenuSubItem key={group._id}>
-                      <SidebarMenuSubButton
-                        asChild
-                        isActive={pathname === `/dashboard/groups/${group._id}`}
+          {menuItems.map((item) => {
+            if (item.hasCalendarSubMenu && item.subItems) {
+              return (
+                <Collapsible
+                  key={item.name}
+                  open={calendarOpen}
+                  onOpenChange={setCalendarOpen}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={item.name}
+                        className="gap-3"
                       >
-                        <Link href={`/dashboard/groups/${group._id}`}>
-                          <span>{group.name}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              )}
-            </SidebarMenuItem>
-          ))}
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        <span>{item.name}</span>
+                        <ChevronDown
+                          className={cn(
+                            "ml-auto h-4 w-4 transition-transform duration-200",
+                            calendarOpen && "rotate-180"
+                          )}
+                        />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.subItems.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.href}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname === subItem.href}
+                            >
+                              <Link href={subItem.href}>
+                                <subItem.icon className="h-3 w-3 shrink-0" />
+                                <span>{subItem.name}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )
+            }
+
+            if (item.hasSubMenu) {
+              return (
+                <Collapsible
+                  key={item.name}
+                  open={groupsOpen}
+                  onOpenChange={setGroupsOpen}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip={item.name}
+                        className="gap-3"
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        <span>{item.name}</span>
+                        <ChevronDown
+                          className={cn(
+                            "ml-auto h-4 w-4 transition-transform duration-200",
+                            groupsOpen && "rotate-180"
+                          )}
+                        />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      {groups && (
+                        <SidebarMenuSub>
+                          {groups.map((group) => (
+                            <SidebarMenuSubItem key={group._id}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={pathname === `/dashboard/groups/${group._id}`}
+                              >
+                                <Link href={`/dashboard/groups/${group._id}`}>
+                                  <span>{group.name}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      )}
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )
+            }
+
+            return (
+              <SidebarMenuItem key={item.name}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.name}
+                  className="gap-3"
+                  isActive={pathname === item.href}
+                >
+                  <Link href={item.href}>
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span>{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
