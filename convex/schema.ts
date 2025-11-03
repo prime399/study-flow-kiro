@@ -42,9 +42,12 @@ export default defineSchema({
     duration: v.number(),
     type: v.string(),
     completed: v.boolean(),
+    googleCalendarEventId: v.optional(v.string()), // Google Calendar event ID if synced
+    syncedToCalendar: v.optional(v.boolean()), // Whether this session was synced
   })
     .index("by_user", ["userId"])
-    .index("by_user_and_time", ["userId", "startTime"]),
+    .index("by_user_and_time", ["userId", "startTime"])
+    .index("by_user_and_sync", ["userId", "syncedToCalendar"]),
   studySettings: defineTable({
     userId: v.id("users"),
     studyDuration: v.number(),

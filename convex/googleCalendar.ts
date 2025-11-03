@@ -451,3 +451,99 @@ export const hasPermission = query({
     }
   },
 });
+
+/**
+ * Get unsynced study sessions that need to be added to calendar
+ */
+export const getUnsyncedSessions = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return [];
+    }
+
+    // Get completed sessions that haven't been synced
+    const sessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("completed"), true),
+          q.or(
+            q.eq(q.field("syncedToCalendar"), false),
+            q.eq(q.field("syncedToCalendar"), undefined)
+          )
+        )
+      )
+      .order("desc")
+      .take(50); // Limit to recent 50 sessions
+
+    return sessions;
+  },
+});
+
+/**
+ * Mark a study session as synced to Google Calendar
+ */
+export const markSessionSynced = mutation({
+  args: {
+    sessionId: v.id("studySessions"),
+    googleCalendarEventId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    // Verify the session belongs to this user
+    const session = await ctx.db.get(args.sessionId);
+    if (!session || session.userId !== userId) {
+      throw new Error("Session not found or unauthorized");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      syncedToCalendar: true,
+      googleCalendarEventId: args.googleCalendarEventId,
+    });
+
+    return { success: true };
+  },
+});
+
+/**
+ * Get sync statistics
+ */
+export const getSyncStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const allSessions = await ctx.db
+      .query("studySessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("completed"), true))
+      .collect();
+
+    const syncedSessions = allSessions.filter(
+      (s) => s.syncedToCalendar === true
+    );
+    const unsyncedSessions = allSessions.filter(
+      (s) => s.syncedToCalendar !== true
+    );
+
+    return {
+      totalCompletedSessions: allSessions.length,
+      syncedCount: syncedSessions.length,
+      unsyncedCount: unsyncedSessions.length,
+      syncPercentage:
+        allSessions.length > 0
+          ? Math.round((syncedSessions.length / allSessions.length) * 100)
+          : 0,
+    };
+  },
+});

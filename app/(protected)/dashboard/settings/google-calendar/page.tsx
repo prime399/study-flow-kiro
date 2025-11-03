@@ -73,6 +73,9 @@ export default function GoogleCalendarSettingsPage() {
   const permissions = useQuery(api.googleCalendar.getPermissions)
   const updatePermissionsMutation = useMutation(api.googleCalendar.updatePermissions)
 
+  // Get sync statistics
+  const syncStats = useQuery(api.googleCalendar.getSyncStats)
+
   // Local state for permission toggles
   const [localPermissions, setLocalPermissions] = useState<CalendarPermissions>({
     canReadEvents: true,
@@ -531,6 +534,46 @@ export default function GoogleCalendarSettingsPage() {
                   onCheckedChange={handleSyncToggle}
                 />
               </div>
+
+              <Separator />
+
+              {/* Sync Statistics */}
+              {syncStats && (
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
+                  <h4 className="font-medium text-sm">Sync Statistics</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-2xl font-bold text-primary">
+                        {syncStats.syncedCount}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Sessions Synced</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        {syncStats.unsyncedCount}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Pending Sync</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Sync Progress</span>
+                      <span className="font-medium">{syncStats.syncPercentage}%</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${syncStats.syncPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  {syncStats.unsyncedCount > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      💡 Click &quot;Sync Now&quot; to sync {syncStats.unsyncedCount} pending session{syncStats.unsyncedCount !== 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <Separator />
 
