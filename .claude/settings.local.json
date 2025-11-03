@@ -3,7 +3,9 @@
     "allow": [
       "Bash(node -e:*)",
       "Bash(wc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run predev:*)"
     ],
     "deny": [],
     "ask": []

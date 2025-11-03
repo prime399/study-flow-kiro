@@ -87,4 +87,22 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_user", ["userId"]),
+  googleCalendarTokens: defineTable({
+    userId: v.id("users"),
+    accessToken: v.string(), // Encrypted
+    refreshToken: v.string(), // Encrypted
+    expiresAt: v.number(),
+    scope: v.string(),
+    tokenType: v.string(),
+    calendarId: v.optional(v.string()), // Primary calendar ID
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
+  googleCalendarSync: defineTable({
+    userId: v.id("users"),
+    autoSyncEnabled: v.boolean(),
+    lastSyncTime: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
 })

@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as googleCalendar from "../googleCalendar.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as leaderboards from "../leaderboards.js";
@@ -34,6 +35,7 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  googleCalendar: typeof googleCalendar;
   groups: typeof groups;
   http: typeof http;
   leaderboards: typeof leaderboards;

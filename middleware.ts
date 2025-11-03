@@ -14,6 +14,10 @@ const isSpotifyOAuthRoute = createRouteMatcher([
   "/api/spotify-direct/auth",
   "/api/spotify-direct/callback"
 ])
+const isGoogleCalendarOAuthRoute = createRouteMatcher([
+  "/api/google-calendar/auth",
+  "/api/google-calendar/callback"
+])
 
 // Create Convex middleware handler (without Auth0 logic)
 const convexMiddleware = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
@@ -39,6 +43,11 @@ export default function middleware(request: NextRequest) {
   // Handle Spotify OAuth routes - allow them to bypass Convex auth
   // These routes need to work during the OAuth flow before user is fully authenticated
   if (isSpotifyOAuthRoute(request)) {
+    return NextResponse.next()
+  }
+
+  if (isGoogleCalendarOAuthRoute(request)) {
+    // Skip Convex auth handling so Google keeps its OAuth code intact
     return NextResponse.next()
   }
 
