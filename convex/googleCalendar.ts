@@ -332,3 +332,122 @@ export const syncStudySessionToCalendarDirect = action({
     }
   },
 });
+
+/**
+ * Set or update Google Calendar permissions for the authenticated user
+ */
+export const updatePermissions = mutation({
+  args: {
+    canReadEvents: v.boolean(),
+    canCreateEvents: v.boolean(),
+    canModifyEvents: v.boolean(),
+    canDeleteEvents: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const existing = await ctx.db
+      .query("googleCalendarPermissions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    const now = Date.now();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        canReadEvents: args.canReadEvents,
+        canCreateEvents: args.canCreateEvents,
+        canModifyEvents: args.canModifyEvents,
+        canDeleteEvents: args.canDeleteEvents,
+        updatedAt: now,
+      });
+      return existing._id;
+    } else {
+      return await ctx.db.insert("googleCalendarPermissions", {
+        userId,
+        canReadEvents: args.canReadEvents,
+        canCreateEvents: args.canCreateEvents,
+        canModifyEvents: args.canModifyEvents,
+        canDeleteEvents: args.canDeleteEvents,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+  },
+});
+
+/**
+ * Get Google Calendar permissions for the authenticated user
+ */
+export const getPermissions = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const permissions = await ctx.db
+      .query("googleCalendarPermissions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    // Return default permissions if none exist
+    if (!permissions) {
+      return {
+        canReadEvents: true,
+        canCreateEvents: true,
+        canModifyEvents: false,
+        canDeleteEvents: false,
+      };
+    }
+
+    return permissions;
+  },
+});
+
+/**
+ * Check if user has a specific permission
+ */
+export const hasPermission = query({
+  args: {
+    permission: v.union(
+      v.literal("read"),
+      v.literal("create"),
+      v.literal("modify"),
+      v.literal("delete")
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      return false;
+    }
+
+    const permissions = await ctx.db
+      .query("googleCalendarPermissions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .first();
+
+    if (!permissions) {
+      // Default permissions
+      return args.permission === "read" || args.permission === "create";
+    }
+
+    switch (args.permission) {
+      case "read":
+        return permissions.canReadEvents;
+      case "create":
+        return permissions.canCreateEvents;
+      case "modify":
+        return permissions.canModifyEvents;
+      case "delete":
+        return permissions.canDeleteEvents;
+      default:
+        return false;
+    }
+  },
+});

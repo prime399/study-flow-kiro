@@ -3,6 +3,7 @@ import { ConvexHttpClient } from 'convex/browser';
 import { api } from '@/convex/_generated/api';
 import { cookies } from 'next/headers';
 import { getGoogleAccessTokenDirect, decryptToken, createGoogleCalendarEvent } from '@/lib/google-calendar-direct';
+import { enforceCalendarPermission, CalendarPermissionError } from '@/lib/google-calendar-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,19 @@ export async function POST(request: NextRequest) {
 
     const convexClient = new ConvexHttpClient(convexUrl);
     convexClient.setAuth(convexAuthToken);
+
+    // Check permission to create calendar events (required for sync)
+    try {
+      await enforceCalendarPermission(convexClient, 'create');
+    } catch (error) {
+      if (error instanceof CalendarPermissionError) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
 
     // Get Google Calendar tokens
     const tokens = await convexClient.query(api.googleCalendar.getTokens);

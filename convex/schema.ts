@@ -105,4 +105,13 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_user", ["userId"]),
+  googleCalendarPermissions: defineTable({
+    userId: v.id("users"),
+    canReadEvents: v.boolean(), // View calendar schedule
+    canCreateEvents: v.boolean(), // Create study session events
+    canModifyEvents: v.boolean(), // Modify/reschedule events
+    canDeleteEvents: v.boolean(), // Delete events (restricted by default)
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"]),
 })

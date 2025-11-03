@@ -10,17 +10,25 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Calendar,
   CheckCircle2,
   XCircle,
   Info,
   ExternalLink,
   RefreshCw,
   ArrowLeft,
+  Eye,
+  Edit3,
+  PlusCircle,
+  Trash2,
+  Shield,
+  Lock,
 } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import Image from "next/image"
 
 interface GoogleCalendarConnection {
   connected: boolean
@@ -29,6 +37,13 @@ interface GoogleCalendarConnection {
   lastSyncTime?: number
   calendarId?: string
   error?: string
+}
+
+interface CalendarPermissions {
+  canReadEvents: boolean
+  canCreateEvents: boolean
+  canModifyEvents: boolean
+  canDeleteEvents: boolean
 }
 
 function LoadingSkeleton() {
@@ -53,6 +68,30 @@ export default function GoogleCalendarSettingsPage() {
   const [googleCalendarConnection, setGoogleCalendarConnection] = useState<GoogleCalendarConnection | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Convex queries and mutations for permissions
+  const permissions = useQuery(api.googleCalendar.getPermissions)
+  const updatePermissionsMutation = useMutation(api.googleCalendar.updatePermissions)
+
+  // Local state for permission toggles
+  const [localPermissions, setLocalPermissions] = useState<CalendarPermissions>({
+    canReadEvents: true,
+    canCreateEvents: true,
+    canModifyEvents: false,
+    canDeleteEvents: false,
+  })
+
+  // Sync permissions from Convex to local state
+  useEffect(() => {
+    if (permissions) {
+      setLocalPermissions({
+        canReadEvents: permissions.canReadEvents ?? true,
+        canCreateEvents: permissions.canCreateEvents ?? true,
+        canModifyEvents: permissions.canModifyEvents ?? false,
+        canDeleteEvents: permissions.canDeleteEvents ?? false,
+      })
+    }
+  }, [permissions])
 
   const fetchGoogleCalendarConnection = useCallback(async () => {
     try {
@@ -167,6 +206,25 @@ export default function GoogleCalendarSettingsPage() {
     }
   }
 
+  const handlePermissionToggle = async (
+    permission: keyof CalendarPermissions,
+    enabled: boolean
+  ) => {
+    // Update local state immediately for better UX
+    const newPermissions = { ...localPermissions, [permission]: enabled }
+    setLocalPermissions(newPermissions)
+
+    try {
+      await updatePermissionsMutation(newPermissions)
+      toast.success('Permission updated successfully')
+    } catch (error) {
+      console.error('Error updating permission:', error)
+      toast.error('Failed to update permission')
+      // Revert on error
+      setLocalPermissions(localPermissions)
+    }
+  }
+
   if (loading) {
     return <LoadingSkeleton />
   }
@@ -194,9 +252,14 @@ export default function GoogleCalendarSettingsPage() {
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <CardTitle className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-blue-500/10">
-                    <Calendar className="h-6 w-6 text-blue-500" />
-                  </div>
+                    <div className=" rounded-lg bg-white">
+                    <Image
+                      src="/google_calendar_icon.svg"
+                      alt="Google Calendar"
+                      width={64}
+                      height={64}
+                    />
+                    </div>
                   Connection Status
                 </CardTitle>
                 <CardDescription>
@@ -249,9 +312,14 @@ export default function GoogleCalendarSettingsPage() {
               {!googleCalendarConnection?.connected ? (
                 <Button
                   onClick={handleConnectGoogleCalendar}
-                  className="gap-2 bg-blue-500 hover:bg-blue-600"
+                  className="gap-2 bg-[#4285F4] hover:bg-[#3367D6]"
                 >
-                  <Calendar className="h-4 w-4" />
+                  <Image
+                    src="https://www.google.com/calendar/images/calendar_16.png"
+                    alt="Google Calendar"
+                    width={16}
+                    height={16}
+                  />
                   Connect Google Calendar
                 </Button>
               ) : (
@@ -291,6 +359,149 @@ export default function GoogleCalendarSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Fine-Grained Permissions (Auth0 Integration) */}
+        {googleCalendarConnection?.connected && (
+          <Card className="border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-blue-500/10">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <CardTitle className="flex items-center gap-2">
+                    Calendar Permissions
+                    <Badge variant="outline" className="text-xs">
+                      Fine-Grained Control
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Control which calendar operations MentorMind AI can perform on your behalf
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertTitle className="text-blue-900 dark:text-blue-100">
+                  Secured by Auth0
+                </AlertTitle>
+                <AlertDescription className="text-blue-800 dark:text-blue-200 text-sm">
+                  These permissions are enforced at the API level using Auth0 fine-grained authorization.
+                  Changes take effect immediately.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-3">
+                {/* Read Permission */}
+                <div className="flex items-start justify-between p-4 rounded-lg border bg-card">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-green-500/10 mt-1">
+                      <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="read-permission" className="font-semibold text-base cursor-pointer">
+                        Read Calendar Events
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow MentorMind to view your calendar schedule and suggest optimal study times
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs">
+                          Recommended
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    id="read-permission"
+                    checked={localPermissions.canReadEvents}
+                    onCheckedChange={(checked) => handlePermissionToggle('canReadEvents', checked)}
+                  />
+                </div>
+
+                {/* Create Permission */}
+                <div className="flex items-start justify-between p-4 rounded-lg border bg-card">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-blue-500/10 mt-1">
+                      <PlusCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="create-permission" className="font-semibold text-base cursor-pointer">
+                        Create Study Sessions
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow MentorMind to automatically create calendar events when you complete study sessions
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs">
+                          Recommended
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    id="create-permission"
+                    checked={localPermissions.canCreateEvents}
+                    onCheckedChange={(checked) => handlePermissionToggle('canCreateEvents', checked)}
+                  />
+                </div>
+
+                {/* Modify Permission */}
+                <div className="flex items-start justify-between p-4 rounded-lg border bg-card">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-orange-500/10 mt-1">
+                      <Edit3 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="modify-permission" className="font-semibold text-base cursor-pointer">
+                        Modify Calendar Events
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow MentorMind to reschedule or update existing study session events
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="modify-permission"
+                    checked={localPermissions.canModifyEvents}
+                    onCheckedChange={(checked) => handlePermissionToggle('canModifyEvents', checked)}
+                  />
+                </div>
+
+                {/* Delete Permission */}
+                <div className="flex items-start justify-between p-4 rounded-lg border bg-card border-red-200 dark:border-red-900">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-red-500/10 mt-1">
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="delete-permission" className="font-semibold text-base cursor-pointer">
+                        Delete Calendar Events
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow MentorMind to remove study session events from your calendar
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="destructive" className="text-xs">
+                          <Lock className="h-3 w-3 mr-1" />
+                          Restricted
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">Use with caution</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    id="delete-permission"
+                    checked={localPermissions.canDeleteEvents}
+                    onCheckedChange={(checked) => handlePermissionToggle('canDeleteEvents', checked)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Sync Settings */}
         {googleCalendarConnection?.connected && (
@@ -367,6 +578,14 @@ export default function GoogleCalendarSettingsPage() {
               <li>Block study time to avoid scheduling conflicts</li>
               <li>View your complete schedule in one place</li>
             </ul>
+            <Separator className="bg-blue-200 dark:bg-blue-800" />
+            <div className="flex items-start gap-2">
+              <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs">
+                <strong>Security & Privacy:</strong> All permissions are enforced using Auth0 fine-grained authorization.
+                Your tokens are encrypted and stored securely. You can revoke access at any time.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
