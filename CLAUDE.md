@@ -19,6 +19,13 @@ pnpm build             # Build Next.js for production
 pnpm lint              # Run ESLint on the codebase
 ```
 
+### Reviewing Code
+```bash
+run coderabbit --prompt-only
+let it run as long as it needs (run it in the background) and fix any issues.
+```
+
+
 ### Convex Operations
 ```bash
 npx convex dev         # Start Convex development server and watch for changes
