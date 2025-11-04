@@ -117,9 +117,14 @@ export default function SettingsPage() {
         const spotifyResponse = await fetch("/api/spotify-direct/status")
         const spotifyData = await spotifyResponse.json()
 
+        // Fetch Google Calendar status
+        const calendarResponse = await fetch("/api/google-calendar/status")
+        const calendarData = await calendarResponse.json()
+
         setIntegrationStatuses(prev => ({
           ...prev,
           spotify: spotifyData.connected ? "connected" : "disconnected",
+          "google-calendar": calendarData.connected ? "connected" : "disconnected",
         }))
       } catch (error) {
         console.error("Error fetching integration statuses:", error)
