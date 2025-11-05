@@ -232,12 +232,16 @@ When using these tools, extract any required information (like URLs) directly fr
 
     let completion: OpenAI.Chat.Completions.ChatCompletion
 
-    // Use Heroku Agents endpoint with all available MCP tools
-    if (availableMcpTools.length > 0) {
+    // Use Heroku Agents endpoint with MCP tools (exclude local tools)
+    // Local tools like google-calendar-local cannot be invoked through Heroku's infrastructure
+    const herokuMcpTools = availableMcpTools.filter(tool => !tool.isLocal)
+
+    if (herokuMcpTools.length > 0) {
+      console.log(`[AI Helper] Using ${herokuMcpTools.length} Heroku MCP tools (${availableMcpTools.length - herokuMcpTools.length} local tools excluded)`)
       completion = await callHerokuAgentsEndpoint(
         config,
         chatMessages,
-        availableMcpTools
+        herokuMcpTools
       )
     } else {
       // Fall back to standard OpenAI client if no MCP tools available

@@ -152,6 +152,7 @@ async function sendTokensToMCP(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
         'X-API-Key': mcpConfig.apiKey,
       },
       body: JSON.stringify({
