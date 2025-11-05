@@ -60,17 +60,28 @@ async function callHerokuAgentsEndpoint(
 ) {
   const agentsUrl = `${config.herokuBaseUrl.replace(/\/$/, "")}/v1/agents/heroku`
 
-  // Deduplicate tools by ID to avoid "duplicate tool names" error
-  const uniqueTools = mcpTools.reduce((acc, tool) => {
+  // Filter out tools with missing IDs and deduplicate
+  const validTools = mcpTools.filter(tool => {
+    if (!tool.id || typeof tool.id !== 'string') {
+      console.warn(`[AI Helper] Skipping tool with missing or invalid id:`, tool)
+      return false
+    }
+    return true
+  })
+
+  const uniqueTools = validTools.reduce((acc, tool) => {
     if (!acc.find(t => t.id === tool.id)) {
       acc.push(tool)
     }
     return acc
   }, [] as McpTool[])
 
-  // Log deduplication stats
-  if (mcpTools.length !== uniqueTools.length) {
-    console.log(`[AI Helper] Deduplicated ${mcpTools.length} tools to ${uniqueTools.length} unique tools`)
+  // Log filtering and deduplication stats
+  if (mcpTools.length !== validTools.length) {
+    console.log(`[AI Helper] Filtered ${mcpTools.length - validTools.length} invalid tools`)
+  }
+  if (validTools.length !== uniqueTools.length) {
+    console.log(`[AI Helper] Deduplicated ${validTools.length} tools to ${uniqueTools.length} unique tools`)
   }
 
   const toolsArray = uniqueTools.map(tool => ({
