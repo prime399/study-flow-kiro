@@ -260,7 +260,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center relative" style={{ zIndex: 10 }}>
               <Link href="/dashboard">
-                <InteractiveHoverButton className="rounded-full bg-blue-600 hover:bg-white text-white border-blue-600 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
+                <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
                   Get Started
                 </InteractiveHoverButton>
               </Link>
@@ -566,7 +566,7 @@ export default function Home() {
                 
                 <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <Link href="/dashboard">
-                    <InteractiveHoverButton className="rounded-full bg-blue-600 hover:bg-white text-white border-blue-600 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
+                    <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
                       Start Your Journey
                     </InteractiveHoverButton>
                   </Link>
