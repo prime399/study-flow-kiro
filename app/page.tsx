@@ -9,12 +9,18 @@ import Meteors from "@/components/ui/meteors"
 import { Highlighter } from "@/components/ui/highlighter"
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Marquee } from "@/components/ui/marquee"
+import { cn } from "@/lib/utils"
 import {
   BarChart,
   BookOpen,
+  Check,
   Clock,
+  Crown,
   Github,
+  Key,
   LineChart,
+  Rocket,
+  Sparkles,
   Star,
   Target,
   Timer,
@@ -120,6 +126,77 @@ const testimonials = [
     username: "@alex_focus",
     body: "The AI-powered insights helped me identify my most productive study times. Brilliant!",
     img: "https://avatar.vercel.sh/alex",
+  },
+]
+
+const pricingTiers = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "month",
+    description: "Perfect for individuals starting their journey",
+    icon: Sparkles,
+    features: [
+      "Basic Integration",
+      "Limited Model Selection",
+      "20 Queries Monthly",
+      "Focus timer & goal tracking",
+      "Community support access",
+    ],
+    cta: "Get Started",
+    popular: false,
+  },
+  {
+    name: "Pro",
+    price: "$9",
+    period: "month",
+    description: "Unlock powerful automations and insights",
+    icon: Rocket,
+    discount: "Most Popular",
+    features: [
+      "Spotify & Google Calendar integration",
+      "Advanced AI model selection",
+      "100 Queries Monthly",
+      "Advanced Study Insights",
+      "Priority in-app support",
+      "API access",
+    ],
+    cta: "Start Free Trial",
+    popular: true,
+  },
+  {
+    name: "BYOK",
+    price: "$19",
+    period: "month",
+    description: "Bring your own API key for limitless personalization",
+    icon: Key,
+    features: [
+      "Use your own OpenAI or Anthropic key",
+      "Unlimited AI queries (metered by your key)",
+      "Granular rate limit controls",
+      "Usage analytics & cost visibility",
+      "Workspace-level access policies",
+      "Dedicated BYOK onboarding support",
+    ],
+    cta: "Connect Your Key",
+    popular: false,
+  },
+  {
+    name: "Lifetime",
+    price: "Custom",
+    period: "",
+    description: "For power users with unlimited needs",
+    icon: Crown,
+    features: [
+      "Everything advanced",
+      "Lifetime Updates",
+      "Uncapped AI Queries",
+      "Easy Progress Export",
+      "White-glove implementation",
+      "Priority concierge support",
+    ],
+    cta: "Contact Sales",
+    popular: false,
   },
 ]
 
@@ -343,6 +420,89 @@ export default function Home() {
                   </div>
                 ))}
               </Marquee>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="text-center mb-12 sm:mb-16 px-4">
+              <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
+                Simple, transparent pricing
+              </h2>
+              <p className="text-base sm:text-lg text-gray-400 leading-relaxed max-w-3xl mx-auto">
+                Choose the perfect plan for your needs. All plans include a 14-day free trial.
+              </p>
+            </div>
+            
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 max-w-7xl mx-auto">
+              {pricingTiers.map((tier, i) => {
+                const Icon = tier.icon
+
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      "relative flex h-full flex-col overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.02] p-8 sm:p-10 transition-all duration-300 hover:-translate-y-2",
+                      tier.popular
+                        ? "border-white/40 bg-white/[0.06] shadow-[0_24px_80px_-24px_rgba(99,102,241,0.6)] hover:border-white/60"
+                        : "hover:border-white/20 hover:bg-white/[0.04]"
+                    )}
+                  >
+                    {tier.popular && (
+                      <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                        <span className="rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-black">
+                          {tier.discount}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="mb-8">
+                      <div
+                        className={cn(
+                          "mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 text-white/80 transition-colors duration-300",
+                          tier.popular ? "bg-white text-black" : "bg-white/5"
+                        )}
+                      >
+                        <Icon className="h-8 w-8" />
+                      </div>
+                      <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
+                      <div className="mt-4 flex items-baseline gap-2">
+                        <span className="text-4xl sm:text-5xl font-bold text-white">{tier.price}</span>
+                        {tier.period && <span className="text-sm uppercase tracking-wide text-gray-500">/ {tier.period}</span>}
+                      </div>
+                      <p className="mt-3 text-sm text-gray-400 leading-relaxed">
+                        {tier.description}
+                      </p>
+                    </div>
+
+                    <ul className="mb-10 space-y-4 text-sm text-gray-300">
+                      {tier.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-auto">
+                      <Button
+                        size="lg"
+                        className={cn(
+                          "w-full rounded-full text-base py-3 transition-colors duration-200",
+                          tier.popular
+                            ? "bg-white text-black hover:bg-slate-200"
+                            : "border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                        )}
+                        variant={tier.popular ? "default" : "outline"}
+                        asChild
+                      >
+                        <Link href="/dashboard">{tier.cta}</Link>
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
