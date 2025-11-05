@@ -192,6 +192,145 @@ async function getLocalGoogleCalendarTools(): Promise<McpServer | null> {
             required: ['userId', 'calendarId', 'eventId'],
           },
         },
+        {
+          id: 'google-calendar-local/update-event',
+          name: 'update-event',
+          namespace: 'google-calendar-local',
+          description: 'Update an existing calendar event with conflict detection and recurring event support',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              userId: {
+                type: 'string',
+                description: 'User ID from Convex authentication',
+              },
+              calendarId: {
+                type: 'string',
+                description: 'Calendar ID',
+              },
+              eventId: {
+                type: 'string',
+                description: 'Event ID to update',
+              },
+              summary: {
+                type: 'string',
+                description: 'New event title (optional)',
+              },
+              description: {
+                type: 'string',
+                description: 'New event description (optional)',
+              },
+              start: {
+                type: 'string',
+                description: 'New start time in ISO 8601 format (optional)',
+              },
+              end: {
+                type: 'string',
+                description: 'New end time in ISO 8601 format (optional)',
+              },
+              location: {
+                type: 'string',
+                description: 'New event location (optional)',
+              },
+            },
+            required: ['userId', 'calendarId', 'eventId'],
+          },
+        },
+        {
+          id: 'google-calendar-local/get-event',
+          name: 'get-event',
+          namespace: 'google-calendar-local',
+          description: 'Get detailed information about a specific event by ID',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              userId: {
+                type: 'string',
+                description: 'User ID from Convex authentication',
+              },
+              calendarId: {
+                type: 'string',
+                description: 'Calendar ID',
+              },
+              eventId: {
+                type: 'string',
+                description: 'Event ID to retrieve',
+              },
+            },
+            required: ['userId', 'calendarId', 'eventId'],
+          },
+        },
+        {
+          id: 'google-calendar-local/get-freebusy',
+          name: 'get-freebusy',
+          namespace: 'google-calendar-local',
+          description: 'Check availability across multiple calendars to find free time slots',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              userId: {
+                type: 'string',
+                description: 'User ID from Convex authentication',
+              },
+              calendars: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                },
+                description: 'Array of calendar IDs to check',
+              },
+              timeMin: {
+                type: 'string',
+                description: 'Start of time range in ISO 8601 format',
+              },
+              timeMax: {
+                type: 'string',
+                description: 'End of time range in ISO 8601 format',
+              },
+              timeZone: {
+                type: 'string',
+                description: 'Timezone (optional)',
+              },
+            },
+            required: ['userId', 'calendars', 'timeMin', 'timeMax'],
+          },
+        },
+        {
+          id: 'google-calendar-local/list-colors',
+          name: 'list-colors',
+          namespace: 'google-calendar-local',
+          description: 'Get available color IDs for events and calendars',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              userId: {
+                type: 'string',
+                description: 'User ID from Convex authentication',
+              },
+            },
+            required: ['userId'],
+          },
+        },
+        {
+          id: 'google-calendar-local/get-current-time',
+          name: 'get-current-time',
+          namespace: 'google-calendar-local',
+          description: 'Get current time in a specific timezone or the calendar\'s timezone',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              userId: {
+                type: 'string',
+                description: 'User ID from Convex authentication',
+              },
+              timeZone: {
+                type: 'string',
+                description: 'Timezone (optional, uses calendar\'s default if not provided)',
+              },
+            },
+            required: ['userId'],
+          },
+        },
       ],
     }
 
