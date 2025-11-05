@@ -56,9 +56,11 @@ async function fetchAvailableMcpTools(requestUrl?: string): Promise<McpTool[]> {
 async function callHerokuAgentsEndpoint(
   config: { herokuBaseUrl: string; herokuApiKey: string; herokuModelId: string },
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  mcpTools: McpTool[]
-) {
+  mcpTools: McpTool[],
+  retryCount = 0
+): Promise<any> {
   const agentsUrl = `${config.herokuBaseUrl.replace(/\/$/, "")}/v1/agents/heroku`
+  const MAX_RETRIES = 2
 
   // Filter out tools with missing IDs and deduplicate
   const validTools = mcpTools.filter(tool => {
@@ -95,47 +97,82 @@ async function callHerokuAgentsEndpoint(
     tools: toolsArray,
   }
 
-  const response = await fetch(agentsUrl, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${config.herokuApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestBody),
-  })
+  console.log(`[AI Helper] Calling Heroku Agents API with ${toolsArray.length} tools (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`)
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Heroku Agents API error (${response.status}): ${errorText}`)
-  }
+  try {
+    const response = await fetch(agentsUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${config.herokuApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
 
-  // Parse SSE response
-  const text = await response.text()
-  const lines = text.split('\n')
-  let lastCompletion: any = null
+    if (!response.ok) {
+      const errorText = await response.text()
 
-  for (const line of lines) {
-    if (line.startsWith('data:')) {
-      const data = line.slice(5).trim()
-      if (data === '[DONE]') break
-      
-      try {
-        const parsed = JSON.parse(data)
-        // Collect chat completions (including tool calls and responses)
-        if (parsed.object === 'chat.completion' || parsed.object === 'tool.completion') {
-          lastCompletion = parsed
+      // Retry on 503 (Service Unavailable) errors
+      if (response.status === 503 && retryCount < MAX_RETRIES) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000) // Exponential backoff: 1s, 2s, 5s
+        console.warn(`[AI Helper] Got 503 error, retrying in ${delay}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return callHerokuAgentsEndpoint(config, messages, mcpTools, retryCount + 1)
+      }
+
+      throw new Error(`Heroku Agents API error (${response.status}): ${errorText}`)
+    }
+
+    // Parse SSE response
+    const text = await response.text()
+    const lines = text.split('\n')
+    let lastCompletion: any = null
+    let toolCalls: any[] = []
+
+    for (const line of lines) {
+      if (line.startsWith('data:')) {
+        const data = line.slice(5).trim()
+        if (data === '[DONE]') break
+
+        try {
+          const parsed = JSON.parse(data)
+
+          // Log tool invocations for debugging
+          if (parsed.object === 'tool.completion') {
+            console.log(`[AI Helper] Tool invoked: ${parsed.tool?.name || 'unknown'}`)
+            toolCalls.push(parsed)
+          }
+
+          // Collect chat completions (including tool calls and responses)
+          if (parsed.object === 'chat.completion' || parsed.object === 'tool.completion') {
+            lastCompletion = parsed
+          }
+        } catch (e) {
+          // Skip invalid JSON lines
         }
-      } catch (e) {
-        // Skip invalid JSON lines
       }
     }
-  }
 
-  if (!lastCompletion) {
-    throw new Error("No valid completion received from Heroku Agents API")
-  }
+    if (toolCalls.length > 0) {
+      console.log(`[AI Helper] Total tools invoked: ${toolCalls.length}`)
+    }
 
-  return lastCompletion
+    if (!lastCompletion) {
+      throw new Error("No valid completion received from Heroku Agents API")
+    }
+
+    return lastCompletion
+  } catch (error) {
+    // Retry on network errors
+    if (retryCount < MAX_RETRIES && error instanceof Error &&
+        (error.message.includes('fetch') || error.message.includes('ECONNRESET'))) {
+      const delay = Math.min(1000 * Math.pow(2, retryCount), 5000)
+      console.warn(`[AI Helper] Network error, retrying in ${delay}ms...`, error.message)
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return callHerokuAgentsEndpoint(config, messages, mcpTools, retryCount + 1)
+    }
+    throw error
+  }
 }
 
 export async function POST(req: Request) {
@@ -289,9 +326,26 @@ When using these tools, extract any required information (like URLs) directly fr
     }
 
     if (error instanceof Error) {
-      return new Response(error.message, { status: 500 })
+      // Provide user-friendly error messages
+      let userMessage = error.message
+
+      if (error.message.includes('503')) {
+        userMessage = "The AI service is temporarily unavailable. Please try again in a moment."
+      } else if (error.message.includes('Heroku Agents API error')) {
+        userMessage = "AI service error. Please try again or contact support if the issue persists."
+      } else if (error.message.includes('No valid completion')) {
+        userMessage = "Failed to get a response from the AI. Please try again."
+      }
+
+      return new Response(JSON.stringify({ error: userMessage }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    return new Response("Error processing request", { status: 500 })
+    return new Response(JSON.stringify({ error: "Error processing request" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
