@@ -358,8 +358,45 @@ export default function Home() {
                 Join thousands of students who have transformed their study habits with StudyFlow
               </p>
             </div>
-            
-            <div className="overflow-x-hidden">
+
+            {/* Mobile: Horizontal Scroll */}
+            <div className="md:hidden px-4">
+              <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4">
+                {testimonials.map((review, idx) => (
+                  <div
+                    key={idx}
+                    className="flex-shrink-0 w-[85vw] max-w-sm snap-center rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="relative">
+                        <Image
+                          className="h-11 w-11 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
+                          src={review.img}
+                          alt={`${review.name} avatar`}
+                          width={56}
+                          height={56}
+                        />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-black" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-white tracking-tight">
+                          {review.name}
+                        </div>
+                        <div className="text-xs text-gray-500 font-medium">
+                          {review.username}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300 leading-relaxed font-light">
+                      &ldquo;{review.body}&rdquo;
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop: Auto-play Marquee */}
+            <div className="hidden md:block overflow-x-hidden">
               <Marquee pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
                 {testimonials.map((review, idx) => (
                   <div
@@ -447,7 +484,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     className={cn(
-                      "relative z-10 w-full rounded-full text-base py-3 transition-colors duration-200",
+                      "relative z-10 w-full rounded-full text-sm sm:text-base py-2.5 sm:py-3 transition-colors duration-200",
                       tier.popular
                         ? "bg-white text-black hover:bg-slate-200"
                         : "border-white/20 text-white hover:border-white/40 hover:bg-white/10"
@@ -463,61 +500,61 @@ export default function Home() {
                   <div
                     key={i}
                     className={cn(
-                      "relative flex h-full flex-col rounded-[32px] border border-white/10 bg-white/[0.02] p-8 sm:p-10 transition-all duration-300 hover:-translate-y-2",
+                      "relative flex h-full flex-col rounded-[32px] border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-10 transition-all duration-300 hover:-translate-y-2",
                       tier.popular
                         ? "border-white/40 bg-white/[0.06] shadow-[0_24px_80px_-24px_rgba(99,102,241,0.6)] hover:border-white/60"
                         : "hover:border-white/20 hover:bg-white/[0.04]"
                     )}
                   >
                     {tier.popular && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                      <div className="absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 w-max">
                         <div className="relative inline-flex rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 p-[1.5px] shadow-[0_18px_48px_-18px_rgba(76,29,149,0.7)]">
                           <div className="absolute inset-0 rounded-full bg-white/20 blur-md" />
-                          <span className="relative inline-flex items-center gap-2 rounded-full bg-black/85 px-4 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white">
-                            <Sparkles className="h-3.5 w-3.5 text-amber-200" />
-                            {tier.discount}
+                          <span className="relative inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-black/85 px-3 sm:px-4 py-1 text-[0.6rem] sm:text-[0.65rem] font-semibold uppercase tracking-[0.15em] sm:tracking-[0.18em] text-white whitespace-nowrap">
+                            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-200 flex-shrink-0" />
+                            <span>{tier.discount}</span>
                           </span>
                         </div>
                       </div>
                     )}
 
-                    <div className="mb-8">
+                    <div className="mb-6 sm:mb-8 flex flex-col">
                       {tier.earlyBird && (
-                        <div className="mb-5 inline-flex items-center gap-2 self-start rounded-full bg-white text-black px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] shadow-[0_2px_8px_rgba(255,255,255,0.15)] border border-white/20">
-                          <Sparkles className="h-3 w-3" />
+                        <div className="mb-4 sm:mb-5 inline-flex items-center gap-1.5 sm:gap-2 self-start rounded-full bg-white text-black px-2.5 sm:px-3 py-1.5 text-[0.6rem] sm:text-[0.625rem] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] shadow-[0_2px_8px_rgba(255,255,255,0.15)] border border-white/20">
+                          <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
                           <span className="whitespace-nowrap">Early Bird · 100% OFF</span>
                         </div>
                       )}
                       <div
                         className={cn(
-                          "mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 text-white/80 transition-colors duration-300",
+                          "mb-4 sm:mb-6 inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl border border-white/10 text-white/80 transition-colors duration-300",
                           tier.popular ? "bg-white text-black" : "bg-white/5"
                         )}
                       >
-                        <Icon className="h-8 w-8" />
+                        <Icon className="h-6 w-6 sm:h-8 sm:w-8" />
                       </div>
-                      <h3 className="text-2xl font-semibold text-white">{tier.name}</h3>
-                      <div className="mt-4 flex items-baseline gap-2">
-                        <span className="text-4xl sm:text-5xl font-bold text-white">{tier.price}</span>
-                        {tier.period && <span className="text-sm uppercase tracking-wide text-gray-500">/ {tier.period}</span>}
+                      <h3 className="text-xl sm:text-2xl font-semibold text-white">{tier.name}</h3>
+                      <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
+                        <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">{tier.price}</span>
+                        {tier.period && <span className="text-xs sm:text-sm uppercase tracking-wide text-gray-500">/ {tier.period}</span>}
                       </div>
-                      <p className="mt-3 text-sm text-gray-400 leading-relaxed">
+                      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400 leading-relaxed">
                         {tier.description}
                       </p>
                     </div>
 
-                    <ul className="mb-10 space-y-4 text-sm text-gray-300">
+                    <ul className="mb-8 sm:mb-10 space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-300">
                       {tier.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" />
-                          <span>{feature}</span>
+                        <li key={idx} className="flex items-start gap-2 sm:gap-3">
+                          <Check className="mt-0.5 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-green-400" />
+                          <span className="leading-relaxed">{feature}</span>
                         </li>
                       ))}
                     </ul>
 
                     <div className="mt-auto">
                       {tier.note && (
-                        <p className="mb-4 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white/60">
+                        <p className="mb-3 sm:mb-4 text-[0.6rem] sm:text-[0.65rem] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.3em] text-white/60">
                           {tier.note}
                         </p>
                       )}
