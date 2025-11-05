@@ -190,8 +190,15 @@ export async function POST(req: Request) {
 
     // ===== GOOGLE CALENDAR MCP TOKEN INJECTION =====
     // If Google Calendar MCP tools are available and user is authenticated, inject tokens
+    // Calendar tools can be under different namespaces: 'mcp', 'google-calendar', 'google-calendar-local'
+    const calendarToolNames = ['list-calendars', 'list-events', 'create-event', 'update-event',
+                                'delete-event', 'get-event', 'search-events', 'get-freebusy',
+                                'list-colors', 'get-current-time']
     const hasGoogleCalendarTools = availableMcpTools.some(
-      tool => tool.namespace === 'google-calendar' || tool.id.includes('calendar')
+      tool => tool.namespace === 'mcp' ||
+              tool.namespace === 'google-calendar' ||
+              tool.namespace === 'google-calendar-local' ||
+              calendarToolNames.includes(tool.name)
     )
 
     if (hasGoogleCalendarTools && userId && convexAuthToken) {
