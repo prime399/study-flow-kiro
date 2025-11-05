@@ -35,7 +35,8 @@ async function fetchAvailableMcpTools(requestUrl?: string): Promise<McpTool[]> {
     }
     
     const baseUrl = requestUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/ai-helper/mcp-servers`, {
+    // Use mcp-servers-local to include both local Google Calendar MCP and Heroku servers
+    const response = await fetch(`${baseUrl}/api/ai-helper/mcp-servers-local`, {
       cache: 'no-store'
     })
     
@@ -115,32 +116,24 @@ async function callHerokuAgentsEndpoint(
 
 export async function POST(req: Request) {
   try {
-    // ===== AUTHENTICATION & USER CONTEXT =====
-    // Extract Convex auth token from cookies
+    // ===== OPTIONAL AUTHENTICATION FOR GOOGLE CALENDAR =====
+    // Extract Convex auth token from cookies (optional - only needed for Google Calendar)
     const cookieStore = await cookies()
     const isLocalhost = req.headers.get('host')?.includes('localhost')
     const cookieName = isLocalhost ? '__convexAuthJWT' : '__Host-__convexAuthJWT'
     const convexAuthToken = cookieStore.get(cookieName)?.value
 
-    if (!convexAuthToken) {
-      return Response.json(
-        { error: 'Not authenticated', message: 'Please log in to use the AI helper' },
-        { status: 401 }
-      )
-    }
-
-    // Create authenticated Convex client
-    const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
-    convexClient.setAuth(convexAuthToken)
-
-    // Get user ID
-    const userId = await convexClient.query(api.scheduling.getCurrentUserId)
-
-    if (!userId) {
-      return Response.json(
-        { error: 'User not authenticated', message: 'Unable to retrieve user information' },
-        { status: 401 }
-      )
+    // Get user ID if authenticated (for Google Calendar MCP token injection)
+    let userId: string | null = null
+    if (convexAuthToken) {
+      try {
+        const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+        convexClient.setAuth(convexAuthToken)
+        userId = await convexClient.query(api.scheduling.getCurrentUserId)
+      } catch (error) {
+        console.warn('[AI Helper] Failed to get user ID from auth token:', error)
+        // Continue without user ID - calendar tools won't work but AI helper will
+      }
     }
 
     const { messages, userName, studyStats, groupInfo, modelId, mcpToolId }: AIRequestBody & { modelId?: string; mcpToolId?: string } =
@@ -163,12 +156,12 @@ export async function POST(req: Request) {
     const availableMcpTools = await fetchAvailableMcpTools(baseUrl)
 
     // ===== GOOGLE CALENDAR MCP TOKEN INJECTION =====
-    // If Google Calendar MCP tools are available, inject user tokens
+    // If Google Calendar MCP tools are available and user is authenticated, inject tokens
     const hasGoogleCalendarTools = availableMcpTools.some(
       tool => tool.namespace === 'google-calendar' || tool.id.includes('calendar')
     )
 
-    if (hasGoogleCalendarTools) {
+    if (hasGoogleCalendarTools && userId && convexAuthToken) {
       try {
         console.log(`[AI Helper] Injecting Google Calendar tokens for user: ${userId}`)
         const injectionResult = await injectUserTokensToMCP(userId, convexAuthToken)
@@ -185,6 +178,8 @@ export async function POST(req: Request) {
         // Continue with the request even if token injection fails
         // The calendar tools will return appropriate errors if tokens are missing
       }
+    } else if (hasGoogleCalendarTools && !userId) {
+      console.log('[AI Helper] Google Calendar tools available but user not authenticated - calendar tools will not work')
     }
 
     // Build system prompt with user context
