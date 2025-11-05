@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import UnicornScene from "unicornstudio-react"
+import { HeroBackground } from "@/components/hero-background"
 
 const features = [
   {
@@ -158,10 +158,8 @@ export default function Home() {
           </div>
           
           <div className="mx-auto flex max-w-[64rem] flex-col items-center gap-6 sm:gap-8 text-center relative">
-            {/* UnicornScene for desktop only */}
-            <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" style={{ zIndex: 0 }}>
-              <UnicornScene projectId="FRNkkpNIXvQHGx3ZkpMt" width={1600} height={800} />
-            </div>
+            {/* Hero Background - UnicornScene with Spotlight fallback (desktop only) */}
+            <HeroBackground />
             <h1 className="text-pretty text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight relative" style={{ zIndex: 10 }}>
               Study. Connect. <span className="lg:hidden"><Highlighter 
                 action="highlight" 
