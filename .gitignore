@@ -46,3 +46,6 @@ test-token-injection-real.js
 test-token-refresh-and-inject.js
 test-real-token-injection.js
 convex/testHelpers.ts
+
+/docs/
+scripts/generate-encryption-key.js

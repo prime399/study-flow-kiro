@@ -161,9 +161,57 @@ The app includes Spotify OAuth for music playback during study sessions:
   - `HEROKU_INFERENCE_KEY_NOVA_LITE` - For Nova Lite
   - `HEROKU_INFERENCE_KEY_NOVA_PRO` - For Nova Pro
 - `NEXT_PUBLIC_APP_URL` - Required for MCP tool discovery
+- `API_KEY_ENCRYPTION_SECRET` - **REQUIRED for BYOK** - 256-bit encryption key (see BYOK Setup below)
 
 **Model Configuration:**
 Models are defined in `app/api/ai-helper/_lib/models.ts` with environment key mappings.
+
+### BYOK (Bring Your Own Key) Feature
+
+The app supports user-provided API keys for OpenAI, Anthropic, and OpenRouter:
+
+- **No coins charged** when users use their own keys
+- **Automatic fallback** to platform keys if BYOK fails
+- **AES-256-GCM encryption** for secure key storage
+- **Per-user key management** with usage tracking
+
+**Setup BYOK:**
+1. Generate encryption key:
+   ```bash
+   node scripts/generate-encryption-key.js
+   ```
+2. Set in Convex:
+   ```bash
+   npx convex env set API_KEY_ENCRYPTION_SECRET "<generated-key>"
+   npx convex env set API_KEY_ENCRYPTION_SECRET "<generated-key>" --prod
+   ```
+3. Install Anthropic SDK:
+   ```bash
+   npm install @anthropic-ai/sdk
+   ```
+
+**Key Files:**
+- `/convex/userApiKeys.ts` - Key management (queries, mutations, actions)
+- `/convex/lib/encryption.ts` - AES-256-GCM encryption
+- `/app/api/byok/` - Validation and model fetching
+- `/app/api/ai-helper/_lib/byok-helper.ts` - BYOK configuration logic
+- `/app/api/ai-helper/_lib/providers/` - Provider adapters (OpenAI, Anthropic)
+- `/app/(protected)/dashboard/settings/byok/page.tsx` - User settings UI
+
+**How It Works:**
+1. User adds API key in Settings → BYOK
+2. Key is validated and encrypted before storage
+3. When user sends AI query, system checks for active BYOK key
+4. If BYOK exists: uses user's key (no coins charged)
+5. If BYOK fails or doesn't exist: falls back to platform keys (100 coins)
+
+**Security:**
+- Keys encrypted with AES-256-GCM before storage
+- Decryption only happens server-side
+- Users can only access their own keys
+- Keys masked in UI (first 4 + last 4 chars only)
+
+See `docs/BYOK.md` for complete documentation.
 
 ### TypeScript Configuration
 - Strict mode enabled

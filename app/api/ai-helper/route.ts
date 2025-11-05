@@ -16,6 +16,8 @@ import {
 import { processAIResponse } from "./_lib/response-processor"
 import { resolveModelRouting } from "./_lib/model-router"
 import { injectUserTokensToMCP } from "@/lib/mcp-token-injector"
+import { getAIConfig, isBYOKConfig, recordBYOKUsage } from "./_lib/byok-helper"
+import { createProvider } from "./_lib/providers/factory"
 
 interface McpTool {
   id: string
@@ -216,8 +218,37 @@ export async function POST(req: Request) {
       modelId,
     })
 
+    // ===== BYOK (Bring Your Own Key) CHECK =====
+    // Check if user has their own API key configured
+    // If yes, use BYOK (no coins charged)
+    // If no or error, fall back to platform keys (coins charged)
+    const aiConfig = await getAIConfig(
+      convexAuthToken,
+      process.env.NEXT_PUBLIC_CONVEX_URL!,
+      routingDecision.resolvedModelId,
+      () => {
+        // Platform config fallback
+        const platformConfig = validateOpenAIConfig(routingDecision.resolvedModelId);
+        return {
+          ...platformConfig,
+          isBYOK: false as const,
+        };
+      }
+    );
+
+    // Log which config is being used
+    if (isBYOKConfig(aiConfig)) {
+      console.log(`[BYOK] Using user's ${aiConfig.provider} key (model: ${aiConfig.modelId})`)
+      console.log('[BYOK] No coins will be charged for this query')
+    } else {
+      console.log(`[Platform] Using platform keys (model: ${aiConfig.herokuModelId})`)
+      console.log('[Platform] 100 coins will be charged for this query')
+    }
+
     // Validate and get OpenAI configuration for the resolved model
-    const config = validateOpenAIConfig(routingDecision.resolvedModelId)
+    const config = isBYOKConfig(aiConfig)
+      ? { herokuBaseUrl: aiConfig.baseUrl || '', herokuApiKey: aiConfig.apiKey, herokuModelId: aiConfig.modelId }
+      : aiConfig
 
     // Get base URL from request for MCP tools fetch
     const url = new URL(req.url)
@@ -403,12 +434,23 @@ ${toolsList}`
     // Process response and extract tables
     const { choices, toolInvocations } = processAIResponse(completion)
 
+    // Record BYOK usage if applicable
+    if (isBYOKConfig(aiConfig) && convexAuthToken) {
+      await recordBYOKUsage(
+        convexAuthToken,
+        process.env.NEXT_PUBLIC_CONVEX_URL!,
+        aiConfig.provider
+      )
+    }
+
     const responsePayload = {
       ...completion,
       choices,
       toolInvocations,
       routing: routingDecision,
       selectedModel: routingDecision.resolvedModelId,
+      isBYOK: isBYOKConfig(aiConfig),
+      provider: isBYOKConfig(aiConfig) ? aiConfig.provider : 'platform',
     }
 
     return Response.json(responsePayload)

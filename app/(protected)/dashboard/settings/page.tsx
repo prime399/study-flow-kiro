@@ -18,6 +18,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Auth0Logo } from "@/components/logos/auth0-logo"
 import { SpotifyLogo } from "@/components/logos/spotify-logo"
+import { BYOKLogo } from "@/components/logos/byok-logo"
 
 interface IntegrationStatus {
   id: string
@@ -58,9 +59,9 @@ const integrations: IntegrationStatus[] = [
     id: "byok",
     name: "Bring Your Own Key",
     description: "Use your own API keys for AI models",
-    icon: <Key className="h-8 w-8 text-amber-500" />,
+    icon: <BYOKLogo className="h-8 w-8 text-amber-500" />,
     href: "/dashboard/settings/byok",
-    status: "pending",
+    status: "disconnected",
   },
   {
     id: "notion",
@@ -68,7 +69,7 @@ const integrations: IntegrationStatus[] = [
     description: "Sync study data with your Notion workspace",
     icon: <BookOpen className="h-8 w-8 text-slate-700" />,
     href: "/dashboard/settings/notion",
-    status: "disconnected",
+    status: "pending",
   },
 ]
 
@@ -121,10 +122,15 @@ export default function SettingsPage() {
         const calendarResponse = await fetch("/api/google-calendar/status")
         const calendarData = await calendarResponse.json()
 
+        // Fetch BYOK status
+        const byokResponse = await fetch("/api/byok/status")
+        const byokData = await byokResponse.json()
+
         setIntegrationStatuses(prev => ({
           ...prev,
           spotify: spotifyData.connected ? "connected" : "disconnected",
           "google-calendar": calendarData.connected ? "connected" : "disconnected",
+          byok: byokData.connected ? "connected" : "disconnected",
         }))
       } catch (error) {
         console.error("Error fetching integration statuses:", error)

@@ -205,6 +205,28 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_user", ["userId"]),
+  // BYOK (Bring Your Own Key) - User's own AI API keys
+  userApiKeys: defineTable({
+    userId: v.id("users"),
+    keyName: v.string(), // User-friendly name for the key
+    provider: v.union(
+      v.literal("openai"),
+      v.literal("anthropic"),
+      v.literal("openrouter")
+    ),
+    encryptedApiKey: v.string(), // Encrypted API key
+    baseUrl: v.optional(v.string()), // Custom endpoint URL (optional)
+    modelId: v.string(), // Default model to use with this key
+    isActive: v.boolean(), // Whether this key is currently active
+    lastUsed: v.optional(v.number()), // Last time this key was used
+    usageCount: v.optional(v.number()), // Number of times this key has been used
+    lastValidated: v.optional(v.number()), // Last successful validation timestamp
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_provider", ["userId", "provider"])
+    .index("by_user_and_active", ["userId", "isActive"]),
   // Spaced repetition and review scheduling
   reviewItems: defineTable({
     userId: v.id("users"),

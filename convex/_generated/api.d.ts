@@ -19,6 +19,7 @@ import type * as googleCalendar from "../googleCalendar.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as leaderboards from "../leaderboards.js";
+import type * as lib_encryption from "../lib/encryption.js";
 import type * as messages from "../messages.js";
 import type * as moderators from "../moderators.js";
 import type * as onboarding from "../onboarding.js";
@@ -27,6 +28,7 @@ import type * as spotify from "../spotify.js";
 import type * as study from "../study.js";
 import type * as testHelpers from "../testHelpers.js";
 import type * as todos from "../todos.js";
+import type * as userApiKeys from "../userApiKeys.js";
 import type * as users from "../users.js";
 
 /**
@@ -44,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   groups: typeof groups;
   http: typeof http;
   leaderboards: typeof leaderboards;
+  "lib/encryption": typeof lib_encryption;
   messages: typeof messages;
   moderators: typeof moderators;
   onboarding: typeof onboarding;
@@ -52,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   study: typeof study;
   testHelpers: typeof testHelpers;
   todos: typeof todos;
+  userApiKeys: typeof userApiKeys;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

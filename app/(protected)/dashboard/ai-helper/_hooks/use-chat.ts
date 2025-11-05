@@ -194,6 +194,27 @@ export function useChat({ studyStats, groupInfo, userName }: UseChatProps) {
         setResolvedModel(selectedModelState)
       }
 
+      // Check if BYOK was used - if so, refund the coins
+      if (data.isBYOK === true && pendingCoinsRef.current > 0) {
+        try {
+          const refundResult = await refundCoins({
+            amount: pendingCoinsRef.current,
+            reason: "byok-refund"
+          })
+          setCoinBalance(refundResult.balance)
+          pendingCoinsRef.current = 0
+
+          toast.success("BYOK used - coins refunded!", {
+            description: `Using your ${data.provider} API key. No coins charged.`,
+          })
+        } catch (refundError) {
+          console.error("Failed to refund coins for BYOK:", refundError)
+        }
+      } else {
+        // Platform keys used - coins were spent
+        pendingCoinsRef.current = 0
+      }
+
       let assistantContent = ""
       if (data.choices && data.choices[0] && data.choices[0].message) {
         assistantContent = data.choices[0].message.content
@@ -203,7 +224,6 @@ export function useChat({ studyStats, groupInfo, userName }: UseChatProps) {
 
       const assistantMessage = createAssistantMessage(assistantContent, toolInvocations)
       setMessages(prev => [...prev, assistantMessage])
-      pendingCoinsRef.current = 0
     } catch (err: any) {
       if (pendingCoinsRef.current > 0) {
         try {
