@@ -271,17 +271,42 @@ export async function POST(req: Request) {
 
     // Build system prompt with user context
     const baseSystemPrompt = buildSystemPrompt({ userName, studyStats, groupInfo })
-    let systemPrompt = baseSystemPrompt
+
+    // Check for calendar tools FIRST
+    const calendarTools = availableMcpTools.filter(t =>
+      t.namespace === 'mcp' || t.namespace === 'google-calendar' || t.namespace === 'google-calendar-local'
+    )
+    const otherTools = availableMcpTools.filter(t =>
+      t.namespace !== 'mcp' && t.namespace !== 'google-calendar' && t.namespace !== 'google-calendar-local'
+    )
+
+    // Put userId requirement FIRST if calendar tools are available
+    let systemPrompt = ''
+
+    if (calendarTools.length > 0 && userId) {
+      systemPrompt = `🚨🚨🚨 CRITICAL INSTRUCTION - READ THIS FIRST 🚨🚨🚨
+
+WHEN CALLING ANY CALENDAR TOOL, THE VERY FIRST PARAMETER MUST ALWAYS BE:
+userId: "${userId}"
+
+DO NOT FORGET THIS! Every single calendar tool call needs userId as the first parameter.
+
+Examples of CORRECT tool calls:
+- get-current-time({ "userId": "${userId}" })
+- create-event({ "userId": "${userId}", "calendarId": "primary", "summary": "...", "start": "...", "end": "..." })
+- list-events({ "userId": "${userId}", "calendarId": "primary", "timeMin": "...", "timeMax": "..." })
+
+If you call a calendar tool WITHOUT userId, it will fail with error -32602.
+
+===========================================
+
+${baseSystemPrompt}`
+    } else {
+      systemPrompt = baseSystemPrompt
+    }
 
     // Add MCP tool instruction if tools are available
     if (availableMcpTools.length > 0) {
-      const calendarTools = availableMcpTools.filter(t =>
-        t.namespace === 'mcp' || t.namespace === 'google-calendar' || t.namespace === 'google-calendar-local'
-      )
-      const otherTools = availableMcpTools.filter(t =>
-        t.namespace !== 'mcp' && t.namespace !== 'google-calendar' && t.namespace !== 'google-calendar-local'
-      )
-
       const toolsList = availableMcpTools
         .map(tool => `- ${tool.name}: ${tool.description}`)
         .join('\n')
@@ -292,29 +317,6 @@ export async function POST(req: Request) {
 
 You have access to the following tools to help users:
 ${toolsList}`
-
-      if (calendarTools.length > 0 && userId) {
-        toolInstructions = `
-
-## 🚨 CRITICAL: USER ID REQUIRED FOR ALL CALENDAR TOOLS 🚨
-
-**YOU MUST INCLUDE THIS IN EVERY CALENDAR TOOL CALL:**
-- userId: "${userId}"
-
-**EVERY SINGLE CALENDAR TOOL CALL MUST HAVE userId AS THE FIRST PARAMETER!**
-
-Examples:
-- get-current-time: { "userId": "${userId}" }
-- create-event: { "userId": "${userId}", "calendarId": "primary", ... }
-- list-events: { "userId": "${userId}", "calendarId": "primary", ... }
-
-If you forget userId, the tool will fail with error -32602. ALWAYS include it!
-
-## Available MCP Tools
-
-You have access to the following tools to help users:
-${toolsList}`
-      }
 
       toolInstructions += `
 
