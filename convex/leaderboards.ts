@@ -3,19 +3,29 @@ import { getAuthUserId } from "@convex-dev/auth/server"
 import { v } from "convex/values"
 
 export const getStudyTimeLeaderboard = query({
-  args: {},
-  handler: async (ctx) => {
-    const settings = await ctx.db
+  args: {
+    page: v.optional(v.number()),
+    pageSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const page = args.page || 1
+    const pageSize = args.pageSize || 10
+    const skip = (page - 1) * pageSize
+
+    const allSettings = await ctx.db
       .query("studySettings")
       .withIndex("by_total_time")
       .order("desc")
-      .take(10)
+      .collect()
+
+    const totalCount = allSettings.length
+    const paginatedSettings = allSettings.slice(skip, skip + pageSize)
 
     const leaderboard = await Promise.all(
-      settings.map(async (setting, index) => {
+      paginatedSettings.map(async (setting, index) => {
         const user = await ctx.db.get(setting.userId)
         return {
-          rank: index + 1,
+          rank: skip + index + 1,
           userId: setting.userId,
           name: user?.name || "Unknown User",
           email: user?.email,
@@ -25,7 +35,17 @@ export const getStudyTimeLeaderboard = query({
       }),
     )
 
-    return leaderboard
+    return {
+      data: leaderboard,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+        hasNext: page < Math.ceil(totalCount / pageSize),
+        hasPrev: page > 1,
+      },
+    }
   },
 })
 

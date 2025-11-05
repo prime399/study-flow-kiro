@@ -2,6 +2,7 @@
 import PageTitle from "@/components/page-title"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -21,8 +22,8 @@ import {
 import { api } from "@/convex/_generated/api"
 import { cn, formatDuration } from "@/lib/utils"
 import { useQuery } from "convex/react"
-import { Clock, Crown, Medal, Trophy, User, Users, TrendingUp, Zap, Target } from "lucide-react"
-import { ReactNode } from "react"
+import { Clock, Crown, Medal, Trophy, User, Users, TrendingUp, Zap, Target, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { ReactNode, useState } from "react"
 
 interface LeaderboardEntry {
   rank: number
@@ -38,6 +39,15 @@ interface LeaderboardCardProps {
   description: string
   icon: ReactNode
   data: LeaderboardEntry[]
+  pagination?: {
+    currentPage: number
+    pageSize: number
+    totalCount: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+  onPageChange?: (page: number) => void
 }
 
 function PersonalStatsCard({ userRanking }: { userRanking: any }) {
@@ -120,26 +130,28 @@ function LeaderboardCard({
   description,
   icon,
   data,
+  pagination,
+  onPageChange,
 }: LeaderboardCardProps) {
   const getRankBadge = (rank: number) => {
     const badges = {
       1: { 
         icon: <Crown className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-yellow-400 to-yellow-600",
+        bgColor: "bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600",
         textColor: "text-white",
-        borderColor: "border-yellow-300"
+        borderColor: "border-yellow-400/50"
       },
       2: { 
         icon: <Medal className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-gray-300 to-gray-500",
+        bgColor: "bg-gradient-to-r from-slate-300 via-slate-400 to-slate-500",
         textColor: "text-white",
-        borderColor: "border-gray-300"
+        borderColor: "border-slate-400/50"
       },
       3: { 
         icon: <Medal className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-amber-500 to-amber-700",
+        bgColor: "bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800",
         textColor: "text-white",
-        borderColor: "border-amber-300"
+        borderColor: "border-amber-600/50"
       },
     }
     return badges[rank as keyof typeof badges]
@@ -147,9 +159,9 @@ function LeaderboardCard({
 
   const getRowStyle = (rank: number) => {
     if (rank <= 3) {
-      return "bg-gradient-to-r from-primary/5 to-transparent border-l-4 border-l-primary"
+      return "bg-gradient-to-r from-primary/8 via-primary/5 to-transparent border-l-4 border-l-primary shadow-sm"
     }
-    return "hover:bg-muted/50 transition-colors"
+    return "hover:bg-muted/50 transition-all duration-200 hover:shadow-sm"
   }
 
   return (
@@ -183,7 +195,7 @@ function LeaderboardCard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.slice(0, 10).map((leader, index) => (
+              {data.map((leader) => (
                 <TableRow 
                   key={leader.userId}
                   className={cn(
@@ -196,7 +208,7 @@ function LeaderboardCard({
                       {getRankBadge(leader.rank) ? (
                         <div
                           className={cn(
-                            "rounded-full p-2 shadow-sm border",
+                            "rounded-full p-2 shadow-md border-2",
                             getRankBadge(leader.rank)?.bgColor,
                             getRankBadge(leader.rank)?.borderColor
                           )}
@@ -206,14 +218,14 @@ function LeaderboardCard({
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-bold">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-muted to-muted/70 text-sm font-bold border-2 border-border">
                           {leader.rank}
                         </div>
                       )}
                       {leader.rank <= 3 && (
                         <Badge 
                           variant={leader.rank === 1 ? "default" : "secondary"}
-                          className="text-xs"
+                          className="text-xs font-semibold"
                         >
                           {leader.rank === 1 ? "Champion" : leader.rank === 2 ? "Runner-up" : "3rd Place"}
                         </Badge>
@@ -222,9 +234,9 @@ function LeaderboardCard({
                   </TableCell>
                   <TableCell className="py-4">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+                      <Avatar className="h-11 w-11 border-2 border-background shadow-md ring-2 ring-primary/10">
                         <AvatarImage src={leader.avatar} alt={leader.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold text-base">
                           {leader.name[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -233,7 +245,7 @@ function LeaderboardCard({
                         {leader.rank <= 3 && (
                           <div className="flex items-center gap-1 mt-1">
                             <Zap className="h-3 w-3 text-yellow-500" />
-                            <span className="text-xs text-muted-foreground">Top Performer</span>
+                            <span className="text-xs text-muted-foreground font-medium">Top Performer</span>
                           </div>
                         )}
                       </div>
@@ -241,11 +253,11 @@ function LeaderboardCard({
                   </TableCell>
                   <TableCell className="text-right py-4">
                     <div className="space-y-1">
-                      <div className="text-lg font-bold">
+                      <div className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                         {formatDuration(leader.totalStudyTime)}
                       </div>
                       {leader.rank <= 5 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-primary/50">
                           <Target className="h-3 w-3 mr-1" />
                           Elite
                         </Badge>
@@ -257,11 +269,85 @@ function LeaderboardCard({
             </TableBody>
           </Table>
         </div>
-        {data.length > 10 && (
-          <div className="mt-4 text-center">
-            <Badge variant="secondary" className="px-4 py-2">
-              Showing top 10 of {data.length} students
-            </Badge>
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-sm text-muted-foreground">
+                Showing <span className="font-semibold text-foreground">{((pagination.currentPage - 1) * pagination.pageSize) + 1}</span> to{" "}
+                <span className="font-semibold text-foreground">{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)}</span> of{" "}
+                <span className="font-semibold text-foreground">{pagination.totalCount}</span> students
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange?.(1)}
+                  disabled={!pagination.hasPrev}
+                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange?.(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrev}
+                  className="h-9 px-3 hover:bg-primary/10 hover:text-primary transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNum: number
+                    if (pagination.totalPages <= 5) {
+                      pageNum = i + 1
+                    } else if (pagination.currentPage <= 3) {
+                      pageNum = i + 1
+                    } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                      pageNum = pagination.totalPages - 4 + i
+                    } else {
+                      pageNum = pagination.currentPage - 2 + i
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pagination.currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => onPageChange?.(pageNum)}
+                        className={cn(
+                          "h-9 w-9 p-0 transition-all",
+                          pagination.currentPage === pageNum
+                            ? "bg-gradient-to-br from-primary to-primary/80 shadow-md"
+                            : "hover:bg-primary/10 hover:text-primary"
+                        )}
+                      >
+                        {pageNum}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange?.(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNext}
+                  className="h-9 px-3 hover:bg-primary/10 hover:text-primary transition-colors"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPageChange?.(pagination.totalPages)}
+                  disabled={!pagination.hasNext}
+                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
@@ -329,15 +415,26 @@ function LoadingState() {
 }
 
 export default function LeaderboardsPage() {
-  const globalLeaderboard = useQuery(api.leaderboards.getStudyTimeLeaderboard)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
+  const globalLeaderboard = useQuery(api.leaderboards.getStudyTimeLeaderboard, { 
+    page: currentPage, 
+    pageSize 
+  })
   const userRanking = useQuery(api.leaderboards.getUserRanking)
   const myGroups = useQuery(api.groups.listMyGroups)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   if (!globalLeaderboard || !userRanking || !myGroups) {
     return <LoadingState />
   }
 
-  if (globalLeaderboard.length === 0) {
+  if (!globalLeaderboard.data || globalLeaderboard.data.length === 0) {
     return (
       <div className="space-y-8">
         <div className="space-y-2">
@@ -386,7 +483,7 @@ export default function LeaderboardsPage() {
           </p>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
-            <span>{globalLeaderboard.length} Active Students</span>
+            <span>{globalLeaderboard.pagination.totalCount} Active Students</span>
           </div>
         </div>
       </div>
@@ -397,7 +494,9 @@ export default function LeaderboardsPage() {
           title="Global Rankings"
           description="Top students across all groups and study sessions"
           icon={<Trophy className="h-5 w-5 text-primary" />}
-          data={globalLeaderboard}
+          data={globalLeaderboard.data}
+          pagination={globalLeaderboard.pagination}
+          onPageChange={handlePageChange}
         />
       </div>
     </div>
