@@ -218,21 +218,33 @@ export default function MainSidebar() {
                     className="group/collapsible"
                   >
                     <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
+                      <div className="relative flex items-center">
                         <SidebarMenuButton
+                          asChild
                           tooltip={item.name}
-                          className="gap-3"
+                          className="flex-1 gap-3 pr-8"
+                          isActive={pathname.startsWith("/dashboard/groups")}
                         >
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <span>{item.name}</span>
-                          <ChevronDown
-                            className={cn(
-                              "ml-auto h-4 w-4 transition-transform duration-200",
-                              groupsOpen && "rotate-180"
-                            )}
-                          />
+                          <Link href={item.href}>
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            <span>{item.name}</span>
+                          </Link>
                         </SidebarMenuButton>
-                      </CollapsibleTrigger>
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 h-6 w-6 p-0 hover:bg-sidebar-accent"
+                          >
+                            <ChevronDown
+                              className={cn(
+                                "h-4 w-4 transition-transform duration-200",
+                                groupsOpen && "rotate-180"
+                              )}
+                            />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
                       <CollapsibleContent>
                         <NavGroupsSkeleton />
                       </CollapsibleContent>
@@ -353,36 +365,73 @@ export default function MainSidebar() {
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
+                    <div className="relative flex items-center">
                       <SidebarMenuButton
+                        asChild
                         tooltip={item.name}
-                        className="gap-3"
+                        className="flex-1 gap-3 pr-8"
+                        isActive={pathname.startsWith("/dashboard/groups")}
                       >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        <span>{item.name}</span>
-                        <ChevronDown
-                          className={cn(
-                            "ml-auto h-4 w-4 transition-transform duration-200",
-                            groupsOpen && "rotate-180"
-                          )}
-                        />
+                        <Link href={item.href}>
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span>{item.name}</span>
+                        </Link>
                       </SidebarMenuButton>
-                    </CollapsibleTrigger>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 h-6 w-6 p-0 hover:bg-sidebar-accent"
+                        >
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform duration-200",
+                              groupsOpen && "rotate-180"
+                            )}
+                          />
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
                     <CollapsibleContent>
                       {groups && (
                         <SidebarMenuSub>
-                          {groups.map((group) => (
-                            <SidebarMenuSubItem key={group._id}>
+                          {groups.length === 0 ? (
+                            <SidebarMenuSubItem>
                               <SidebarMenuSubButton
                                 asChild
-                                isActive={pathname === `/dashboard/groups/${group._id}`}
+                                isActive={pathname === "/dashboard/groups"}
                               >
-                                <Link href={`/dashboard/groups/${group._id}`}>
-                                  <span>{group.name}</span>
+                                <Link href="/dashboard/groups?tab=discover">
+                                  <span>Discover Groups</span>
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
-                          ))}
+                          ) : (
+                            <>
+                              {groups.map((group) => (
+                                <SidebarMenuSubItem key={group._id}>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    isActive={pathname === `/dashboard/groups/${group._id}`}
+                                  >
+                                    <Link href={`/dashboard/groups/${group._id}`}>
+                                      <span>{group.name}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              ))}
+                              <SidebarMenuSubItem>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={pathname === "/dashboard/groups"}
+                                >
+                                  <Link href="/dashboard/groups?tab=discover">
+                                    <span>Discover Groups</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            </>
+                          )}
                         </SidebarMenuSub>
                       )}
                     </CollapsibleContent>
