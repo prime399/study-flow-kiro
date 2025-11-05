@@ -1,11 +1,16 @@
 /**
  * MCP Token Injector Service
  *
- * Handles token injection from Convex to the external Google Calendar MCP server
+ * Handles token injection to the external Google Calendar MCP server.
+ * Supports two modes:
+ * 1. Auth0 Token Vault (new, recommended)
+ * 2. Convex-based token storage (legacy, fallback)
  */
 
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { getGoogleCalendarToken, isTokenVaultError, formatTokenVaultError } from "./auth0-token-vault";
+import { AUTH0_FEATURE_FLAGS } from "./auth0-ai";
 
 interface TokenInjectionResult {
   success: boolean;
@@ -49,11 +54,108 @@ function decryptToken(encryptedToken: string): string {
 /**
  * Inject user tokens to MCP server
  *
+ * This function now supports two modes:
+ * 1. Auth0 Token Vault (if USE_TOKEN_VAULT_GOOGLE=true)
+ * 2. Convex-based storage (legacy fallback)
+ *
  * @param userId - The user ID from Convex
  * @param convexAuthToken - The Convex authentication token for the user
  * @returns Promise<TokenInjectionResult>
  */
 export async function injectUserTokensToMCP(
+  userId: string,
+  convexAuthToken: string
+): Promise<TokenInjectionResult> {
+  // Try Auth0 Token Vault first if enabled
+  if (AUTH0_FEATURE_FLAGS.USE_TOKEN_VAULT_GOOGLE) {
+    try {
+      return await injectTokensFromAuth0(userId);
+    } catch (error) {
+      console.error('Auth0 Token Vault failed:', error);
+
+      // If fallback is enabled, try Convex approach
+      if (AUTH0_FEATURE_FLAGS.FALLBACK_TO_CONVEX) {
+        console.warn('Falling back to Convex token storage');
+        return await injectTokensFromConvex(userId, convexAuthToken);
+      }
+
+      // No fallback, return error
+      if (isTokenVaultError(error)) {
+        return {
+          success: false,
+          message: formatTokenVaultError(error),
+        };
+      }
+
+      return {
+        success: false,
+        message: 'Failed to get tokens from Auth0 Token Vault',
+      };
+    }
+  }
+
+  // Use Convex-based token storage (legacy mode)
+  return await injectTokensFromConvex(userId, convexAuthToken);
+}
+
+/**
+ * Inject tokens using Auth0 Token Vault (new approach)
+ *
+ * This is much simpler than Convex approach:
+ * - Auth0 handles token storage, refresh, and encryption automatically
+ * - No need to check expiry or manually refresh
+ * - Just call getAccessTokenFromTokenVault() when needed
+ */
+async function injectTokensFromAuth0(userId: string): Promise<TokenInjectionResult> {
+  try {
+    // Get MCP server configuration
+    const mcpConfig = getMCPServerConfig();
+
+    // Get access token from Auth0 Token Vault
+    // This automatically handles refresh if needed
+    const accessToken = await getGoogleCalendarToken();
+
+    // Send token to MCP server
+    const response = await fetch(`${mcpConfig.url}/api/tokens`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Origin': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        'X-API-Key': mcpConfig.apiKey,
+      },
+      body: JSON.stringify({
+        userId,
+        accessToken,
+        tokenType: 'Bearer',
+        source: 'auth0-token-vault', // Indicate this came from Token Vault
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    return {
+      success: true,
+      message: result.message || 'Tokens injected successfully from Auth0 Token Vault',
+      expiresIn: result.expiresIn,
+    };
+
+  } catch (error) {
+    console.error('Error injecting tokens from Auth0:', error);
+    throw error; // Re-throw for fallback handling
+  }
+}
+
+/**
+ * Inject tokens using Convex storage (legacy approach)
+ *
+ * This is the original implementation - kept for backward compatibility
+ */
+async function injectTokensFromConvex(
   userId: string,
   convexAuthToken: string
 ): Promise<TokenInjectionResult> {
@@ -126,7 +228,7 @@ export async function injectUserTokensToMCP(
     return await sendTokensToMCP(userId, tokens, mcpConfig);
 
   } catch (error) {
-    console.error('Error injecting tokens to MCP:', error);
+    console.error('Error injecting tokens from Convex:', error);
     return {
       success: false,
       message: `Failed to inject tokens: ${error instanceof Error ? error.message : 'Unknown error'}`,

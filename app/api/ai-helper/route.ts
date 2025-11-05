@@ -18,6 +18,7 @@ import { resolveModelRouting } from "./_lib/model-router"
 import { injectUserTokensToMCP } from "@/lib/mcp-token-injector"
 import { getAIConfig, isBYOKConfig, recordBYOKUsage } from "./_lib/byok-helper"
 import { createProvider } from "./_lib/providers/factory"
+import { isTokenVaultError, formatTokenVaultError } from "@/lib/auth0-token-vault"
 
 interface McpTool {
   id: string
@@ -457,20 +458,40 @@ ${toolsList}`
   } catch (error) {
     console.error("Error in AI helper API:", error)
 
-    if (error instanceof OpenAI.APIError) {
-      return new Response(error.message, { status: error.status ?? 500 })
+    // Handle Auth0 Token Vault errors specifically
+    if (isTokenVaultError(error)) {
+      const errorMessage = formatTokenVaultError(error)
+      return new Response(JSON.stringify({
+        error: errorMessage,
+        type: 'token_vault_error',
+        requiresAuth: true,
+        message: 'Please connect your Google Calendar to use calendar features.',
+      }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    if (error instanceof Error) {
-      // Provide user-friendly error messages
-      let userMessage = error.message
+    // Handle OpenAI API errors
+    if (error && typeof error === 'object' && 'status' in error && 'message' in error) {
+      const apiError = error as { status?: number; message: string }
+      return new Response(apiError.message, { status: apiError.status ?? 500 })
+    }
 
-      if (error.message.includes('503')) {
+    // Handle standard Error objects
+    if (error && typeof error === 'object' && 'message' in error) {
+      const err = error as Error
+      // Provide user-friendly error messages
+      let userMessage = err.message
+
+      if (err.message.includes('503')) {
         userMessage = "The AI service is temporarily unavailable. Please try again in a moment."
-      } else if (error.message.includes('Heroku Agents API error')) {
+      } else if (err.message.includes('Heroku Agents API error')) {
         userMessage = "AI service error. Please try again or contact support if the issue persists."
-      } else if (error.message.includes('No valid completion')) {
+      } else if (err.message.includes('No valid completion')) {
         userMessage = "Failed to get a response from the AI. Please try again."
+      } else if (err.message.includes('Token Vault')) {
+        userMessage = "Authentication required. Please reconnect your Google Calendar."
       }
 
       return new Response(JSON.stringify({ error: userMessage }), {
