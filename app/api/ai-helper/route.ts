@@ -97,6 +97,8 @@ async function callHerokuAgentsEndpoint(
     tools: toolsArray,
   }
 
+  console.log(`[AI Helper] Request body tools:`, JSON.stringify(toolsArray, null, 2))
+
   console.log(`[AI Helper] Calling Heroku Agents API with ${toolsArray.length} tools (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`)
 
   try {
@@ -144,11 +146,10 @@ async function callHerokuAgentsEndpoint(
 
           // Log tool invocations for debugging
           if (parsed.object === 'tool.completion') {
-            const toolName = parsed.tool?.name || parsed.name || 'unknown'
+            const toolName = parsed.choices?.[0]?.message?.name || parsed.tool?.name || parsed.name || 'unknown'
+            const toolContent = parsed.choices?.[0]?.message?.content || ''
             console.log(`[AI Helper] Tool invoked: ${toolName}`)
-            if (parsed.result) {
-              console.log(`[AI Helper] Tool result preview:`, JSON.stringify(parsed.result).substring(0, 200))
-            }
+            console.log(`[AI Helper] Tool result:`, toolContent.substring(0, 500))
             toolCalls.push(parsed)
           }
 
@@ -297,33 +298,38 @@ ${toolsList}
 **IMPORTANT: You MUST use these tools to perform actions. Simply describing what you would do is NOT sufficient.**`
 
       if (calendarTools.length > 0) {
+        const userIdInstruction = userId
+          ? `\n- **CRITICAL:** Always include userId: "${userId}" in EVERY calendar tool call`
+          : `\n- **CRITICAL:** User is not authenticated - calendar tools will not work`
+
         toolInstructions += `
 
 ### Google Calendar Tools
 When users ask to:
 - **Create events** (e.g., "create a study session", "schedule a meeting"):
-  1. FIRST call get-current-time to get the current date/time in user's timezone
+  1. FIRST call get-current-time with userId to get the current date/time in user's timezone
   2. Parse the user's requested time (e.g., "tomorrow at 2 PM")
-  3. THEN call create-event with the parsed ISO 8601 datetime
+  3. THEN call create-event with userId and the parsed ISO 8601 datetime
 
 - **List events** (e.g., "what's on my calendar", "show my events"):
-  - Call list-events with appropriate time range (use get-current-time first to know current time)
+  - Call list-events with userId and appropriate time range
 
 - **Update/delete events**:
-  1. First search for the event using search-events or list-events
-  2. Then use update-event or delete-event with the event ID
+  1. First search for the event using search-events or list-events (with userId)
+  2. Then use update-event or delete-event with userId and the event ID
 
-**Calendar Tool Requirements:**
+**Calendar Tool Requirements:**${userIdInstruction}
 - Always use calendarId: "primary" for the user's main calendar
-- Use ISO 8601 format for all dates/times (e.g., "2025-01-15T14:00:00Z")
+- Use ISO 8601 format for all dates/times (e.g., "2025-11-06T14:00:00")
+- Do NOT add timezone offset (Z) - use local time format
 - Call get-current-time FIRST before creating events to determine the correct date/time
 - After creating an event, confirm with the user what was created
 
 **Example Flow for "Create a study session tomorrow at 2 PM":**
-1. Call get-current-time → Get current date/time
-2. Calculate tomorrow's date at 2 PM in ISO format
-3. Call create-event with: calendarId="primary", summary="Study Session", start="2025-01-16T14:00:00Z", end="2025-01-16T15:00:00Z"
-4. Confirm to user: "I've created a study session for tomorrow (January 16) at 2 PM."`
+1. Call get-current-time with: { "userId": "${userId || 'USER_ID'}" }
+2. Calculate tomorrow's date at 2 PM in ISO format (WITHOUT timezone)
+3. Call create-event with: { "userId": "${userId || 'USER_ID'}", "calendarId": "primary", "summary": "Study Session", "start": "2025-11-06T14:00:00", "end": "2025-11-06T15:00:00" }
+4. Confirm to user: "I've created a study session for tomorrow (November 6) at 2 PM."`
       }
 
       if (otherTools.length > 0) {
