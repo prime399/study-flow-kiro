@@ -136,6 +136,7 @@ const pricingTiers = [
     period: "month",
     description: "Perfect for individuals starting their journey",
     icon: Sparkles,
+    earlyBird: true,
     features: [
       "Basic Integration",
       "Limited Model Selection",
@@ -153,6 +154,7 @@ const pricingTiers = [
     description: "Unlock powerful automations and insights",
     icon: Rocket,
     discount: "Most Popular",
+    earlyBird: true,
     features: [
       "Spotify & Google Calendar integration",
       "Advanced AI model selection",
@@ -171,6 +173,7 @@ const pricingTiers = [
     description: "Bring your own API key for limitless personalization",
     icon: Key,
     note: "Powered by Auth0",
+    earlyBird: true,
     features: [
       "Use your own OpenAI or Anthropic key",
       "Unlimited AI queries (metered by your key)",
@@ -188,6 +191,7 @@ const pricingTiers = [
     period: "",
     description: "For power users with unlimited needs",
     icon: Crown,
+    earlyBird: false,
     features: [
       "Everything advanced",
       "Lifetime Updates",
@@ -356,7 +360,7 @@ export default function Home() {
             </div>
             
             <div className="overflow-hidden">
-              <Marquee pauseOnHover className="[--duration:60s] py-2 sm:py-4">
+              <Marquee pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
                 {testimonials.map((review, idx) => (
                   <div
                     key={idx}
@@ -388,8 +392,8 @@ export default function Home() {
                   </div>
                 ))}
               </Marquee>
-              
-              <Marquee reverse pauseOnHover className="[--duration:60s] py-2 sm:py-4">
+
+              <Marquee reverse pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
                 {testimonials.slice().reverse().map((review, idx) => (
                   <div
                     key={idx}
@@ -459,21 +463,31 @@ export default function Home() {
                   <div
                     key={i}
                     className={cn(
-                      "relative flex h-full flex-col overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.02] p-8 sm:p-10 transition-all duration-300 hover:-translate-y-2",
+                      "relative flex h-full flex-col rounded-[32px] border border-white/10 bg-white/[0.02] p-8 sm:p-10 transition-all duration-300 hover:-translate-y-2",
                       tier.popular
                         ? "border-white/40 bg-white/[0.06] shadow-[0_24px_80px_-24px_rgba(99,102,241,0.6)] hover:border-white/60"
                         : "hover:border-white/20 hover:bg-white/[0.04]"
                     )}
                   >
                     {tier.popular && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                        <span className="rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-black">
-                          {tier.discount}
-                        </span>
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                        <div className="relative inline-flex rounded-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 p-[1.5px] shadow-[0_18px_48px_-18px_rgba(76,29,149,0.7)]">
+                          <div className="absolute inset-0 rounded-full bg-white/20 blur-md" />
+                          <span className="relative inline-flex items-center gap-2 rounded-full bg-black/85 px-4 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white">
+                            <Sparkles className="h-3.5 w-3.5 text-amber-200" />
+                            {tier.discount}
+                          </span>
+                        </div>
                       </div>
                     )}
 
                     <div className="mb-8">
+                      {tier.earlyBird && (
+                        <div className="mb-5 inline-flex items-center gap-2 self-start rounded-full bg-white text-black px-3 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.15em] shadow-[0_2px_8px_rgba(255,255,255,0.15)] border border-white/20">
+                          <Sparkles className="h-3 w-3" />
+                          <span className="whitespace-nowrap">Early Bird · 100% OFF</span>
+                        </div>
+                      )}
                       <div
                         className={cn(
                           "mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 text-white/80 transition-colors duration-300",
