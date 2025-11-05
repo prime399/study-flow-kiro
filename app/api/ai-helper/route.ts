@@ -59,8 +59,21 @@ async function callHerokuAgentsEndpoint(
   mcpTools: McpTool[]
 ) {
   const agentsUrl = `${config.herokuBaseUrl.replace(/\/$/, "")}/v1/agents/heroku`
-  
-  const toolsArray = mcpTools.map(tool => ({
+
+  // Deduplicate tools by ID to avoid "duplicate tool names" error
+  const uniqueTools = mcpTools.reduce((acc, tool) => {
+    if (!acc.find(t => t.id === tool.id)) {
+      acc.push(tool)
+    }
+    return acc
+  }, [] as McpTool[])
+
+  // Log deduplication stats
+  if (mcpTools.length !== uniqueTools.length) {
+    console.log(`[AI Helper] Deduplicated ${mcpTools.length} tools to ${uniqueTools.length} unique tools`)
+  }
+
+  const toolsArray = uniqueTools.map(tool => ({
     type: "mcp",
     name: tool.id,
   }))
