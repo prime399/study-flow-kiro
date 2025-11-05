@@ -35,8 +35,8 @@ async function fetchAvailableMcpTools(requestUrl?: string): Promise<McpTool[]> {
     }
     
     const baseUrl = requestUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    // Use mcp-servers-local to include both local Google Calendar MCP and Heroku servers
-    const response = await fetch(`${baseUrl}/api/ai-helper/mcp-servers-local`, {
+    // Fetch all Heroku-registered MCP tools (including Google Calendar MCP addon)
+    const response = await fetch(`${baseUrl}/api/ai-helper/mcp-servers`, {
       cache: 'no-store'
     })
     
@@ -177,7 +177,16 @@ export async function POST(req: Request) {
     const baseUrl = `${url.protocol}//${url.host}`
 
     // Fetch all available MCP tools
-    const availableMcpTools = await fetchAvailableMcpTools(baseUrl)
+    let availableMcpTools = await fetchAvailableMcpTools(baseUrl)
+
+    // Filter tools if user selected a specific tool
+    if (mcpToolId && mcpToolId !== 'none') {
+      const selectedTool = availableMcpTools.find(tool => tool.id === mcpToolId)
+      if (selectedTool) {
+        availableMcpTools = [selectedTool]
+        console.log(`[AI Helper] User selected specific tool: ${mcpToolId}`)
+      }
+    }
 
     // ===== GOOGLE CALENDAR MCP TOKEN INJECTION =====
     // If Google Calendar MCP tools are available and user is authenticated, inject tokens
@@ -232,21 +241,18 @@ When using these tools, extract any required information (like URLs) directly fr
 
     let completion: OpenAI.Chat.Completions.ChatCompletion
 
-    // Use Heroku Agents endpoint with MCP tools (exclude local tools)
-    // Local tools like google-calendar-local cannot be invoked through Heroku's infrastructure
-    const herokuMcpTools = availableMcpTools.filter(tool => !tool.isLocal)
-
-    if (herokuMcpTools.length > 0) {
-      console.log(`[AI Helper] Using ${herokuMcpTools.length} Heroku MCP tools (${availableMcpTools.length - herokuMcpTools.length} local tools excluded)`)
+    // Use Heroku Agents endpoint with all registered MCP tools
+    if (availableMcpTools.length > 0) {
+      console.log(`[AI Helper] Using ${availableMcpTools.length} Heroku-registered MCP tools`)
       completion = await callHerokuAgentsEndpoint(
         config,
         chatMessages,
-        herokuMcpTools
+        availableMcpTools
       )
     } else {
       // Fall back to standard OpenAI client if no MCP tools available
       const client = createOpenAIClient(config)
-      
+
       const completionOptions: ChatCompletionOptions = {
         model: config.herokuModelId,
         messages: chatMessages,
