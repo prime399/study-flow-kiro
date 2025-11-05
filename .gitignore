@@ -41,3 +41,8 @@ prev.md
 # Ignore every readme file except README.md and readme.md
 /markdown
 AGENT.MD
+
+test-token-injection-real.js
+test-token-refresh-and-inject.js
+test-real-token-injection.js
+convex/testHelpers.ts
