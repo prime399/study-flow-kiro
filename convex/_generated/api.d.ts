@@ -20,6 +20,7 @@ import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as leaderboards from "../leaderboards.js";
 import type * as messages from "../messages.js";
+import type * as moderators from "../moderators.js";
 import type * as onboarding from "../onboarding.js";
 import type * as scheduling from "../scheduling.js";
 import type * as spotify from "../spotify.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   leaderboards: typeof leaderboards;
   messages: typeof messages;
+  moderators: typeof moderators;
   onboarding: typeof onboarding;
   scheduling: typeof scheduling;
   spotify: typeof spotify;

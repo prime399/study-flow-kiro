@@ -22,19 +22,94 @@ export default defineSchema({
     groupId: v.id("groups"),
     userId: v.id("users"),
     joinedAt: v.number(),
-    role: v.union(v.literal("admin"), v.literal("member")),
+    role: v.union(v.literal("admin"), v.literal("moderator"), v.literal("member")),
+    // Auth0 RBAC integration
+    auth0RoleId: v.optional(v.string()), // Auth0 role ID
+    auth0Permissions: v.optional(v.array(v.string())), // Synced from Auth0
+    lastAuth0Sync: v.optional(v.number()), // Last sync timestamp
   })
     .index("by_group", ["groupId"])
     .index("by_user", ["userId"])
-    .index("by_group_and_user", ["groupId", "userId"]),
+    .index("by_group_and_user", ["groupId", "userId"])
+    .index("by_group_and_role", ["groupId", "role"]),
   messages: defineTable({
     userId: v.id("users"),
     body: v.string(),
     groupId: v.id("groups"),
     createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    isAIMessage: v.optional(v.boolean()), // True if message is from AI mentor
+    mentionedUsers: v.optional(v.array(v.id("users"))), // Users mentioned in message
+    replyToMessageId: v.optional(v.id("messages")), // For threading
+    reactionCount: v.optional(v.number()), // Total reactions
+    replyCount: v.optional(v.number()), // Number of replies
+    // Topic/subject for discussion threads (only for top-level messages)
+    topic: v.optional(v.string()), // e.g., "Math Chapter 5", "Physics Assignment"
+    topicColor: v.optional(v.string()), // Hex color for topic badge
+    isPinned: v.optional(v.boolean()), // Pinned threads stay at top
+    // Moderator actions
+    isDeleted: v.optional(v.boolean()), // Soft delete by moderator
+    deletedBy: v.optional(v.id("users")), // Moderator who deleted
+    deletedReason: v.optional(v.string()), // Deletion reason
+    isLocked: v.optional(v.boolean()), // Thread locked (no new replies)
+    lockedBy: v.optional(v.id("users")), // Moderator who locked
+    editedBy: v.optional(v.id("users")), // Last moderator who edited
+    originalBody: v.optional(v.string()), // Original content before edit
   })
     .index("by_group", ["groupId", "createdAt"])
-    .index("by_user", ["userId", "createdAt"]),
+    .index("by_user", ["userId", "createdAt"])
+    .index("by_parent", ["replyToMessageId"])
+    .index("by_group_and_parent", ["groupId", "replyToMessageId"])
+    .index("by_group_and_topic", ["groupId", "topic"]),
+  // Reactions on messages (upvotes, helpful, etc.)
+  messageReactions: defineTable({
+    messageId: v.id("messages"),
+    userId: v.id("users"),
+    reaction: v.union(
+      v.literal("upvote"),
+      v.literal("helpful"),
+      v.literal("thanks"),
+      v.literal("mind_blown")
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_message", ["messageId"])
+    .index("by_user", ["userId"])
+    .index("by_message_and_user", ["messageId", "userId"]),
+  // Store conversation summaries for AI context
+  groupConversationContext: defineTable({
+    groupId: v.id("groups"),
+    summary: v.string(), // Summarized conversation history
+    lastUpdated: v.number(),
+    messageCount: v.number(), // Number of messages included in summary
+    topTopics: v.optional(v.array(v.string())), // Main discussion topics
+  }).index("by_group", ["groupId"]),
+  // Moderator action logs (audit trail)
+  moderatorActions: defineTable({
+    groupId: v.id("groups"),
+    moderatorId: v.id("users"),
+    action: v.union(
+      v.literal("pin_message"),
+      v.literal("unpin_message"),
+      v.literal("delete_message"),
+      v.literal("edit_message"),
+      v.literal("assign_moderator"),
+      v.literal("remove_moderator"),
+      v.literal("lock_thread"),
+      v.literal("unlock_thread")
+    ),
+    targetId: v.string(), // ID of the target (message, user, etc.)
+    targetType: v.union(v.literal("message"), v.literal("user"), v.literal("thread")),
+    reason: v.optional(v.string()),
+    metadata: v.optional(v.string()), // JSON string for additional data
+    createdAt: v.number(),
+    // Auth0 compliance tracking
+    auth0UserId: v.optional(v.string()), // Auth0 sub claim
+    auth0Permissions: v.optional(v.array(v.string())), // Permissions used
+  })
+    .index("by_group", ["groupId"])
+    .index("by_moderator", ["moderatorId"])
+    .index("by_group_and_action", ["groupId", "action"]),
   studySessions: defineTable({
     userId: v.id("users"),
     startTime: v.number(),

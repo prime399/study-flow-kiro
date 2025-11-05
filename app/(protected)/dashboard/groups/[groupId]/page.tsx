@@ -3,9 +3,10 @@ import PageTitle from "@/components/page-title"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
-import { Crown, Medal, MessageSquare, Trophy } from "lucide-react"
-import { Chat } from "../_components/chat"
+import { Crown, Medal, MessageSquare, Trophy, Shield } from "lucide-react"
+import { RedditStyleChat } from "../_components/reddit-style-chat"
 import { GroupActionsSheet } from "../_components/group-actions-sheet"
+import { ModeratorPanel } from "../_components/moderator-panel"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -75,9 +76,15 @@ export default function GroupPage({ params }: { params: { groupId: string } }) {
             <Trophy className="h-4 w-4" />
             Leaderboard
           </TabsTrigger>
+          {isCreator && (
+            <TabsTrigger value="moderators" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Moderators
+            </TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="chat" className="space-y-4">
-          <Chat groupId={groupId} />
+          <RedditStyleChat groupId={groupId} />
         </TabsContent>
         <TabsContent value="leaderboard" className="space-y-4">
           <Card>
@@ -92,6 +99,11 @@ export default function GroupPage({ params }: { params: { groupId: string } }) {
             </CardContent>
           </Card>
         </TabsContent>
+        {isCreator && (
+          <TabsContent value="moderators" className="space-y-4">
+            <ModeratorPanel groupId={groupId} isAdmin={isCreator} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

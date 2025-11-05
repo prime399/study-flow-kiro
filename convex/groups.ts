@@ -186,7 +186,7 @@ export const updateMemberRole = mutation({
   args: {
     groupId: v.id("groups"),
     userId: v.id("users"),
-    newRole: v.union(v.literal("admin"), v.literal("member")),
+    newRole: v.union(v.literal("admin"), v.literal("moderator"), v.literal("member")),
   },
   handler: async (ctx, args) => {
     const currentUserId = await getAuthUserId(ctx)

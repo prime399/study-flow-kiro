@@ -51,6 +51,7 @@ export function MemberRoleSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="admin">Admin</SelectItem>
+        <SelectItem value="moderator">Moderator</SelectItem>
         <SelectItem value="member">Member</SelectItem>
       </SelectContent>
     </Select>
