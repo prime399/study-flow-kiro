@@ -39,8 +39,8 @@ export const ALL_MODELS: ModelInfo[] = [
     badgeVariant: "outline",
   },
   {
-    id: "claude-3-5-haiku",
-    name: "Claude 3.5 Haiku",
+    id: "claude-4-5-haiku",
+    name: "Claude 4.5 Haiku",
     description: "Balanced reasoning model recommended for most study help.",
     iconType: "cpu",
     badge: "Recommended",

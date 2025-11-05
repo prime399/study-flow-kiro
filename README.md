@@ -16,7 +16,7 @@ StudyFlow AI is a comprehensive learning platform that combines advanced AI capa
 - **📅 Calendar Integration** - Study session scheduling and planning tools
 
 ### AI Capabilities (MentorMind)
-- **Multi-Model Architecture** - Dynamic routing between GPT-OSS 120B, Nova Lite/Pro, and Claude 3.5 Haiku
+- **Multi-Model Architecture** - Dynamic routing between GPT-OSS 120B, Nova Lite/Pro, and Claude 4.5 Haiku
 - **MCP Tool Integration** - Automatic external resource fetching and processing via Model Context Protocol
 - **Context-Aware Responses** - Personalized advice based on user study patterns, performance metrics, and group data
 - **URL Processing** - Automatic extraction and analysis of content from study materials (PDFs, articles, documentation)
@@ -64,11 +64,11 @@ NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 HEROKU_INFERENCE_URL=https://us.inference.heroku.com
 
 # Model identifiers (comma-separated for multi-model support)
-HEROKU_INFERENCE_MODEL_ID=gpt-oss-120b,nova-lite,claude-3-5-haiku,nova-pro
+HEROKU_INFERENCE_MODEL_ID=gpt-oss-120b,nova-lite,claude-4-5-haiku,nova-pro
 
 # API Keys for each model (at least one required)
 HEROKU_INFERENCE_KEY_OSS=your-oss-key          # For GPT-OSS 120B
-HEROKU_INFERENCE_KEY_CLAUDE=your-claude-key    # For Claude 3.5 Haiku
+HEROKU_INFERENCE_KEY_CLAUDE=your-claude-key    # For Claude 4.5 Haiku
 HEROKU_INFERENCE_KEY_NOVA_LITE=your-lite-key   # For Nova Lite
 HEROKU_INFERENCE_KEY_NOVA_PRO=your-pro-key     # For Nova Pro
 
@@ -307,7 +307,7 @@ Configure at least one AI model for MentorMind functionality. Each model has dif
 | **GPT-OSS 120B** | `HEROKU_INFERENCE_KEY_OSS` | General-purpose, recommended default | Medium | Low |
 | **Nova Lite** | `HEROKU_INFERENCE_KEY_NOVA_LITE` | Quick responses, simple queries | Fast | Low |
 | **Nova Pro** | `HEROKU_INFERENCE_KEY_NOVA_PRO` | Balanced performance and quality | Medium | Medium |
-| **Claude 3.5 Haiku** | `HEROKU_INFERENCE_KEY_CLAUDE` | Complex reasoning, analysis | Slower | Higher |
+| **Claude 4.5 Haiku** | `HEROKU_INFERENCE_KEY_CLAUDE` | Complex reasoning, analysis | Slower | Higher |
 
 **Model Routing Logic:**
 - User can manually select model from UI dropdown
@@ -617,7 +617,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 | GPT-OSS 120B | Heroku | General-purpose queries |
 | Nova Lite | Heroku | Fast responses |
 | Nova Pro | Heroku | Balanced performance |
-| Claude 3.5 Haiku | Anthropic (via Heroku) | Complex reasoning |
+| Claude 4.5 Haiku | Anthropic (via Heroku) | Complex reasoning |
 
 ## 🔗 Resources & Links
 

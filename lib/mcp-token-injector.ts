@@ -82,7 +82,9 @@ export async function injectUserTokensToMCP(
     // If expired, try to refresh
     if (timeUntilExpiry <= 0) {
       try {
-        await convex.action(api.googleCalendar.refreshAccessToken, {});
+        await convex.action(api.googleCalendar.refreshAccessToken, {
+          refreshToken: decryptToken(tokens.refreshToken),
+        });
         // Fetch refreshed tokens
         const refreshedTokens = await convex.query(api.googleCalendar.getTokens, {});
 
@@ -106,7 +108,9 @@ export async function injectUserTokensToMCP(
     // If expiring soon (within 5 minutes), refresh proactively
     if (timeUntilExpiry < 5 * 60 * 1000) {
       try {
-        await convex.action(api.googleCalendar.refreshAccessToken, {});
+        await convex.action(api.googleCalendar.refreshAccessToken, {
+          refreshToken: decryptToken(tokens.refreshToken),
+        });
         const refreshedTokens = await convex.query(api.googleCalendar.getTokens, {});
 
         if (refreshedTokens) {

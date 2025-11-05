@@ -19,7 +19,7 @@ export interface OpenAIConfig {
 // Model to environment key mapping
 const MODEL_ENV_KEYS = {
   "gpt-oss-120b": "HEROKU_INFERENCE_KEY_OSS",
-  "claude-3-5-haiku": "HEROKU_INFERENCE_KEY_CLAUDE", 
+  "claude-4-5-haiku": "HEROKU_INFERENCE_KEY_CLAUDE",
   "nova-lite": "HEROKU_INFERENCE_KEY_NOVA_LITE",
   "nova-pro": "HEROKU_INFERENCE_KEY_NOVA_PRO"
 } as const

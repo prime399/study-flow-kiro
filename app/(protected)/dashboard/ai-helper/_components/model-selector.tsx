@@ -30,7 +30,7 @@ const getIconForModel = (id: string) => {
       return <Brain className="h-4 w-4" />
     case "nova-lite":
       return <Zap className="h-4 w-4" />
-    case "claude-3-5-haiku":
+    case "claude-4-5-haiku":
       return <Cpu className="h-4 w-4" />
     default:
       return <Brain className="h-4 w-4" />
@@ -50,8 +50,8 @@ const AUTO_MODEL_OPTION: ModelInfo = {
 const DEFAULT_MODELS: ModelInfo[] = [
   AUTO_MODEL_OPTION,
   {
-    id: "claude-3-5-haiku",
-    name: "Claude 3.5 Haiku",
+    id: "claude-4-5-haiku",
+    name: "Claude 4.5 Haiku",
     description: "Balanced reasoning model recommended for most study help.",
     icon: <Cpu className="h-4 w-4" />,
     badge: "Recommended",
