@@ -207,7 +207,7 @@ const pricingTiers = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-full bg-black relative">
+    <div className="min-h-screen w-full bg-black relative overflow-x-hidden">
       {/* Midnight Mist */}
       <div
         className="absolute inset-0 z-0"
@@ -220,7 +220,7 @@ export default function Home() {
         }}
       />
       
-      <div className="flex min-h-screen flex-col relative z-10">
+      <div className="flex min-h-screen flex-col relative z-10 overflow-x-hidden">
         <Header />
         <header className="sticky top-0 z-50 hidden w-full border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-sm md:block">
           <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
@@ -231,9 +231,9 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="relative flex-1">
+        <main className="relative flex-1 overflow-x-hidden">
 
-        <section className="relative mx-auto space-y-6 sm:space-y-8 py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <section className="relative mx-auto space-y-6 sm:space-y-8 py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           {/* Meteors for mobile/tablet only */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
             <Meteors number={4} />
@@ -311,7 +311,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+        <section className="mx-auto py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
               Everything you need to excel
@@ -321,7 +321,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+          <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto w-full">
             {features.map((feature, i) => (
               <div
                 key={i}
@@ -348,7 +348,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 w-full">
+        <section className="py-12 sm:py-16 lg:py-20 w-full overflow-hidden">
           <div className="w-full">
             <div className="text-center mb-8 sm:mb-12 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
@@ -359,7 +359,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="overflow-hidden">
+            <div className="overflow-x-hidden">
               <Marquee pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
                 {testimonials.map((review, idx) => (
                   <div
@@ -429,8 +429,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
+        <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+          <div className="mx-auto max-w-7xl w-full">
             <div className="text-center mb-12 sm:mb-16 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
                 Simple, transparent pricing
@@ -440,7 +440,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 max-w-7xl mx-auto">
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 max-w-7xl mx-auto w-full">
               {pricingTiers.map((tier, i) => {
                 const Icon = tier.icon
                 const button = (
@@ -545,8 +545,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 xl:py-32">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <section className="py-12 sm:py-16 lg:py-20 xl:py-32 overflow-x-hidden">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 w-full">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-black via-black to-gray-900 border border-white/10 shadow-[0_20px_80px_-20px_rgba(99,102,241,0.3)]">
               <div className="absolute inset-0 h-full w-full opacity-40">
                 <Meteors number={12} color="white" />
