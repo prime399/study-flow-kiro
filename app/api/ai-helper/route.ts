@@ -360,7 +360,7 @@ ${toolsList}`
 
 **Remember:** ALWAYS actually call the tools. Don't just explain what you would do - DO IT!`
 
-      systemPrompt = baseSystemPrompt + toolInstructions
+      systemPrompt = systemPrompt + toolInstructions
     }
 
     // Log system prompt for debugging (show first 600 chars to verify userId warning is at top)
