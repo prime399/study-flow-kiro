@@ -363,10 +363,11 @@ ${toolsList}`
       systemPrompt = baseSystemPrompt + toolInstructions
     }
 
-    // Log system prompt for debugging (show first 2000 chars to verify userId is included)
+    // Log system prompt for debugging (show first 600 chars to verify userId warning is at top)
     if (userId && hasGoogleCalendarTools) {
-      console.log(`[AI Helper] System prompt preview (first 1000 chars):`)
-      console.log(systemPrompt.substring(0, 1000))
+      console.log(`[AI Helper] System prompt starts with:`)
+      console.log(systemPrompt.substring(0, 600))
+      console.log(`[AI Helper] System prompt begins with 🚨: ${systemPrompt.startsWith('🚨')}`)
       console.log(`[AI Helper] System prompt includes userId "${userId}": ${systemPrompt.includes(userId)}`)
     }
 
