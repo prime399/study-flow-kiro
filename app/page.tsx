@@ -9,6 +9,7 @@ import Meteors from "@/components/ui/meteors"
 import { Highlighter } from "@/components/ui/highlighter"
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Marquee } from "@/components/ui/marquee"
+import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { cn } from "@/lib/utils"
 import {
   BarChart,
@@ -18,7 +19,6 @@ import {
   Crown,
   Github,
   Key,
-  LineChart,
   Rocket,
   Sparkles,
   Star,
@@ -170,6 +170,7 @@ const pricingTiers = [
     period: "month",
     description: "Bring your own API key for limitless personalization",
     icon: Key,
+    note: "Powered by Auth0",
     features: [
       "Use your own OpenAI or Anthropic key",
       "Unlimited AI queries (metered by your key)",
@@ -438,6 +439,21 @@ export default function Home() {
             <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 max-w-7xl mx-auto">
               {pricingTiers.map((tier, i) => {
                 const Icon = tier.icon
+                const button = (
+                  <Button
+                    size="lg"
+                    className={cn(
+                      "relative z-10 w-full rounded-full text-base py-3 transition-colors duration-200",
+                      tier.popular
+                        ? "bg-white text-black hover:bg-slate-200"
+                        : "border-white/20 text-white hover:border-white/40 hover:bg-white/10"
+                    )}
+                    variant={tier.popular ? "default" : "outline"}
+                    asChild
+                  >
+                    <Link href="/dashboard">{tier.cta}</Link>
+                  </Button>
+                )
 
                 return (
                   <div
@@ -486,19 +502,27 @@ export default function Home() {
                     </ul>
 
                     <div className="mt-auto">
-                      <Button
-                        size="lg"
-                        className={cn(
-                          "w-full rounded-full text-base py-3 transition-colors duration-200",
-                          tier.popular
-                            ? "bg-white text-black hover:bg-slate-200"
-                            : "border-white/20 text-white hover:border-white/40 hover:bg-white/10"
-                        )}
-                        variant={tier.popular ? "default" : "outline"}
-                        asChild
-                      >
-                        <Link href="/dashboard">{tier.cta}</Link>
-                      </Button>
+                      {tier.note && (
+                        <p className="mb-4 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white/60">
+                          {tier.note}
+                        </p>
+                      )}
+                      {tier.popular ? (
+                        <div className="relative isolate rounded-full p-[1.5px]">
+                          <GlowingEffect
+                            spread={40}
+                            glow
+                            disabled={false}
+                            proximity={64}
+                            inactiveZone={0.01}
+                            borderWidth={1.5}
+                            className="rounded-full"
+                          />
+                          {button}
+                        </div>
+                      ) : (
+                        button
+                      )}
                     </div>
                   </div>
                 )
