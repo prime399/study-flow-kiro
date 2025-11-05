@@ -1,5 +1,8 @@
 import { AIRequestBody } from "@/lib/types"
 import OpenAI from "openai"
+import { cookies } from "next/headers"
+import { ConvexHttpClient } from "convex/browser"
+import { api } from "@/convex/_generated/api"
 
 import { buildSystemPrompt } from "./_lib/system-prompt"
 import { sanitizeMessages } from "./_lib/message-sanitizer"
@@ -12,6 +15,7 @@ import {
 } from "./_lib/openai-client"
 import { processAIResponse } from "./_lib/response-processor"
 import { resolveModelRouting } from "./_lib/model-router"
+import { injectUserTokensToMCP } from "@/lib/mcp-token-injector"
 
 interface McpTool {
   id: string
@@ -111,6 +115,34 @@ async function callHerokuAgentsEndpoint(
 
 export async function POST(req: Request) {
   try {
+    // ===== AUTHENTICATION & USER CONTEXT =====
+    // Extract Convex auth token from cookies
+    const cookieStore = await cookies()
+    const isLocalhost = req.headers.get('host')?.includes('localhost')
+    const cookieName = isLocalhost ? '__convexAuthJWT' : '__Host-__convexAuthJWT'
+    const convexAuthToken = cookieStore.get(cookieName)?.value
+
+    if (!convexAuthToken) {
+      return Response.json(
+        { error: 'Not authenticated', message: 'Please log in to use the AI helper' },
+        { status: 401 }
+      )
+    }
+
+    // Create authenticated Convex client
+    const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+    convexClient.setAuth(convexAuthToken)
+
+    // Get user ID
+    const userId = await convexClient.query(api.scheduling.getCurrentUserId)
+
+    if (!userId) {
+      return Response.json(
+        { error: 'User not authenticated', message: 'Unable to retrieve user information' },
+        { status: 401 }
+      )
+    }
+
     const { messages, userName, studyStats, groupInfo, modelId, mcpToolId }: AIRequestBody & { modelId?: string; mcpToolId?: string } =
       await req.json()
 
@@ -129,6 +161,31 @@ export async function POST(req: Request) {
 
     // Fetch all available MCP tools
     const availableMcpTools = await fetchAvailableMcpTools(baseUrl)
+
+    // ===== GOOGLE CALENDAR MCP TOKEN INJECTION =====
+    // If Google Calendar MCP tools are available, inject user tokens
+    const hasGoogleCalendarTools = availableMcpTools.some(
+      tool => tool.namespace === 'google-calendar' || tool.id.includes('calendar')
+    )
+
+    if (hasGoogleCalendarTools) {
+      try {
+        console.log(`[AI Helper] Injecting Google Calendar tokens for user: ${userId}`)
+        const injectionResult = await injectUserTokensToMCP(userId, convexAuthToken)
+
+        if (!injectionResult.success) {
+          console.warn(`[AI Helper] Token injection failed: ${injectionResult.message}`)
+          // Don't fail the request, but log the warning
+          // The user will get an error when they try to use calendar tools
+        } else {
+          console.log(`[AI Helper] Tokens injected successfully. Expires in: ${injectionResult.expiresIn}ms`)
+        }
+      } catch (error) {
+        console.error('[AI Helper] Error during token injection:', error)
+        // Continue with the request even if token injection fails
+        // The calendar tools will return appropriate errors if tokens are missing
+      }
+    }
 
     // Build system prompt with user context
     const baseSystemPrompt = buildSystemPrompt({ userName, studyStats, groupInfo })
