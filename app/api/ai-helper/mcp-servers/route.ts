@@ -8,7 +8,8 @@ export const runtime = 'nodejs'
 export async function GET() {
   try {
     const herokuInferenceUrl = process.env.HEROKU_INFERENCE_URL
-    const herokuInferenceKey = process.env.HEROKU_INFERENCE_KEY_OSS
+    // Use Claude key to access calendar-mcp-server addon
+    const herokuInferenceKey = process.env.HEROKU_INFERENCE_KEY_CLAUDE || process.env.HEROKU_INFERENCE_KEY_OSS
 
     if (!herokuInferenceUrl || !herokuInferenceKey) {
       return Response.json(
@@ -18,7 +19,7 @@ export async function GET() {
     }
 
     const mcpServersUrl = `${herokuInferenceUrl.replace(/\/$/, "")}/v1/mcp/servers`
-    
+
     const response = await fetch(mcpServersUrl, {
       method: "GET",
       headers: {
