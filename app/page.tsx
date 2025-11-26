@@ -30,7 +30,26 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { HeroBackground } from "@/components/hero-background"
+import dynamic from "next/dynamic"
+import { Suspense } from "react"
+
+// Loading placeholder for 3D model
+function ModelLoadingPlaceholder() {
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/80" />
+    </div>
+  )
+}
+
+// Dynamically import ThreeHeroModel with SSR disabled
+const ThreeHeroModel = dynamic(
+  () => import("@/components/three-hero-model").then((mod) => mod.ThreeHeroModel),
+  {
+    ssr: false,
+    loading: () => <ModelLoadingPlaceholder />,
+  }
+)
 
 const features = [
   {
@@ -233,54 +252,65 @@ export default function Home() {
 
         <main className="relative flex-1 overflow-x-hidden">
 
-        <section className="relative mx-auto space-y-6 sm:space-y-8 py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <section className="relative mx-auto py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           {/* Meteors for mobile/tablet only */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
             <Meteors number={4} />
           </div>
           
-          <div className="mx-auto flex max-w-[64rem] flex-col items-center gap-6 sm:gap-8 text-center relative">
-            {/* Hero Background - UnicornScene with Spotlight fallback (desktop only) */}
-            <HeroBackground />
-            <h1 className="text-pretty text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight relative" style={{ zIndex: 10 }}>
-              Study. Connect. <span className="lg:hidden"><Highlighter 
-                action="highlight" 
-                color="#2563eb" 
-                strokeWidth={1}
-                animationDuration={1200}
-                isView={true}
-                padding={1}
-              >
-                Achieve.
-              </Highlighter></span><span className="hidden lg:inline">Achieve.</span>
-            </h1>
-            <p className="max-w-[42rem] leading-normal text-gray-300 text-base sm:text-lg lg:text-xl lg:leading-8 px-4 relative" style={{ zIndex: 10 }}>
-              Your intelligent study companion. Track progress, collaborate with peers, 
-              and unlock your academic potential with AI-powered insights.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center relative" style={{ zIndex: 10 }}>
-              <Link href="/dashboard">
-                <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
-                  Get Started
-                </InteractiveHoverButton>
-              </Link>
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full sm:size-lg text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8"
-                asChild
-              >
-                <Link
-                  href={"http://github.com/prime399/study-flow/"}
-                  target="_blank"
+          {/* Two-column grid layout: text left, 3D model right on desktop */}
+          <div className="mx-auto max-w-[80rem] grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left column: Text content */}
+            <div className="flex flex-col items-center lg:items-start gap-6 sm:gap-8 text-center lg:text-left relative z-10">
+              <h1 className="text-pretty text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight">
+                Study. Connect. <span className="lg:hidden"><Highlighter 
+                  action="highlight" 
+                  color="#2563eb" 
+                  strokeWidth={1}
+                  animationDuration={1200}
+                  isView={true}
+                  padding={1}
                 >
-                  <Github className="h-3 w-3 sm:h-4 sm:w-4" />
-                  Github
+                  Achieve.
+                </Highlighter></span><span className="hidden lg:inline">Achieve.</span>
+              </h1>
+              <p className="max-w-[42rem] leading-normal text-gray-300 text-base sm:text-lg lg:text-xl lg:leading-8">
+                Your intelligent study companion. Track progress, collaborate with peers, 
+                and unlock your academic potential with AI-powered insights.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center lg:items-start justify-center lg:justify-start">
+                <Link href="/dashboard">
+                  <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
+                    Get Started
+                  </InteractiveHoverButton>
                 </Link>
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full sm:size-lg text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8"
+                  asChild
+                >
+                  <Link
+                    href={"http://github.com/prime399/study-flow/"}
+                    target="_blank"
+                  >
+                    <Github className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Github
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            
+            {/* Right column: 3D Model (desktop only) */}
+            <div className="hidden lg:block relative h-[400px] xl:h-[500px]">
+              <Suspense fallback={<ModelLoadingPlaceholder />}>
+                <ThreeHeroModel className="w-full h-full" />
+              </Suspense>
             </div>
           </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 px-4">
+          
+          {/* Stats section */}
+          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 px-4 mt-12 sm:mt-16">
             {stats.map((stat, i) => (
               <div key={i} className="flex flex-col items-center gap-1 sm:gap-2 p-3 sm:p-4">
                 <div className="flex items-center gap-1 sm:gap-2 text-white">

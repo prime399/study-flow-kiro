@@ -72,26 +72,42 @@
     - **Property 3: Resource Cleanup on Unmount**
     - **Validates: Requirements 3.4**
 
-- [ ] 3. Update landing page hero section layout
-  - [ ] 3.1 Restructure hero section to two-column grid layout
+- [x] 3. Update landing page hero section layout
+
+
+
+
+
+  - [x] 3.1 Restructure hero section to two-column grid layout
+
+
     - Use CSS Grid with lg:grid-cols-2
     - Place text content in left column
     - Place 3D model container in right column (desktop only)
     - _Requirements: 1.3, 1.4_
-  - [ ] 3.2 Dynamically import ThreeHeroModel with SSR disabled
+  - [x] 3.2 Dynamically import ThreeHeroModel with SSR disabled
+
     - Use next/dynamic with ssr: false
     - Add loading placeholder component
     - _Requirements: 3.3, 5.1_
-  - [ ] 3.3 Write property test for SSR safety
+  - [x] 3.3 Write property test for SSR safety
+
+
     - **Property 2: SSR Safety**
     - **Validates: Requirements 3.3**
-  - [ ] 3.4 Maintain Meteors effect for mobile/tablet
+  - [x] 3.4 Maintain Meteors effect for mobile/tablet
+
+
     - Keep existing Meteors component for screens below lg breakpoint
     - Hide 3D model on mobile using hidden lg:block classes
     - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 4. Remove old Unicorn Studio implementation
-  - [ ] 4.1 Delete HeroBackground component
+- [-] 4. Remove old Unicorn Studio implementation
+
+
+
+  - [-] 4.1 Delete HeroBackground component
+
     - Remove `components/hero-background.tsx`
     - Remove any imports of HeroBackground from page.tsx
     - _Requirements: 6.2_
