@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState, useEffect, useRef, Component, ReactNode } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useState, useEffect, useRef, Component, ReactNode, useCallback } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { Spotlight } from "@/components/ui/spotlight";
@@ -149,19 +149,59 @@ function disposeMaterial(material: THREE.Material) {
 }
 
 
-// Skeleton model component that loads the GLB file
+// Skeleton model component that loads the GLB file with drag rotation
+interface DraggableSkeletonModelProps extends SkeletonModelProps {
+  dragRotationY: number;
+}
+
 function SkeletonModel({
   url,
   scale = 2,
   position = [0, -1, 0],
   rotation = [0, 0.5, 0],
-}: SkeletonModelProps) {
+  dragRotationY = 0,
+}: DraggableSkeletonModelProps) {
   const { scene } = useGLTF(url);
   const clonedSceneRef = useRef<THREE.Object3D | null>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  
+  // Spring physics state for smooth bounce-back
+  const springRef = useRef({
+    current: 0,
+    target: 0,
+    velocity: 0,
+  });
 
   // Clone the scene to avoid issues with reusing the same geometry
   const clonedScene = scene.clone();
   clonedSceneRef.current = clonedScene;
+
+  // Update spring target when drag rotation changes
+  useEffect(() => {
+    springRef.current.target = dragRotationY;
+  }, [dragRotationY]);
+
+  // Animate with spring physics
+  useFrame((_, delta) => {
+    const spring = springRef.current;
+    const stiffness = 180; // Spring stiffness
+    const damping = 12; // Damping factor
+    
+    // Spring force calculation
+    const displacement = spring.target - spring.current;
+    const springForce = displacement * stiffness;
+    const dampingForce = spring.velocity * damping;
+    const acceleration = springForce - dampingForce;
+    
+    // Update velocity and position
+    spring.velocity += acceleration * delta;
+    spring.current += spring.velocity * delta;
+    
+    // Apply rotation to the group
+    if (groupRef.current) {
+      groupRef.current.rotation.y = rotation[1] + spring.current;
+    }
+  });
 
   // Cleanup cloned scene on unmount
   useEffect(() => {
@@ -173,12 +213,14 @@ function SkeletonModel({
   }, []);
 
   return (
-    <primitive
-      object={clonedScene}
-      scale={scale}
-      position={position}
-      rotation={rotation}
-    />
+    <group ref={groupRef} rotation={[rotation[0], rotation[1], rotation[2]]}>
+      <primitive
+        object={clonedScene}
+        scale={scale}
+        position={position}
+        rotation={[0, 0, 0]}
+      />
+    </group>
   );
 }
 
@@ -196,11 +238,72 @@ function SpotlightFallback({ className }: { className?: string }) {
   );
 }
 
+// Custom hook for drag-to-rotate interaction
+function useDragRotation(maxRotation: number = Math.PI) {
+  const [dragRotation, setDragRotation] = useState(0);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const currentRotation = useRef(0);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+    currentRotation.current = dragRotation;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [dragRotation]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    
+    const deltaX = e.clientX - startX.current;
+    const sensitivity = 0.005; // Adjust for rotation speed
+    let newRotation = currentRotation.current + deltaX * sensitivity;
+    
+    // Clamp rotation to max range (±180 degrees = ±π radians)
+    newRotation = Math.max(-maxRotation, Math.min(maxRotation, newRotation));
+    
+    setDragRotation(newRotation);
+  }, [maxRotation]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    
+    // Bounce back to original position
+    setDragRotation(0);
+  }, []);
+
+  const handlePointerLeave = useCallback((e: React.PointerEvent) => {
+    if (isDragging.current) {
+      isDragging.current = false;
+      try {
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture may already be released
+      }
+      // Bounce back to original position
+      setDragRotation(0);
+    }
+  }, []);
+
+  return {
+    dragRotation,
+    handlers: {
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: handlePointerUp,
+      onPointerLeave: handlePointerLeave,
+    },
+  };
+}
+
 // Main ThreeHeroModel component
 export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
   const [hasError, setHasError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { dragRotation, handlers } = useDragRotation(Math.PI); // 180 degrees max
 
   useEffect(() => {
     setMounted(true);
@@ -235,10 +338,15 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
       fallback={<SpotlightFallback className={className} />}
       onError={handleError}
     >
-      <div ref={containerRef} className={className} style={{ height: "100%", width: "100%" }}>
+      <div 
+        ref={containerRef} 
+        className={className} 
+        style={{ height: "100%", width: "100%", cursor: "grab", touchAction: "none" }}
+        {...handlers}
+      >
         <Canvas
           camera={{ position: [0, 0, 5], fov: 50 }}
-          style={{ background: "transparent" }}
+          style={{ background: "transparent", pointerEvents: "none" }}
           gl={{ alpha: true, antialias: true }}
           onCreated={(state) => {
             // Set up error handling for WebGL context loss
@@ -249,7 +357,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         >
           <SceneLighting />
           <Suspense fallback={null}>
-            <SkeletonModel url="/skelton with plane.glb" />
+            <SkeletonModel url="/skelton with plane.glb" dragRotationY={dragRotation} />
           </Suspense>
         </Canvas>
       </div>
