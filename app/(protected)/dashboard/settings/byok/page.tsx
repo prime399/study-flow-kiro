@@ -57,6 +57,42 @@ import { OpenAILogo } from "@/components/logos/openai-logo"
 import { ClaudeLogo } from "@/components/logos/claude-logo"
 import { OpenRouterLogo } from "@/components/logos/openrouter-logo"
 
+const providers = [
+  {
+    id: "openai",
+    name: "OpenAI",
+    description: "GPT-4, GPT-4o, GPT-3.5, and other OpenAI models",
+    icon: <OpenAILogo className="h-5 w-5 text-[#10A37F]" />, // OpenAI brand green
+    iconLarge: <OpenAILogo className="h-8 w-8 text-[#10A37F]" />,
+    color: "text-[#10A37F]",
+    bgColor: "bg-[#10A37F]/10",
+    docs: "https://platform.openai.com/docs/quickstart",
+    defaultModels: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    description: "Claude 4.5 Sonnet, Claude 4.5 Haiku, and other Claude models",
+    icon: <ClaudeLogo className="h-5 w-5" />, // Claude uses its own color internally
+    iconLarge: <ClaudeLogo className="h-8 w-8" />,
+    color: "text-[#C15F3C]",
+    bgColor: "bg-[#C15F3C]/10",
+    docs: "https://docs.anthropic.com/",
+    defaultModels: ["claude-sonnet-4-5-20250929", "claude-haiku-4-5-20251001", "claude-opus-4-1-20250805"],
+  },
+  {
+    id: "openrouter",
+    name: "OpenRouter",
+    description: "Access to multiple AI models through a single API",
+    icon: <OpenRouterLogo className="h-5 w-5 text-purple-600" />,
+    iconLarge: <OpenRouterLogo className="h-8 w-8 text-purple-600" />,
+    color: "text-purple-600",
+    bgColor: "bg-purple-600/10",
+    docs: "https://openrouter.ai/docs",
+    defaultModels: ["anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro-1.5"],
+  },
+] as const
+
 export default function BYOKSettingsPage() {
   // Fetch user's API keys from Convex
   const userApiKeys = useQuery(api.userApiKeys.getUserApiKeys) || []
@@ -88,42 +124,6 @@ export default function BYOKSettingsPage() {
   const [savingKey, setSavingKey] = useState(false)
   const [validatingKey, setValidatingKey] = useState(false)
   const [loadingModels, setLoadingModels] = useState(false)
-
-  const providers = [
-    {
-      id: "openai",
-      name: "OpenAI",
-      description: "GPT-4, GPT-4o, GPT-3.5, and other OpenAI models",
-      icon: <OpenAILogo className="h-5 w-5 text-[#10A37F]" />, // OpenAI brand green
-      iconLarge: <OpenAILogo className="h-8 w-8 text-[#10A37F]" />,
-      color: "text-[#10A37F]",
-      bgColor: "bg-[#10A37F]/10",
-      docs: "https://platform.openai.com/docs/quickstart",
-      defaultModels: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
-    },
-    {
-      id: "anthropic",
-      name: "Anthropic",
-      description: "Claude 4.5 Sonnet, Claude 4.5 Haiku, and other Claude models",
-      icon: <ClaudeLogo className="h-5 w-5" />, // Claude uses its own color internally
-      iconLarge: <ClaudeLogo className="h-8 w-8" />,
-      color: "text-[#C15F3C]",
-      bgColor: "bg-[#C15F3C]/10",
-      docs: "https://docs.anthropic.com/",
-      defaultModels: ["claude-sonnet-4-5-20250929", "claude-haiku-4-5-20251001", "claude-opus-4-1-20250805"],
-    },
-    {
-      id: "openrouter",
-      name: "OpenRouter",
-      description: "Access to multiple AI models through a single API",
-      icon: <OpenRouterLogo className="h-5 w-5 text-purple-600" />,
-      iconLarge: <OpenRouterLogo className="h-8 w-8 text-purple-600" />,
-      color: "text-purple-600",
-      bgColor: "bg-purple-600/10",
-      docs: "https://openrouter.ai/docs",
-      defaultModels: ["anthropic/claude-3.5-sonnet", "openai/gpt-4o", "google/gemini-pro-1.5"],
-    },
-  ]
 
   // Load available models when provider changes
   useEffect(() => {

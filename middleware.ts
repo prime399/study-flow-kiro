@@ -4,8 +4,7 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server"
 import { NextResponse } from "next/server"
-import { NextRequest } from "next/server"
-import { auth0 } from "@/lib/auth0"
+import type { NextRequest } from "next/server"
 
 const isSignInPage = createRouteMatcher(["/signin"])
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"])
@@ -37,7 +36,7 @@ const convexMiddleware = convexAuthNextjsMiddleware(async (request, { convexAuth
 export default function middleware(request: NextRequest) {
   // Handle Auth0 routes FIRST, completely isolated from Convex
   if (isAuth0Route(request)) {
-    return auth0.middleware(request)
+    return NextResponse.next()
   }
 
   // Handle Spotify OAuth routes - allow them to bypass Convex auth

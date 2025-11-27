@@ -49,3 +49,6 @@ convex/testHelpers.ts
 
 /docs/
 scripts/generate-encryption-key.js
+
+#Ignore big glf model scene
+public/third scene with animation.glb
