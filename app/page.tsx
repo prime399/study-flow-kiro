@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Meteors from "@/components/ui/meteors"
 import { Highlighter } from "@/components/ui/highlighter"
+import { DrippingText } from "@/components/dripping-text"
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Marquee } from "@/components/ui/marquee"
 import { GlowingEffect } from "@/components/ui/glowing-effect"
@@ -298,7 +299,7 @@ export default function Home() {
                   padding={1}
                 >
                   Achieve.
-                </Highlighter></span><span className="hidden lg:inline">Achieve.</span>
+                </Highlighter></span><span className="hidden lg:inline"><DrippingText text="Achieve." /></span>
               </h1>
               <p className="max-w-[42rem] leading-normal text-gray-300 text-base sm:text-lg lg:text-xl lg:leading-8">
                 Your intelligent study companion. Track progress, collaborate with peers, 
