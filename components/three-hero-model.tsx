@@ -18,7 +18,7 @@ const SCENE_CONFIG = {
   modelDefaultRotationY: -0.7, // Adjust: 0 = front, Math.PI/2 (1.57) = 90°, Math.PI (3.14) = 180°
   
   // Model scale and position
-  modelScale: 0.9,
+  modelScale: 1,
   modelPosition: [0, -1, 0] as [number, number, number],
   
   // Scene container aspect ratio (width multiplier)
@@ -27,7 +27,7 @@ const SCENE_CONFIG = {
   // Right top point light settings
   rightTopLight: {
     enabled: true,
-    position: [4, 3, 2] as [number, number, number],
+    position: [10, 10, 20] as [number, number, number],
     intensity: 3,
     color: "#ffffff",
     distance: 15,
@@ -454,7 +454,8 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
           width: `${100 * SCENE_CONFIG.horizontalScale}%`, 
           cursor: "grab", 
           touchAction: "none",
-          marginTop: "-30px",
+          marginTop: "-90px",
+          marginBottom: "25px",
           position: "relative",
         }}
         {...handlers}

@@ -328,7 +328,7 @@ export default function Home() {
             </div>
             
             {/* Right column: 3D Model (desktop only) */}
-            <div className="hidden lg:block relative h-[400px] xl:h-[500px]">
+            <div className="hidden lg:block relative h-[480px] xl:h-[580px]">
               <Suspense fallback={<ModelLoadingPlaceholder />}>
                 <ThreeHeroModel className="w-full h-full" />
               </Suspense>
