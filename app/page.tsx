@@ -253,6 +253,32 @@ export default function Home() {
         <main className="relative flex-1 overflow-x-hidden">
 
         <section className="relative mx-auto py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+          {/* Halloween themed background - spans full hero section */}
+          <div 
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: `
+                radial-gradient(ellipse 90% 70% at 70% 30%, rgba(255, 80, 0, 0.25) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 80% 50%, rgba(180, 60, 10, 0.18) 0%, transparent 45%),
+                radial-gradient(ellipse 60% 55% at 60% 40%, rgba(120, 40, 140, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 100% at 70% 60%, rgba(15, 5, 25, 0.7) 0%, transparent 70%),
+                radial-gradient(ellipse 80% 50% at 60% 100%, rgba(255, 100, 0, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 70% 95%, rgba(80, 20, 100, 0.1) 0%, transparent 60%)
+              `,
+            }}
+          />
+          {/* Animated fog/mist effect */}
+          <div 
+            className="pointer-events-none absolute inset-0 opacity-40 animate-pulse"
+            style={{
+              background: `
+                radial-gradient(ellipse 50% 40% at 75% 25%, rgba(130, 50, 160, 0.25) 0%, transparent 55%),
+                radial-gradient(ellipse 45% 35% at 85% 60%, rgba(255, 120, 40, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse 40% 30% at 65% 80%, rgba(255, 60, 0, 0.18) 0%, transparent 45%)
+              `,
+              animationDuration: "4s",
+            }}
+          />
           {/* Meteors for mobile/tablet only */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
             <Meteors number={4} />

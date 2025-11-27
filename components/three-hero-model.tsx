@@ -453,13 +453,15 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
           height: "100%", 
           width: `${100 * SCENE_CONFIG.horizontalScale}%`, 
           cursor: "grab", 
-          touchAction: "none" 
+          touchAction: "none",
+          marginTop: "-30px",
+          position: "relative",
         }}
         {...handlers}
       >
         <Canvas
           camera={{ position: SCENE_CONFIG.cameraPosition, fov: SCENE_CONFIG.cameraFov }}
-          style={{ background: "transparent", pointerEvents: "none" }}
+          style={{ background: "transparent", pointerEvents: "none", position: "relative", zIndex: 1 }}
           gl={{ alpha: true, antialias: true }}
           onCreated={(state) => {
             // Set up error handling for WebGL context loss
