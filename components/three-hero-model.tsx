@@ -6,6 +6,38 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { Spotlight } from "@/components/ui/spotlight";
 
+// ============================================
+// SCENE CONFIGURATION - Adjust these values
+// ============================================
+const SCENE_CONFIG = {
+  // Camera settings
+  cameraPosition: [0, 0, 5] as [number, number, number],
+  cameraFov: 50,
+  
+  // Model default rotation (in radians) - ~75 degrees from right = ~1.31 radians
+  modelDefaultRotationY: -0.7, // Adjust: 0 = front, Math.PI/2 (1.57) = 90°, Math.PI (3.14) = 180°
+  
+  // Model scale and position
+  modelScale: 0.9,
+  modelPosition: [0, -1, 0] as [number, number, number],
+  
+  // Scene container aspect ratio (width multiplier)
+  horizontalScale: 1.5, // Increase for wider scene (1.0 = default, 1.5 = 50% wider)
+  
+  // Right top point light settings
+  rightTopLight: {
+    enabled: true,
+    position: [4, 3, 2] as [number, number, number],
+    intensity: 3,
+    color: "#ffffff",
+    distance: 15,
+    decay: 2,
+  },
+  
+  // Pumpkin spotlight position
+  pumpkinLightPosition: [-1.10403, -0.752614, 0.623707] as [number, number, number],
+};
+
 // Error Boundary for catching React render errors in 3D scene
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -83,6 +115,17 @@ function SceneLighting({
       />
       {/* Fill light for better visibility */}
       <directionalLight position={[-3, 2, -5]} intensity={0.4} />
+      
+      {/* Right top point light - configurable via SCENE_CONFIG */}
+      {SCENE_CONFIG.rightTopLight.enabled && (
+        <pointLight
+          position={SCENE_CONFIG.rightTopLight.position}
+          intensity={SCENE_CONFIG.rightTopLight.intensity}
+          color={SCENE_CONFIG.rightTopLight.color}
+          distance={SCENE_CONFIG.rightTopLight.distance}
+          decay={SCENE_CONFIG.rightTopLight.decay}
+        />
+      )}
     </>
   );
 }
@@ -149,6 +192,69 @@ function disposeMaterial(material: THREE.Material) {
 }
 
 
+// Animated spotlight inside the pumpkin (flickering candle effect)
+function PumpkinSpotlight({ position = [-1.10403, -0.752614, 0.623707] }: { position?: [number, number, number] }) {
+  const spotlightRef = useRef<THREE.SpotLight>(null);
+  const targetRef = useRef<THREE.Object3D>(null);
+  
+  // Flickering animation state
+  const flickerRef = useRef({
+    baseIntensity: 15,
+    time: 0,
+  });
+
+  useFrame((_, delta) => {
+    if (!spotlightRef.current) return;
+    
+    const flicker = flickerRef.current;
+    flicker.time += delta;
+    
+    // Create organic flickering effect using multiple sine waves
+    const flicker1 = Math.sin(flicker.time * 8) * 0.15;
+    const flicker2 = Math.sin(flicker.time * 13) * 0.1;
+    const flicker3 = Math.sin(flicker.time * 21) * 0.05;
+    const randomFlicker = Math.random() * 0.05 - 0.025;
+    
+    // Combine for natural candle-like flickering
+    const intensityMultiplier = 1 + flicker1 + flicker2 + flicker3 + randomFlicker;
+    spotlightRef.current.intensity = flicker.baseIntensity * intensityMultiplier;
+    
+    // Subtle color temperature variation (warm orange to yellow)
+    const colorShift = Math.sin(flicker.time * 5) * 0.05;
+    spotlightRef.current.color.setRGB(1, 0.6 + colorShift, 0.2);
+  });
+
+  return (
+    <>
+      {/* Target for the spotlight to point at */}
+      <object3D ref={targetRef} position={[position[0], position[1] + 2, position[2]]} />
+      
+      {/* Main spotlight inside pumpkin */}
+      <spotLight
+        ref={spotlightRef}
+        position={position}
+        target={targetRef.current || undefined}
+        intensity={15}
+        color="#ff9933"
+        angle={Math.PI / 6}
+        penumbra={0.3}
+        distance={5}
+        decay={2}
+        castShadow
+      />
+      
+      {/* Point light for inner glow effect */}
+      <pointLight
+        position={position}
+        intensity={3}
+        color="#ff6600"
+        distance={2}
+        decay={2}
+      />
+    </>
+  );
+}
+
 // Skeleton model component that loads the GLB file with drag rotation
 interface DraggableSkeletonModelProps extends SkeletonModelProps {
   dragRotationY: number;
@@ -156,9 +262,9 @@ interface DraggableSkeletonModelProps extends SkeletonModelProps {
 
 function SkeletonModel({
   url,
-  scale = 2,
-  position = [0, -1, 0],
-  rotation = [0, 0.5, 0],
+  scale = SCENE_CONFIG.modelScale,
+  position = SCENE_CONFIG.modelPosition,
+  rotation = [0, SCENE_CONFIG.modelDefaultRotationY, 0],
   dragRotationY = 0,
 }: DraggableSkeletonModelProps) {
   const { scene } = useGLTF(url);
@@ -220,6 +326,8 @@ function SkeletonModel({
         position={position}
         rotation={[0, 0, 0]}
       />
+      {/* Animated spotlight inside the pumpkin */}
+      <PumpkinSpotlight position={SCENE_CONFIG.pumpkinLightPosition} />
     </group>
   );
 }
@@ -313,7 +421,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
   useEffect(() => {
     return () => {
       // Dispose of cached GLTF resources
-      useGLTF.clear("/skelton with plane.glb");
+      useGLTF.clear("/third scene with animation.glb");
     };
   }, []);
 
@@ -341,11 +449,16 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
       <div 
         ref={containerRef} 
         className={className} 
-        style={{ height: "100%", width: "100%", cursor: "grab", touchAction: "none" }}
+        style={{ 
+          height: "100%", 
+          width: `${100 * SCENE_CONFIG.horizontalScale}%`, 
+          cursor: "grab", 
+          touchAction: "none" 
+        }}
         {...handlers}
       >
         <Canvas
-          camera={{ position: [0, 0, 5], fov: 50 }}
+          camera={{ position: SCENE_CONFIG.cameraPosition, fov: SCENE_CONFIG.cameraFov }}
           style={{ background: "transparent", pointerEvents: "none" }}
           gl={{ alpha: true, antialias: true }}
           onCreated={(state) => {
@@ -357,7 +470,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         >
           <SceneLighting />
           <Suspense fallback={null}>
-            <SkeletonModel url="/skelton with plane.glb" dragRotationY={dragRotation} />
+            <SkeletonModel url="/third scene with animation.glb" dragRotationY={dragRotation} />
           </Suspense>
         </Canvas>
       </div>
@@ -371,4 +484,4 @@ export function ThreeHeroModelWithError({ className }: ThreeHeroModelProps) {
 }
 
 // Preload the model for better performance
-useGLTF.preload("/skelton with plane.glb");
+useGLTF.preload("/third scene with animation.glb");
