@@ -307,21 +307,20 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center lg:items-start justify-center lg:justify-start">
                 <Link href="/dashboard">
-                  <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
+                  <InteractiveHoverButton className="rounded-full bg-red-700 hover:bg-amber-500 text-white border-red-700 hover:border-amber-500 text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8">
                     Get Started
                   </InteractiveHoverButton>
                 </Link>
                 <Button
-                  size="sm"
                   variant="outline"
-                  className="rounded-full sm:size-lg text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8"
+                  className="rounded-full text-sm sm:text-base py-2 sm:py-3 px-6 sm:px-8 h-auto"
                   asChild
                 >
                   <Link
                     href={"http://github.com/prime399/study-flow/"}
                     target="_blank"
                   >
-                    <Github className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Github className="h-4 w-4 sm:h-5 sm:w-5" />
                     Github
                   </Link>
                 </Button>
