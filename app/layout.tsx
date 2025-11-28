@@ -6,7 +6,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Inter, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google"
+import { Inter, Plus_Jakarta_Sans, Space_Grotesk, Creepster } from "next/font/google"
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -26,6 +26,13 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   display: "swap",
   weight: ["500", "600", "700"],
+})
+
+const creepster = Creepster({
+  subsets: ["latin"],
+  variable: "--font-creepster",
+  display: "swap",
+  weight: ["400"],
 })
 
 export const metadata: Metadata = {
@@ -50,6 +57,7 @@ export default function RootLayout({
             spaceGrotesk.variable,
             GeistSans.variable,
             GeistMono.variable,
+            creepster.variable,
           )}
         >
           <ThemeProvider

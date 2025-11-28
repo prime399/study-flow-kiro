@@ -55,57 +55,57 @@ const ThreeHeroModel = dynamic(
 const features = [
   {
     icon: <Timer className="h-12 w-12" />,
-    title: "Focus Timer",
-    description: "Customizable study sessions with break reminders",
-    badge: "Popular",
+    title: "Ghost Mode Timer",
+    description: "Haunting hourglass with dripping sand & ghost particles floating during sessions",
+    badge: "Spooky",
   },
   {
     icon: <Trophy className="h-12 w-12" />,
-    title: "Competitive Learning",
-    description: "Global and group-based leaderboards",
+    title: "Undead Leaderboard",
+    description: "Become spirits competing to escape the haunted library",
   },
   {
     icon: <Users className="h-12 w-12" />,
-    title: "Study Groups",
-    description: "Create and join study groups for collaborative learning",
+    title: "Coven Groups",
+    description: "Summon your study coven for collaborative dark academia sessions",
     badge: "New",
   },
   {
     icon: <BarChart className="h-12 w-12" />,
-    title: "Progress Analytics",
-    description: "Detailed insights into your study patterns",
+    title: "Graveyard Analytics",
+    description: "Study stats displayed as tombstones in a misty graveyard",
   },
   {
     icon: <Target className="h-12 w-12" />,
-    title: "Goal Setting",
-    description: "Set and track daily and weekly study goals",
+    title: "Potion Progress",
+    description: "Track goals as bubbling cauldrons filling with glowing liquid",
   },
   {
     icon: <Zap className="h-12 w-12" />,
-    title: "Achievements",
-    description: "Earn rewards for consistent study habits",
+    title: "Cursed Achievements",
+    description: "Unlock dark relics and haunted badges for your dedication",
   },
 ]
 
 const stats = [
   {
     value: "5,000+",
-    label: "Active Students",
+    label: "Haunted Souls",
     icon: <Users className="h-4 w-4" />,
   },
   {
     value: "500K+",
-    label: "Study Hours",
+    label: "Midnight Hours",
     icon: <Clock className="h-4 w-4" />,
   },
   {
     value: "2,500+",
-    label: "Study Groups",
+    label: "Study Covens",
     icon: <BookOpen className="h-4 w-4" />,
   },
   {
     value: "25+",
-    label: "Universities",
+    label: "Haunted Halls",
     icon: <Star className="h-4 w-4" />,
   },
 ]
@@ -113,114 +113,114 @@ const stats = [
 const testimonials = [
   {
     name: "Sarah Chen",
-    username: "@sarahc_studies",
-    body: "StudyFlow helped me improve my GPA from 3.2 to 3.8 in just one semester. The focus timer is a game-changer!",
+    username: "@sarahc_haunted",
+    body: "The Ghost Mode Timer kept me focused through the witching hours. My GPA rose from the dead - 3.2 to 3.8!",
     img: "https://avatar.vercel.sh/sarah",
   },
   {
     name: "Marcus Rodriguez",
-    username: "@marcus_learns",
-    body: "The study groups feature connected me with amazing peers. We motivated each other to achieve our goals.",
+    username: "@marcus_spirit",
+    body: "My study coven and I escaped the haunted library together. The Undead Leaderboard keeps us competing!",
     img: "https://avatar.vercel.sh/marcus",
   },
   {
     name: "Emily Watson",
-    username: "@emily_achieves",
-    body: "I love the progress analytics. Seeing my study patterns helped me optimize my learning schedule.",
+    username: "@emily_phantom",
+    body: "The Graveyard Analytics revealed my study patterns from beyond. Now I know my most powerful midnight hours.",
     img: "https://avatar.vercel.sh/emily",
   },
   {
     name: "David Kim",
-    username: "@david_studies",
-    body: "The competitive leaderboards make studying fun! I never thought I'd be excited about study sessions.",
+    username: "@david_specter",
+    body: "Racing to the top of the Undead Leaderboard is addictive! Never thought I'd be excited to haunt the library.",
     img: "https://avatar.vercel.sh/david",
   },
   {
     name: "Lisa Thompson",
-    username: "@lisa_learns",
-    body: "StudyFlow's goal setting feature keeps me accountable. I've been more consistent than ever before.",
+    username: "@lisa_wraith",
+    body: "Watching my Potion Progress bars fill with glowing liquid keeps me brewing knowledge every night.",
     img: "https://avatar.vercel.sh/lisa",
   },
   {
     name: "Alex Johnson",
-    username: "@alex_focus",
-    body: "The AI-powered insights helped me identify my most productive study times. Brilliant!",
+    username: "@alex_ghost",
+    body: "The Librarian Ghost AI whispered secrets about my most productive study times. Eerily brilliant!",
     img: "https://avatar.vercel.sh/alex",
   },
 ]
 
 const pricingTiers = [
   {
-    name: "Free",
+    name: "Apprentice",
     price: "$0",
-    period: "month",
-    description: "Perfect for individuals starting their journey",
+    period: "moon",
+    description: "Begin your journey into the haunted library",
     icon: Sparkles,
     earlyBird: true,
     features: [
-      "Basic Integration",
-      "Limited Model Selection",
-      "20 Queries Monthly",
-      "Focus timer & goal tracking",
-      "Community support access",
+      "Basic dark rituals",
+      "Limited spirit selection",
+      "20 séances monthly",
+      "Ghost Mode timer & cauldron tracking",
+      "Coven community access",
     ],
-    cta: "Get Started",
+    cta: "Enter the Crypt",
     popular: false,
   },
   {
-    name: "Pro",
+    name: "Warlock",
     price: "$9",
-    period: "month",
-    description: "Unlock powerful automations and insights",
+    period: "moon",
+    description: "Unlock powerful dark academia enchantments",
     icon: Rocket,
-    discount: "Most Popular",
+    discount: "Most Haunted",
     earlyBird: true,
     features: [
-      "Spotify & Google Calendar integration",
-      "Advanced AI model selection",
-      "100 Queries Monthly",
-      "Advanced Study Insights",
-      "Priority in-app support",
-      "API access",
+      "Spotify & Calendar summoning",
+      "Advanced Librarian Ghost AI",
+      "100 séances monthly",
+      "Graveyard Analytics unlocked",
+      "Priority spectral support",
+      "Forbidden API access",
     ],
-    cta: "Start Free Trial",
+    cta: "Begin the Ritual",
     popular: true,
   },
   {
-    name: "BYOK",
+    name: "Necromancer",
     price: "$19",
-    period: "month",
-    description: "Bring your own API key for limitless personalization",
+    period: "moon",
+    description: "Bring your own cursed key for limitless power",
     icon: Key,
-    note: "Powered by Auth0",
+    note: "Blood Pact Required",
     earlyBird: true,
     features: [
-      "Use your own OpenAI or Anthropic key",
-      "Unlimited AI queries (metered by your key)",
-      "Granular rate limit controls",
-      "Usage analytics & cost visibility",
-      "Workspace-level access policies",
-      "Dedicated BYOK onboarding support",
+      "Your own OpenAI or Anthropic grimoire",
+      "Unlimited séances (soul-metered)",
+      "Granular curse controls",
+      "Potion usage & cost visibility",
+      "Coven-level access policies",
+      "Dedicated necromancy support",
     ],
-    cta: "Connect Your Key",
+    cta: "Bind Your Soul",
     popular: false,
   },
   {
-    name: "Lifetime",
+    name: "Immortal",
     price: "Custom",
     period: "",
-    description: "For power users with unlimited needs",
+    description: "For those who seek eternal knowledge",
     icon: Crown,
     earlyBird: false,
     features: [
-      "Everything advanced",
-      "Lifetime Updates",
-      "Uncapped AI Queries",
-      "Easy Progress Export",
-      "White-glove implementation",
-      "Priority concierge support",
+      "All dark powers unlocked",
+      "Eternal updates from beyond",
+      "Unlimited Librarian Ghost queries",
+      "Export your haunted progress",
+      "White-shroud implementation",
+      "Priority phantom support",
     ],
-    cta: "Contact Sales",
+    cta: "Claim Immortality",
     popular: false,
   },
 ]
@@ -290,20 +290,20 @@ export default function Home() {
             {/* Left column: Text content */}
             <div className="flex flex-col items-center lg:items-start gap-6 sm:gap-8 text-center lg:text-left relative z-10">
               <h1 className="text-pretty text-2xl font-bold sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight">
-                Study. Connect. <span className="lg:hidden"><Highlighter 
+                Study. Haunt. <span className="lg:hidden"><Highlighter 
                   action="highlight" 
-                  color="#2563eb" 
+                  color="#ff4500" 
                   strokeWidth={1}
                   animationDuration={1200}
                   isView={true}
                   padding={1}
                 >
-                  Achieve.
-                </Highlighter></span><span className="hidden lg:inline"><DrippingText text="Achieve." /></span>
+                  <span className="font-[family-name:var(--font-creepster)] text-orange-400">Survive.</span>
+                </Highlighter></span><span className="hidden lg:inline"><DrippingText text="Survive." className="font-[family-name:var(--font-creepster)] text-orange-400" /></span>
               </h1>
               <p className="max-w-[42rem] leading-normal text-gray-300 text-base sm:text-lg lg:text-xl lg:leading-8">
-                Your intelligent study companion. Track progress, collaborate with peers, 
-                and unlock your academic potential with AI-powered insights.
+                Your haunted study companion. Summon the Librarian Ghost, join your coven, 
+                and escape the haunted library with AI-powered dark academia insights.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center lg:items-start justify-center lg:justify-start">
                 <Link href="/dashboard">
@@ -385,10 +385,10 @@ export default function Home() {
         <section className="mx-auto py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
-              Everything you need to excel
+              Dark tools to escape the crypt
             </h2>
             <p className="text-base sm:text-lg text-gray-300 leading-relaxed px-4">
-              Comprehensive tools designed for serious students who want to maximize their potential
+              Haunted features for dedicated spirits who dare to master the dark academia arts
             </p>
           </div>
 
@@ -423,10 +423,10 @@ export default function Home() {
           <div className="w-full">
             <div className="text-center mb-8 sm:mb-12 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
-                What Students Are Saying
+                Whispers from the Haunted Library
               </h2>
               <p className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-2xl mx-auto">
-                Join thousands of students who have transformed their study habits with StudyFlow
+                Join thousands of spirits who have escaped academic purgatory with StudyFlow
               </p>
             </div>
 
@@ -541,10 +541,10 @@ export default function Home() {
           <div className="mx-auto max-w-7xl w-full">
             <div className="text-center mb-12 sm:mb-16 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
-                Simple, transparent pricing
+                Choose your dark path
               </h2>
               <p className="text-base sm:text-lg text-gray-400 leading-relaxed max-w-3xl mx-auto">
-                Choose the perfect plan for your needs. All plans include a 14-day free trial.
+                Select your level of power. All paths include a 14-night free haunting.
               </p>
             </div>
             
@@ -673,18 +673,18 @@ export default function Home() {
               
               <div className="relative z-10 p-8 sm:p-12 lg:p-16 xl:p-20 text-center flex flex-col items-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl xl:text-5xl leading-tight max-w-3xl">
-                  Ready to Transform Your Study Habits?
+                  Ready to Escape the Haunted Library?
                 </h2>
                 
                 <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg lg:text-xl text-gray-300 leading-relaxed font-light">
-                  Join thousands of students who are already improving their
-                  academic performance with StudyFlow.
+                  Join thousands of spirits who are already conquering their
+                  academic nightmares with StudyFlow.
                 </p>
                 
                 <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <Link href="/dashboard">
                     <InteractiveHoverButton className="rounded-full bg-red-700 hover:bg-amber-500 text-white border-red-700 hover:border-amber-500 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
-                      Start Your Journey
+                      Begin Your Haunting
                     </InteractiveHoverButton>
                   </Link>
                 </div>
