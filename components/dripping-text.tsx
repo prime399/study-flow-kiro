@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 interface DrippingTextProps {
   text: string;
   className?: string;
+  color?: string; // Base color for the text (defaults to orange)
 }
 
-export function DrippingText({ text, className = "" }: DrippingTextProps) {
+export function DrippingText({ text, className = "", color = "#fb923c" }: DrippingTextProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,12 +21,10 @@ export function DrippingText({ text, className = "" }: DrippingTextProps) {
 
   return (
     <span className={`relative inline-block ${className}`}>
-      {/* Main text with subtle gradient */}
+      {/* Main text - use the color directly, no gradient override */}
       <span
-        className="relative z-10 bg-clip-text text-transparent"
-        style={{
-          backgroundImage: "linear-gradient(180deg, #ffffff 0%, #f5f5f5 60%, #e8a87c 100%)",
-        }}
+        className="relative z-10"
+        style={{ color }}
       >
         {text}
       </span>
@@ -67,8 +66,8 @@ export function DrippingText({ text, className = "" }: DrippingTextProps) {
         
         <defs>
           <linearGradient id="subtleDripGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#e8a87c" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#c97c5d" stopOpacity="0.3" />
+            <stop offset="0%" stopColor={color} stopOpacity="0.8" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.3" />
           </linearGradient>
         </defs>
       </svg>
