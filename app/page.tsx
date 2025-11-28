@@ -348,7 +348,22 @@ export default function Home() {
             ))}
           </div>
           <div className="mx-auto max-w-5xl p-2 sm:p-4">
-            <div className="relative w-full rounded-[12px] border border-white/10 shadow-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+            <div className="relative w-full rounded-[12px] border border-white/10 shadow-xl overflow-visible bg-white/5 backdrop-blur-sm">
+
+              {/* Grim Reaper - Bottom Right */}
+              <div className="absolute -bottom-8 -right-8 sm:-bottom-12 sm:-right-12 md:-bottom-16 md:-right-16 z-20 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">
+                <Image
+                  src="/halloween assets/Grim Reaper Halloween.webp"
+                  alt="Grim Reaper"
+                  width={224}
+                  height={224}
+                  className="w-full h-full object-contain drop-shadow-2xl"
+                  style={{
+                    filter: 'drop-shadow(0 10px 30px rgba(255, 69, 0, 0.5))',
+                  }}
+                />
+              </div>
+              
               <div className="relative w-full">
                 <Image
                   src="/main-dashboard.webp"
@@ -640,12 +655,21 @@ export default function Home() {
 
         <section className="py-12 sm:py-16 lg:py-20 xl:py-32 overflow-x-hidden">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-black via-black to-gray-900 border border-white/10 shadow-[0_20px_80px_-20px_rgba(99,102,241,0.3)]">
-              <div className="absolute inset-0 h-full w-full opacity-40">
-                <Meteors number={12} color="white" />
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-black via-purple-950/30 to-orange-950/20 border border-orange-500/20">
+              <div className="absolute inset-0 h-full w-full opacity-50">
+                <Meteors number={12} color="orange" />
               </div>
-              {/* Subtle gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-600/5 via-transparent to-transparent" />
+              {/* Halloween gradient overlay */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: `
+                    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255, 80, 0, 0.15) 0%, transparent 60%),
+                    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                    radial-gradient(ellipse 60% 40% at 80% 30%, rgba(255, 100, 0, 0.1) 0%, transparent 50%)
+                  `,
+                }}
+              />
               
               <div className="relative z-10 p-8 sm:p-12 lg:p-16 xl:p-20 text-center flex flex-col items-center">
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl xl:text-5xl leading-tight max-w-3xl">
@@ -659,7 +683,7 @@ export default function Home() {
                 
                 <div className="mt-8 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row gap-4 items-center justify-center">
                   <Link href="/dashboard">
-                    <InteractiveHoverButton className="rounded-full bg-amber-500 hover:bg-blue-600 text-white border-amber-500 hover:border-blue-600 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
+                    <InteractiveHoverButton className="rounded-full bg-red-700 hover:bg-amber-500 text-white border-red-700 hover:border-amber-500 text-base sm:text-lg py-3 sm:py-4 px-8 sm:px-10 font-semibold transition-all duration-300">
                       Start Your Journey
                     </InteractiveHoverButton>
                   </Link>
