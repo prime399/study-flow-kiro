@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect, useRef, Component, ReactNode, useCallback } from "react";
+import { Suspense, useState, useEffect, useRef, Component, ReactNode, useCallback, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
@@ -203,7 +203,7 @@ function PumpkinSpotlight({ position = [-1.10403, -0.752614, 0.623707] }: { posi
     time: 0,
   });
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!spotlightRef.current) return;
     
     const flicker = flickerRef.current;
@@ -222,6 +222,9 @@ function PumpkinSpotlight({ position = [-1.10403, -0.752614, 0.623707] }: { posi
     // Subtle color temperature variation (warm orange to yellow)
     const colorShift = Math.sin(flicker.time * 5) * 0.05;
     spotlightRef.current.color.setRGB(1, 0.6 + colorShift, 0.2);
+    
+    // Request next frame for continuous animation
+    state.invalidate();
   });
 
   return (
@@ -268,7 +271,6 @@ function SkeletonModel({
   dragRotationY = 0,
 }: DraggableSkeletonModelProps) {
   const { scene } = useGLTF(url);
-  const clonedSceneRef = useRef<THREE.Object3D | null>(null);
   const groupRef = useRef<THREE.Group>(null);
   
   // Spring physics state for smooth bounce-back
@@ -278,9 +280,21 @@ function SkeletonModel({
     velocity: 0,
   });
 
-  // Clone the scene to avoid issues with reusing the same geometry
-  const clonedScene = scene.clone();
-  clonedSceneRef.current = clonedScene;
+  // Clone the scene ONCE using useMemo to prevent memory leaks
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    // Optimize: reduce texture quality for large textures
+    clone.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const mat = child.material as THREE.MeshStandardMaterial;
+        if (mat.map) {
+          mat.map.minFilter = THREE.LinearFilter;
+          mat.map.generateMipmaps = false;
+        }
+      }
+    });
+    return clone;
+  }, [scene]);
 
   // Update spring target when drag rotation changes
   useEffect(() => {
@@ -288,35 +302,35 @@ function SkeletonModel({
   }, [dragRotationY]);
 
   // Animate with spring physics
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const spring = springRef.current;
-    const stiffness = 180; // Spring stiffness
-    const damping = 12; // Damping factor
+    const stiffness = 180;
+    const damping = 12;
     
-    // Spring force calculation
     const displacement = spring.target - spring.current;
     const springForce = displacement * stiffness;
     const dampingForce = spring.velocity * damping;
     const acceleration = springForce - dampingForce;
     
-    // Update velocity and position
     spring.velocity += acceleration * delta;
     spring.current += spring.velocity * delta;
     
-    // Apply rotation to the group
     if (groupRef.current) {
       groupRef.current.rotation.y = rotation[1] + spring.current;
+    }
+    
+    // Only continue rendering if animation is active
+    if (Math.abs(spring.velocity) > 0.001 || Math.abs(displacement) > 0.001) {
+      state.invalidate();
     }
   });
 
   // Cleanup cloned scene on unmount
   useEffect(() => {
     return () => {
-      if (clonedSceneRef.current) {
-        disposeObject(clonedSceneRef.current);
-      }
+      disposeObject(clonedScene);
     };
-  }, []);
+  }, [clonedScene]);
 
   return (
     <group ref={groupRef} rotation={[rotation[0], rotation[1], rotation[2]]}>
@@ -326,7 +340,6 @@ function SkeletonModel({
         position={position}
         rotation={[0, 0, 0]}
       />
-      {/* Animated spotlight inside the pumpkin */}
       <PumpkinSpotlight position={SCENE_CONFIG.pumpkinLightPosition} />
     </group>
   );
@@ -421,7 +434,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
   useEffect(() => {
     return () => {
       // Dispose of cached GLTF resources
-      useGLTF.clear("/third scene with animation.glb");
+      useGLTF.clear("/third scene with animation-optimized.glb");
     };
   }, []);
 
@@ -463,9 +476,22 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         <Canvas
           camera={{ position: SCENE_CONFIG.cameraPosition, fov: SCENE_CONFIG.cameraFov }}
           style={{ background: "transparent", pointerEvents: "none", position: "relative", zIndex: 1 }}
-          gl={{ alpha: true, antialias: true }}
+          gl={{ 
+            alpha: true, 
+            antialias: false, // Disable for better performance
+            powerPreference: "low-power", // Use integrated GPU when possible
+            precision: "lowp", // Lower precision for better performance
+            depth: true,
+            stencil: false, // Disable if not needed
+          }}
+          dpr={[1, 1.5]} // Limit pixel ratio to reduce GPU memory
+          frameloop="demand" // Only render when needed
           onCreated={(state) => {
-            // Set up error handling for WebGL context loss
+            // Limit max texture size to reduce memory
+            state.gl.capabilities.maxTextureSize = Math.min(
+              state.gl.capabilities.maxTextureSize,
+              2048
+            );
             state.gl.domElement.addEventListener("webglcontextlost", () => {
               handleError(new Error("WebGL context lost"));
             });
@@ -473,7 +499,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         >
           <SceneLighting />
           <Suspense fallback={null}>
-            <SkeletonModel url="/third scene with animation.glb" dragRotationY={dragRotation} />
+            <SkeletonModel url="/third scene with animation-optimized.glb" dragRotationY={dragRotation} />
           </Suspense>
         </Canvas>
       </div>
@@ -486,5 +512,5 @@ export function ThreeHeroModelWithError({ className }: ThreeHeroModelProps) {
   return <SpotlightFallback className={className} />;
 }
 
-// Preload the model for better performance
-useGLTF.preload("/third scene with animation.glb");
+// Preload the optimized model (2.6MB with Draco compression)
+useGLTF.preload("/third scene with animation-optimized.glb");
