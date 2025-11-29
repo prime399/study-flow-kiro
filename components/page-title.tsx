@@ -1,14 +1,16 @@
 export default function PageTitle({
   title,
   button,
+  children,
 }: {
-  title: string
+  title?: string
   button?: React.ReactNode
+  children?: React.ReactNode
 }) {
   return (
     <div className="flex h-20 w-full flex-row items-center justify-between bg-background px-4">
       <h2 className="text-2xl font-semibold leading-none tracking-tight">
-        {title}
+        {children || title}
       </h2>
       {button && button}
     </div>

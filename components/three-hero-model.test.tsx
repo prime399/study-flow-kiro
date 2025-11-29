@@ -8,12 +8,18 @@ vi.mock("@react-three/fiber", () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="r3f-canvas">{children}</div>
   ),
+  useFrame: () => {}, // Mock useFrame hook
+  useThree: () => ({ gl: {}, camera: {}, scene: {} }), // Mock useThree hook
 }));
 
 vi.mock("@react-three/drei", () => {
   const useGLTF = () => ({
     scene: {
-      clone: () => ({ type: "Group", children: [] }),
+      clone: () => ({ 
+        type: "Group", 
+        children: [],
+        traverse: () => {}, // Mock traverse method to prevent errors
+      }),
     },
   });
   useGLTF.preload = () => {};

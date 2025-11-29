@@ -10,6 +10,9 @@ import StudyDurationChart from "./_components/study-duration-progress-chart"
 import StudySessionDistribution from "./_components/study-session-distribution-chart"
 import OnboardingDialogTrigger from "@/components/onboarding-dialog-trigger"
 import { Progress } from "@/components/ui/progress"
+import { FloatingParticles } from "@/components/floating-particles"
+import { SpookyGhost } from "@/components/spooky-ghost"
+import { DrippingText } from "@/components/dripping-text"
 
 function StatsCard({
   title,
@@ -17,15 +20,23 @@ function StatsCard({
   description,
   icon,
   progress,
+  halloweenGlow = false,
 }: {
   title: string
   value: string
   description: string
   icon: React.ReactNode
   progress?: number
+  halloweenGlow?: boolean
 }) {
   return (
-    <Card>
+    <Card
+      className={
+        halloweenGlow
+          ? "transition-all duration-300 border-orange-500/20 shadow-[0_0_15px_rgba(251,146,60,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:border-purple-500/30"
+          : ""
+      }
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon}
@@ -110,11 +121,21 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div>
-        <PageTitle title="Dashboard" />
+      {/* Halloween Effects Layer - positioned fixed behind content */}
+      <FloatingParticles className="fixed inset-0 z-0" />
+
+      {/* SpookyGhost - positioned in bottom-right corner */}
+      <SpookyGhost className="fixed bottom-4 right-4 w-20 h-20 z-10" />
+
+      <div className="relative z-10">
+        {/* Page Title with DrippingText */}
+        <PageTitle>
+          <DrippingText text="Dashboard" color="#fb923c" />
+        </PageTitle>
+
         <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statsCards.map((card, index) => (
-            <StatsCard key={index} {...card} />
+            <StatsCard key={index} {...card} halloweenGlow />
           ))}
         </div>
 

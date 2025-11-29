@@ -70,7 +70,7 @@ class MockWebGLRenderingContext {
 const originalGetContext = HTMLCanvasElement.prototype.getContext;
 type CanvasContextId = Parameters<HTMLCanvasElement["getContext"]>[0];
 
-HTMLCanvasElement.prototype.getContext = function(contextType: CanvasContextId, ...args: unknown[]) {
+HTMLCanvasElement.prototype.getContext = function(this: HTMLCanvasElement, contextType: CanvasContextId, ...args: unknown[]) {
   if (contextType === "webgl" || contextType === "webgl2" || contextType === "experimental-webgl") {
     return new MockWebGLRenderingContext() as unknown as WebGLRenderingContext;
   }

@@ -129,7 +129,7 @@ export default function BYOKSettingsPage() {
   useEffect(() => {
     const provider = providers.find(p => p.id === selectedProvider)
     if (provider) {
-      setAvailableModels(provider.defaultModels)
+      setAvailableModels([...provider.defaultModels])
       setSelectedModel(provider.defaultModels[0])
     }
   }, [selectedProvider])
@@ -284,7 +284,7 @@ export default function BYOKSettingsPage() {
     // Load available models for this provider
     const providerData = providers.find(p => p.id === provider)
     if (providerData) {
-      setEditModelList(providerData.defaultModels)
+      setEditModelList([...providerData.defaultModels])
     }
   }
 
