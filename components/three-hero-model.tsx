@@ -18,11 +18,11 @@ const SCENE_CONFIG = {
   modelDefaultRotationY: -0.7, // Adjust: 0 = front, Math.PI/2 (1.57) = 90°, Math.PI (3.14) = 180°
   
   // Model scale and position
-  modelScale: 1,
+  modelScale: 0.9,
   modelPosition: [0, -1, 0] as [number, number, number],
   
   // Scene container aspect ratio (width multiplier)
-  horizontalScale: 1.5, // Increase for wider scene (1.0 = default, 1.5 = 50% wider)
+  horizontalScale: 1.5,// Increase for wider scene (1.0 = default, 1.5 = 50% wider)
   
   // Right top point light settings
   rightTopLight: {
@@ -434,7 +434,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
   useEffect(() => {
     return () => {
       // Dispose of cached GLTF resources
-      useGLTF.clear("/third scene with animation-optimized.glb");
+      useGLTF.clear("/fourth scene with detailed textures-optimized.glb");
     };
   }, []);
 
@@ -499,7 +499,7 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         >
           <SceneLighting />
           <Suspense fallback={null}>
-            <SkeletonModel url="/third scene with animation-optimized.glb" dragRotationY={dragRotation} />
+            <SkeletonModel url="/fourth scene with detailed textures-optimized.glb" dragRotationY={dragRotation} />
           </Suspense>
         </Canvas>
       </div>
@@ -513,4 +513,4 @@ export function ThreeHeroModelWithError({ className }: ThreeHeroModelProps) {
 }
 
 // Preload the optimized model (2.6MB with Draco compression)
-useGLTF.preload("/third scene with animation-optimized.glb");
+useGLTF.preload("/fourth scene with detailed textures-optimized.glb");

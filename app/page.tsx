@@ -11,6 +11,7 @@ import { DrippingText } from "@/components/dripping-text"
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Marquee } from "@/components/ui/marquee"
 import { GlowingEffect } from "@/components/ui/glowing-effect"
+import { SpookyGhost } from "@/components/spooky-ghost"
 import { cn } from "@/lib/utils"
 import {
   BarChart,
@@ -349,6 +350,9 @@ export default function Home() {
           </div>
           <div className="mx-auto max-w-5xl p-2 sm:p-4">
             <div className="relative w-full rounded-[12px] border border-white/10 shadow-xl overflow-visible bg-white/5 backdrop-blur-sm">
+
+              {/* Happy Ghost - Peeking from behind left middle */}
+              <SpookyGhost className="-left-6 sm:-left-8 md:-left-10 lg:-left-12 top-1/2 -translate-y-1/2 z-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28" />
 
               {/* Grim Reaper - Bottom Right */}
               <div className="absolute -bottom-8 -right-8 sm:-bottom-12 sm:-right-12 md:-bottom-16 md:-right-16 z-20 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">

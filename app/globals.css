@@ -423,6 +423,32 @@ to {
   }
 }
 
+/* Subtle bounce animation - 70% reduced motion and speed */
+@keyframes subtleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Boo text appearance animation */
+@keyframes booAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) translateX(-5px) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+}
+
 /* Enhanced Markdown Styles for AI Chat */
 .markdown-body {
   @apply space-y-3 text-sm leading-relaxed;
