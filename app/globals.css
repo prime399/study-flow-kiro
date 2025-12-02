@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Gothic Font - Special Alphabets */
+@font-face {
+  font-family: 'Special Alphabets';
+  src: url('/fonts/SpecialAlphabets-2.woff2') format('woff2'),
+       url('/fonts/SpecialAlphabets-2.woff') format('woff'),
+       url('/fonts/SpecialAlphabets-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0.9821 0 0;
@@ -152,6 +163,7 @@
   --font-display: var(--font-display);
   --font-logo: var(--font-logo);
   --font-mono: var(--font-mono);
+  --font-gothic: var(--font-gothic);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -372,6 +384,13 @@ nextjs-portal {
   .logo-brand {
     @apply font-display font-semibold;
     letter-spacing: -0.01em;
+  }
+  
+  /* Gothic font utility for decorative headings */
+  .text-gothic {
+    font-family: var(--font-gothic), 'Special Alphabets', ui-serif, Georgia, serif;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
   }
 }
 

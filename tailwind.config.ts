@@ -10,6 +10,10 @@ const config = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  safelist: [
+    "font-gothic",
+    "text-gothic",
+  ],
   plugins: [
     require("tailwindcss-animate"),
     plugin(function ({ matchUtilities, theme }: any) {
@@ -44,6 +48,7 @@ const config = {
         display: ["var(--font-jakarta)", "var(--font-inter)", ...fontFamily.sans],
         logo: ["var(--font-space-grotesk)", "var(--font-jakarta)", ...fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...fontFamily.mono],
+        gothic: ["var(--font-gothic)", "ui-serif", "Georgia", "serif"],
       },
       letterSpacing: {
         tightest: '-0.05em',

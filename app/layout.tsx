@@ -7,6 +7,24 @@ import "./globals.css"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Inter, Plus_Jakarta_Sans, Space_Grotesk, Creepster } from "next/font/google"
+import localFont from "next/font/local"
+
+const specialAlphabets = localFont({
+  src: [
+    {
+      path: "../public/fonts/SpecialAlphabets-2.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/SpecialAlphabets-2.woff",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-gothic",
+  display: "swap",
+})
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -58,6 +76,7 @@ export default function RootLayout({
             GeistSans.variable,
             GeistMono.variable,
             creepster.variable,
+            specialAlphabets.variable,
           )}
         >
           <ThemeProvider
