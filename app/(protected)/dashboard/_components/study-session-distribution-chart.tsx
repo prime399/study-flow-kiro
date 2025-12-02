@@ -171,7 +171,7 @@ export default function StudySessionDistribution({
     return (
       <Card className="h-[300px]">
         <CardHeader className="flex items-center justify-center">
-          <CardTitle>Daily Study Sessions</CardTitle>
+          <CardTitle className="font-gothic">Daily Study Sessions</CardTitle>
         </CardHeader>
         <CardContent className="flex h-full flex-col items-center gap-4 py-10">
           <p className="text-balance text-center text-muted-foreground">
@@ -210,7 +210,7 @@ export default function StudySessionDistribution({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-lg font-semibold">Daily Study Sessions</CardTitle>
+            <CardTitle className="text-lg font-semibold font-gothic">Daily Study Sessions</CardTitle>
             <Badge
               variant="outline"
               className={`${getTrendColor()} border-none font-medium px-2.5 py-1`}

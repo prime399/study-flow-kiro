@@ -9,7 +9,7 @@ export default function PageTitle({
 }) {
   return (
     <div className="flex h-20 w-full flex-row items-center justify-between bg-background px-4">
-      <h2 className="text-2xl font-semibold leading-none tracking-tight">
+      <h2 className="text-2xl font-semibold leading-none tracking-tight font-gothic">
         {children || title}
       </h2>
       {button && button}

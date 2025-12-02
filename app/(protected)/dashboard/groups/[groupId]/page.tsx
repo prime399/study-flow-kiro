@@ -89,7 +89,7 @@ export default function GroupPage({ params }: { params: { groupId: string } }) {
         <TabsContent value="leaderboard" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-gothic">
                 <Trophy className="h-5 w-5 text-yellow-500" />
                 Group Leaderboard
               </CardTitle>
@@ -127,7 +127,7 @@ function GroupLeaderboard({ groupId }: { groupId: Id<"groups"> }) {
     return (
       <div className="flex flex-col items-center p-6 text-center">
         <Trophy className="mb-4 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 text-lg font-semibold">No Data Available</h3>
+        <h3 className="mb-2 text-lg font-semibold font-gothic">No Data Available</h3>
         <p className="text-muted-foreground">
           Complete some study sessions to see the leaderboard!
         </p>

@@ -162,7 +162,7 @@ export default function StudyDurationChart({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold font-gothic">
               <Clock className="h-5 w-5 text-muted-foreground" />
               Study Duration Trend
             </CardTitle>

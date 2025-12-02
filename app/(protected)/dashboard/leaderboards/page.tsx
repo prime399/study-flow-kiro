@@ -81,7 +81,7 @@ function PersonalStatsCard({ userRanking }: { userRanking: any }) {
   return (
     <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/50">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-xl">
+        <CardTitle className="flex items-center gap-3 text-xl font-gothic">
           <div className="rounded-lg bg-primary/10 p-2">
             <User className="h-6 w-6 text-primary" />
           </div>
@@ -169,7 +169,7 @@ function LeaderboardCard({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-3 text-xl">
+            <CardTitle className="flex items-center gap-3 text-xl font-gothic">
               <div className="rounded-lg bg-primary/10 p-2">
                 {icon}
               </div>
@@ -449,7 +449,7 @@ export default function LeaderboardsPage() {
             <div className="rounded-full bg-primary/10 p-6 mb-6">
               <Trophy className="h-16 w-16 text-primary" />
             </div>
-            <h3 className="mb-4 text-2xl font-bold">Ready to Compete?</h3>
+            <h3 className="mb-4 text-2xl font-bold font-gothic">Ready to Compete?</h3>
             <p className="text-muted-foreground text-lg mb-6 max-w-md">
               Complete some study sessions to see the leaderboard and start competing with other students!
             </p>

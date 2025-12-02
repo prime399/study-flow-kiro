@@ -56,7 +56,7 @@ export default function StudyTimer({
   return (
     <Card className="border-2">
       <CardHeader>
-        <CardTitle className="flex items-center justify-center text-2xl">
+        <CardTitle className="flex items-center justify-center text-2xl font-gothic">
           <Clock className="mr-3 h-8 w-8" />
           Study Timer
         </CardTitle>

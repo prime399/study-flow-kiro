@@ -306,7 +306,7 @@ export function TodoBoard() {
     <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex-1">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">To-Do Board</h2>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground font-gothic">To-Do Board</h2>
           <p className="mt-1 max-w-2xl text-xs sm:text-sm lg:text-base text-muted-foreground">
             Plan your study focus, drag tasks between columns, and keep your goals on track.
           </p>

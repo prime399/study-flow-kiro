@@ -388,7 +388,7 @@ export default function Home() {
 
         <section className="mx-auto py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="mb-12 sm:mb-16 text-center max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
+            <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6 font-gothic">
               Dark tools to escape the crypt
             </h2>
             <p className="text-base sm:text-lg text-gray-300 leading-relaxed px-4">
@@ -412,7 +412,7 @@ export default function Home() {
                     </Badge>
                   )}
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3 group-hover:text-white transition-colors">
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3 group-hover:text-white transition-colors font-gothic">
                   {feature.title}
                 </h3>
                 <p className="text-sm sm:text-base text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">
@@ -426,7 +426,7 @@ export default function Home() {
         <section className="py-12 sm:py-16 lg:py-20 w-full overflow-hidden">
           <div className="w-full">
             <div className="text-center mb-8 sm:mb-12 px-4">
-              <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
+              <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6 font-gothic">
                 Whispers from the Haunted Library
               </h2>
               <p className="text-base sm:text-lg text-gray-300 leading-relaxed max-w-2xl mx-auto">
@@ -544,7 +544,7 @@ export default function Home() {
         <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="mx-auto max-w-7xl w-full">
             <div className="text-center mb-12 sm:mb-16 px-4">
-              <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6">
+              <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6 font-gothic">
                 Choose your dark path
               </h2>
               <p className="text-base sm:text-lg text-gray-400 leading-relaxed max-w-3xl mx-auto">
@@ -608,7 +608,7 @@ export default function Home() {
                       >
                         <Icon className="h-6 w-6 sm:h-8 sm:w-8" />
                       </div>
-                      <h3 className="text-xl sm:text-2xl font-semibold text-white">{tier.name}</h3>
+                      <h3 className="text-xl sm:text-2xl font-semibold text-white font-gothic">{tier.name}</h3>
                       <div className="mt-3 sm:mt-4 flex items-baseline gap-2">
                         <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">{tier.price}</span>
                         {tier.period && <span className="text-xs sm:text-sm uppercase tracking-wide text-gray-500">/ {tier.period}</span>}
@@ -676,7 +676,7 @@ export default function Home() {
               />
               
               <div className="relative z-10 p-8 sm:p-12 lg:p-16 xl:p-20 text-center flex flex-col items-center">
-                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl xl:text-5xl leading-tight max-w-3xl">
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl xl:text-5xl leading-tight max-w-3xl font-gothic">
                   Ready to Escape the Haunted Library?
                 </h2>
                 

@@ -148,7 +148,7 @@ export default function SettingsPage() {
 
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold mb-2">Integrations</h2>
+          <h2 className="text-lg font-semibold mb-2 font-gothic">Integrations</h2>
           <p className="text-sm text-muted-foreground">
             Manage your connected services and integrations
           </p>
@@ -188,7 +188,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="mt-12 p-6 rounded-lg bg-muted/50">
-          <h3 className="font-semibold mb-2">Need Help?</h3>
+          <h3 className="font-semibold mb-2 font-gothic">Need Help?</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Check out our documentation for detailed setup guides for each integration.
           </p>
