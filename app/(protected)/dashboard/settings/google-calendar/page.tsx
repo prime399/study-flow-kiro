@@ -379,7 +379,7 @@ export default function GoogleCalendarSettingsPage() {
                     </Badge>
                   </CardTitle>
                   <CardDescription>
-                    Control which calendar operations MentorMind AI can perform on your behalf
+                    Control which calendar operations The Librarian Ghost can perform on your behalf
                   </CardDescription>
                 </div>
               </div>
@@ -408,7 +408,7 @@ export default function GoogleCalendarSettingsPage() {
                         Read Calendar Events
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow MentorMind to view your calendar schedule and suggest optimal study times
+                        Allow The Librarian Ghost to view your calendar schedule and suggest optimal study times
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">
@@ -435,7 +435,7 @@ export default function GoogleCalendarSettingsPage() {
                         Create Study Sessions
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow MentorMind to automatically create calendar events when you complete study sessions
+                        Allow The Librarian Ghost to automatically create calendar events when you complete study sessions
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">
@@ -462,7 +462,7 @@ export default function GoogleCalendarSettingsPage() {
                         Modify Calendar Events
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow MentorMind to reschedule or update existing study session events
+                        Allow The Librarian Ghost to reschedule or update existing study session events
                       </p>
                     </div>
                   </div>
@@ -484,7 +484,7 @@ export default function GoogleCalendarSettingsPage() {
                         Delete Calendar Events
                       </Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow MentorMind to remove study session events from your calendar
+                        Allow The Librarian Ghost to remove study session events from your calendar
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="destructive" className="text-xs">

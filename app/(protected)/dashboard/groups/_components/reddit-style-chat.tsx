@@ -82,7 +82,7 @@ const TOPIC_COLORS = [
 ]
 
 const MENTOR_MIND_TOPIC = {
-  label: "MentorMind Guidance",
+  label: "Librarian Ghost Guidance",
   color: "#8b5cf6",
 }
 
@@ -210,7 +210,7 @@ function ThreadCard({
                 {thread.isAIMessage && (
                   <Badge variant="secondary" className="h-5 gap-1 rounded-full px-2 text-[11px]">
                     <Bot className="h-3 w-3" />
-                    MentorMind
+                    Librarian Ghost
                   </Badge>
                 )}
                 {thread.topic && (
@@ -266,7 +266,7 @@ function ThreadCard({
               className="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 transition-colors hover:border-purple-400 hover:text-foreground"
             >
               <Sparkles className="h-4 w-4 text-purple-500" />
-              Ask MentorMind
+              Summon the Ghost
             </button>
 
             {replyCount > 0 && (
@@ -352,7 +352,7 @@ function ThreadCard({
                     {reply.isAIMessage && (
                       <Badge variant="secondary" className="h-4 gap-1 rounded-full px-1.5 text-[10px]">
                         <Bot className="h-2.5 w-2.5" />
-                        MentorMind
+                        Librarian Ghost
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground">
@@ -383,7 +383,7 @@ function ThreadCard({
             </div>
             <div>
               <span className="text-xs font-medium text-purple-600 dark:text-purple-300">
-                MentorMind is crafting a response…
+                The Librarian Ghost is conjuring a response…
               </span>
               <div className="mt-2 flex gap-1.5">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-purple-500 [animation-delay:-0.3s]" />
@@ -469,7 +469,7 @@ function NewThreadDialog({
               className="min-h-[130px] resize-none"
             />
             <p className="text-xs text-muted-foreground">
-              Tip: Tag <Badge variant="outline" className="mx-1 text-[10px] px-1">@Mind</Badge> to get contextual help from MentorMind without leaving the thread.
+              Tip: Tag <Badge variant="outline" className="mx-1 text-[10px] px-1">@Mind</Badge> to summon The Librarian Ghost without leaving the thread.
             </p>
           </div>
 
@@ -588,11 +588,11 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
         topicColor: MENTOR_MIND_TOPIC.color,
       })
       await requestMentorMind(prompt, newMentorThreadId)
-      toast.success("Mind is responding in the new MentorMind Guidance thread.")
+      toast.success("The Ghost is responding in the new Librarian Ghost Guidance thread.")
       setMentorPrompt("")
     } catch (error) {
       if (error instanceof Error) {
-        console.error("MentorMind quick prompt error:", error)
+        console.error("Librarian Ghost quick prompt error:", error)
       }
     }
   }
@@ -739,7 +739,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                     Lead your study group with confidence
                   </h1>
                   <p className="max-w-xl text-sm text-muted-foreground md:text-base">
-                    Align your teammates, capture decisions, and invite MentorMind to accelerate momentum. Everything updates in real time so the
+                    Align your teammates, capture decisions, and summon The Librarian Ghost to accelerate momentum. Everything updates in real time so the
                     whole group stays in sync.
                   </p>
                 </div>
@@ -773,10 +773,10 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                   <div className="relative space-y-2">
                     <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                       <Sparkles className="h-4 w-4 text-purple-500" />
-                      MentorMind
+                      Librarian Ghost
                     </div>
                     <p className="text-3xl font-semibold text-foreground">{aiContributionCount}</p>
-                    <p className="text-xs text-muted-foreground">AI-guided insights stitched into discussions.</p>
+                    <p className="text-xs text-muted-foreground">Spectral insights woven into discussions.</p>
                   </div>
                 </div>
               </div>
@@ -792,7 +792,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                   }}
                 >
                   <Sparkles className="mr-2 h-4 w-4 text-purple-500" />
-                  Nudge MentorMind
+                  Summon the Ghost
                 </Button>
               </div>
             </div>
@@ -804,9 +804,9 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-foreground">MentorMind quick assist</h3>
+                  <h3 className="text-base font-semibold text-foreground">Librarian Ghost quick assist</h3>
                   <p className="text-sm text-muted-foreground">
-                    Ask MentorMind for targeted help. Every request spins up a guidance thread the whole group can follow.
+                    Summon The Librarian Ghost for spectral guidance. Every request conjures a guidance thread the whole group can follow.
                   </p>
                 </div>
               </div>
@@ -830,7 +830,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                     ) : (
                       <Sparkles className="mr-2 h-4 w-4" />
                     )}
-                    Ask MentorMind
+                    Summon the Ghost
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -848,11 +848,11 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
               </form>
 
               <div className="relative mt-2 rounded-2xl border border-purple-400/30 bg-purple-500/10 p-4 text-xs text-purple-900 dark:text-purple-100">
-                <p className="font-semibold uppercase tracking-wide">MentorMind can:</p>
+                <p className="font-semibold uppercase tracking-wide">The Librarian Ghost can:</p>
                 <ul className="mt-2 space-y-1 text-[11px] text-purple-900/80 dark:text-purple-100/80">
-                  <li>• Outline the next moves for your sprint plan</li>
-                  <li>• Surface blockers hidden in long threads</li>
-                  <li>• Craft study prompts tailored to your exam schedule</li>
+                  <li>• Divine the next moves for your sprint plan</li>
+                  <li>• Unearth blockers hidden in long threads</li>
+                  <li>• Conjure study prompts tailored to your exam schedule</li>
                 </ul>
               </div>
 
@@ -882,9 +882,9 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                     <BarChart3 className="h-4 w-4 text-purple-500" />
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        MentorMind avg
+                        Ghost avg
                       </p>
-                      <p className="text-xs font-medium text-foreground">{mentorTouchpointRate} assists / thread</p>
+                      <p className="text-xs font-medium text-foreground">{mentorTouchpointRate} hauntings / thread</p>
                     </div>
                   </div>
                 </div>
@@ -903,7 +903,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold text-foreground md:text-xl">Thread library</h3>
                   <p className="max-w-2xl text-sm text-muted-foreground">
-                    Scan the knowledge base of your group, filter by context, and keep a pulse on MentorMind activity from one place.
+                    Scan the knowledge base of your group, filter by context, and keep a pulse on Librarian Ghost activity from one place.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -914,7 +914,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                     {isFiltered ? `${filteredReplies} replies` : `${totalReplies} replies`}
                   </Badge>
                   <Badge variant="outline" className="rounded-full border-border/40 px-3 py-1 text-xs">
-                    {aiContributionCount} MentorMind touchpoints
+                    {aiContributionCount} Ghost hauntings
                   </Badge>
                 </div>
               </div>
@@ -942,7 +942,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                       <SelectContent>
                         <SelectItem value="recent">Newest threads</SelectItem>
                         <SelectItem value="active">Recent activity</SelectItem>
-                        <SelectItem value="mentor">MentorMind first</SelectItem>
+                        <SelectItem value="mentor">Ghost guidance first</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -965,7 +965,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                         value="mentor"
                         className="rounded-full text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground"
                       >
-                        MentorMind
+                        Ghost Threads
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -1030,7 +1030,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-foreground">No discussions yet</h3>
                     <p className="text-sm text-muted-foreground">
-                      Launch the first thread to set the tone for your group. Invite MentorMind by tagging{" "}
+                      Launch the first thread to set the tone for your group. Summon The Librarian Ghost by tagging{" "}
                       <Badge variant="secondary" className="mx-1 rounded-full px-2 py-1 text-[11px]">@Mind</Badge>
                       for instant guidance.
                     </p>
@@ -1088,7 +1088,7 @@ export function RedditStyleChat({ groupId }: RedditStyleChatProps) {
                             ? "newest"
                             : sortOrder === "active"
                               ? "recent activity"
-                              : "MentorMind guidance"}
+                              : "Ghost guidance"}
                         </span>
                       </div>
                       <div className="space-y-5">

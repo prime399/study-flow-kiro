@@ -15,7 +15,7 @@ export const MCP_TOOLS = [
   {
     id: "none",
     label: "Auto-Select Tools",
-    description: "Let MentorMind automatically choose the best tool for each task.",
+    description: "Let The Librarian Ghost automatically choose the best tool for each task.",
   },
 ] as const
 

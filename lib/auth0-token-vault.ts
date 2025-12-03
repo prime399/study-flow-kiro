@@ -42,7 +42,7 @@ export async function getGoogleCalendarToken(): Promise<string> {
     if (!token) {
       throw new TokenVaultError(
         "Authorization required to access the Google Calendar API. " +
-          "MentorMind needs permission to view your calendar events."
+          "The Librarian Ghost needs permission to view your calendar events."
       );
     }
 
@@ -77,7 +77,7 @@ export async function getSpotifyToken(): Promise<string> {
     if (!token) {
       throw new TokenVaultError(
         "Authorization required to access the Spotify API. " +
-          "MentorMind needs permission to control your music playback."
+          "The Librarian Ghost needs permission to control your music playback."
       );
     }
 

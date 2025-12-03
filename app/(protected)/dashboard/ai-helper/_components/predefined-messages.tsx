@@ -1,12 +1,13 @@
 "use client"
 /**
- * Predefined message suggestions for users
- * Provides quick-start options for common queries
+ * Predefined message suggestions for The Librarian Ghost
+ * Provides quick-start options with spooky Halloween theme
  */
 
 import { Button } from "@/components/ui/button"
-import { Bot, ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { useState } from "react"
+import Image from "next/image"
 
 export const PREDEFINED_MESSAGES = [
   // Focus & Concentration
@@ -50,37 +51,37 @@ interface PredefinedMessagesProps {
   isLoading: boolean
 }
 
-// Organize messages by category for better UX
+// Organize messages by category with spooky Halloween theme
 const MESSAGE_CATEGORIES = [
   {
-    title: "🎯 Focus & Concentration",
+    title: "🔮 Focus & Concentration",
     messages: PREDEFINED_MESSAGES.slice(0, 3),
-    color: "border-blue-200 hover:border-blue-300",
+    color: "border-purple-300/50 hover:border-purple-400/70 dark:border-purple-700/50 dark:hover:border-purple-600/70",
   },
   {
-    title: "📚 Study Techniques",
+    title: "📜 Ancient Study Techniques",
     messages: PREDEFINED_MESSAGES.slice(3, 7),
-    color: "border-green-200 hover:border-green-300",
+    color: "border-orange-300/50 hover:border-orange-400/70 dark:border-orange-700/50 dark:hover:border-orange-600/70",
   },
   {
-    title: "⏰ Time Management",
+    title: "⏳ Time Management Rituals",
     messages: PREDEFINED_MESSAGES.slice(7, 11),
-    color: "border-purple-200 hover:border-purple-300",
+    color: "border-violet-300/50 hover:border-violet-400/70 dark:border-violet-700/50 dark:hover:border-violet-600/70",
   },
   {
-    title: "📊 Performance Analysis",
+    title: "🕯️ Performance Divination",
     messages: PREDEFINED_MESSAGES.slice(11, 15),
-    color: "border-orange-200 hover:border-orange-300",
+    color: "border-amber-300/50 hover:border-amber-400/70 dark:border-amber-700/50 dark:hover:border-amber-600/70",
   },
   {
-    title: "💪 Motivation & Habits",
+    title: "💀 Motivation & Habits",
     messages: PREDEFINED_MESSAGES.slice(15, 19),
-    color: "border-pink-200 hover:border-pink-300",
+    color: "border-rose-300/50 hover:border-rose-400/70 dark:border-rose-700/50 dark:hover:border-rose-600/70",
   },
   {
-    title: "🌱 Health & Wellness",
+    title: "🌙 Health & Wellness",
     messages: PREDEFINED_MESSAGES.slice(19),
-    color: "border-emerald-200 hover:border-emerald-300",
+    color: "border-teal-300/50 hover:border-teal-400/70 dark:border-teal-700/50 dark:hover:border-teal-600/70",
   },
 ] as const
 
@@ -100,13 +101,22 @@ export function PredefinedMessages({ onMessageSelect, isLoading }: PredefinedMes
   return (
     <div className="flex h-full flex-col items-center justify-start py-4 sm:py-8 text-center px-3 sm:px-6 overflow-y-auto">
       <div className="mb-6 sm:mb-8">
-        <Bot className="mx-auto mb-3 sm:mb-4 h-12 w-12 sm:h-16 sm:w-16 text-primary" />
-        <h3 className="mb-3 text-xl sm:text-2xl font-bold text-foreground">
-          MentorMind
+        <div className="relative mx-auto mb-3 sm:mb-4 h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-full ring-2 ring-purple-500/50 ring-offset-2 ring-offset-background shadow-lg shadow-purple-500/20 animate-pulse">
+          <Image
+            src="/skelton pfp.webp"
+            alt="The Librarian Ghost"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+        <h3 className="mb-3 text-xl sm:text-2xl font-bold text-foreground font-gothic">
+          The Librarian Ghost
         </h3>
-        <p className="max-w-lg text-sm sm:text-base text-muted-foreground leading-relaxed">
-          Get personalized study advice, techniques, and insights based on your learning patterns. 
-          Choose a topic below or ask me anything!
+        <p className="max-w-lg text-sm sm:text-base text-muted-foreground leading-relaxed italic">
+          &quot;Ah, a seeker of knowledge enters my eternal library... 
+          I have guided countless souls through their studies. 
+          What wisdom do you seek from beyond the veil?&quot;
         </p>
       </div>
       
@@ -183,16 +193,16 @@ export function PredefinedMessages({ onMessageSelect, isLoading }: PredefinedMes
       </div>
       
       <div className="mt-6 sm:mt-8 space-y-3 text-center">
-        <div className="text-sm text-muted-foreground px-2 font-medium">
-          💡 Pro Tip: Ask specific questions for personalized recommendations
+        <div className="text-sm text-muted-foreground px-2 font-medium italic">
+          🕯️ Whisper your questions into the void for spectral guidance...
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs text-muted-foreground/80 px-2">
           <div className="flex items-center gap-1">
-            <span>Powered by</span>
-            <span className="font-semibold text-primary">Heroku Inference and Agents</span>
+            <span>Haunted by</span>
+            <span className="font-semibold text-purple-500">Heroku Inference and Agents</span>
           </div>
           <span className="hidden sm:inline">•</span>
-          <span>Personalized Study Intelligence</span>
+          <span>Ethereal Study Wisdom</span>
         </div>
       </div>
     </div>

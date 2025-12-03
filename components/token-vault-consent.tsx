@@ -82,7 +82,7 @@ function formatScope(scope: string): string {
 /**
  * Token Vault Consent Popup Component
  *
- * Displays a user-friendly consent screen for granting API access to MentorMind
+ * Displays a user-friendly consent screen for granting API access to The Librarian Ghost
  */
 export function TokenVaultConsentPopup({ interrupt }: TokenVaultConsentProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -152,7 +152,7 @@ export function TokenVaultConsentPopup({ interrupt }: TokenVaultConsentProps) {
    * Handle user denying consent
    */
   const handleDeny = () => {
-    setError("Access denied. MentorMind won't be able to access your " + service.name + " data.");
+    setError("Access denied. The Librarian Ghost won't be able to access your " + service.name + " data.");
     // Note: In real implementation, this would cancel the agent execution
   };
 
@@ -164,7 +164,7 @@ export function TokenVaultConsentPopup({ interrupt }: TokenVaultConsentProps) {
             <CheckCircle2 className="h-12 w-12 text-green-600 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Access Granted!</h3>
             <p className="text-sm text-muted-foreground">
-              MentorMind can now access your {service.name} data.
+              The Librarian Ghost can now access your {service.name} data.
             </p>
           </div>
         </CardContent>
@@ -180,7 +180,7 @@ export function TokenVaultConsentPopup({ interrupt }: TokenVaultConsentProps) {
           <div>
             <CardTitle>Additional Permissions Required</CardTitle>
             <CardDescription>
-              MentorMind needs access to your {service.name} account
+              The Librarian Ghost needs access to your {service.name} account
             </CardDescription>
           </div>
         </div>
@@ -188,7 +188,7 @@ export function TokenVaultConsentPopup({ interrupt }: TokenVaultConsentProps) {
       <CardContent className="space-y-4">
         <div>
           <p className="text-sm text-muted-foreground mb-3">
-            To answer your question, MentorMind needs permission to:
+            To answer your question, The Librarian Ghost needs permission to:
           </p>
           <ul className="space-y-2">
             {requiredScopes.map((scope) => (

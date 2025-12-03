@@ -100,7 +100,7 @@ const menuItems = [
     icon: Trophy,
   },
   {
-    name: "AI Helper",
+    name: "Librarian Ghost",
     href: "/dashboard/ai-helper",
     icon: Bot,
   },

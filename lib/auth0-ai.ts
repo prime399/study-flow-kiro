@@ -43,7 +43,7 @@ export const auth0AI = new Auth0AI({
 });
 
 /**
- * Google Calendar scopes required for MentorMind
+ * Google Calendar scopes required for The Librarian Ghost
  * These scopes allow read-only access to calendar data
  */
 const GOOGLE_CALENDAR_SCOPES = [

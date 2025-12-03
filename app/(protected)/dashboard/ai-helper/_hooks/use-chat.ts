@@ -37,7 +37,7 @@ type AvailableModelsResponse = {
 
 const COINS_PER_AI_MESSAGE = 100
 const COIN_SHORTAGE_MESSAGE =
-  "You need at least 100 coins to ask MentorMind. Start a study session to earn more coins (every second of study adds 1 coin)."
+  "The spirits require 100 coins to commune with The Librarian Ghost. Begin a study session to earn more coins (every second of study adds 1 coin to your spectral treasury)."
 
 const MCP_TOOL_STORAGE_KEY = "preferredMcpTool"
 

@@ -200,7 +200,7 @@ export function ChatInput({
 
           {insufficientCoins && (
             <p className="text-xs text-destructive">
-              You need {coinsRequired} coins to ask MentorMind. Start a study session to earn more coins (1 second = 1 coin).
+              You need {coinsRequired} coins to summon The Librarian Ghost. Start a study session to earn more coins (1 second = 1 coin).
             </p>
           )}
 

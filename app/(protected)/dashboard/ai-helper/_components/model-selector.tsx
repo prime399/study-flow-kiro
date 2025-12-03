@@ -40,7 +40,7 @@ const getIconForModel = (id: string) => {
 const AUTO_MODEL_OPTION: ModelInfo = {
   id: AUTO_MODEL_ID,
   name: "Smart Auto Route",
-  description: "MentorMind chooses the best model for each request.",
+  description: "The Librarian Ghost chooses the best model for each request.",
   icon: getIconForModel(AUTO_MODEL_ID),
   badge: "Auto",
   badgeVariant: "secondary",

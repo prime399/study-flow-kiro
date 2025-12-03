@@ -3,7 +3,6 @@
 import PageTitle from "@/components/page-title"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
 import { api } from "@/convex/_generated/api"
 import { useQuery } from "convex/react"
 import { TrashIcon } from "lucide-react"
@@ -47,11 +46,11 @@ export default function AIHelperPage() {
   })
 
   return (
-    <div className="flex flex-col h-screen max-h-screen overflow-hidden">
+    <div className="flex flex-col h-screen max-h-screen overflow-hidden relative">
       {/* Header section - fully responsive layout */}
       <div className="flex flex-col gap-2 px-3 py-2 sm:px-4 sm:py-3 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between">
-          <PageTitle title="MentorMind" />
+          <PageTitle title="The Librarian Ghost" />
           <Button
             variant="ghost"
             size="sm"
