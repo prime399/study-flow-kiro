@@ -22,8 +22,11 @@ import {
 import { api } from "@/convex/_generated/api"
 import { cn, formatDuration } from "@/lib/utils"
 import { useQuery } from "convex/react"
-import { Clock, Crown, Medal, Trophy, User, Users, TrendingUp, Zap, Target, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { Clock, Crown, Medal, Trophy, User, Users, TrendingUp, Zap, Target, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Ghost } from "lucide-react"
 import { ReactNode, useState } from "react"
+import { FloatingParticles } from "@/components/floating-particles"
+import { SpookyGhost } from "@/components/spooky-ghost"
+import { DrippingText } from "@/components/dripping-text"
 
 interface LeaderboardEntry {
   rank: number
@@ -50,45 +53,78 @@ interface LeaderboardCardProps {
   onPageChange?: (page: number) => void
 }
 
+function UndeadAvatar({ src, name, rank }: { src?: string, name: string, rank: number }) {
+  const isTopRank = rank <= 3;
+  
+  return (
+    <div className={cn("relative inline-block", isTopRank && "z-10")}>
+      {isTopRank && (
+        <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-purple-400/20 to-orange-400/20 rounded-full blur-sm" />
+      )}
+      <Avatar className={cn(
+        "h-11 w-11 border-2 relative transition-transform duration-500",
+        isTopRank 
+          ? "border-purple-500/30 ring-2 ring-purple-500/20 scale-105" 
+          : "border-background/50 shadow-sm"
+      )}>
+        <AvatarImage src={src} alt={name} className={cn(isTopRank && "sepia-[.1] brightness-110 contrast-110")} />
+        <AvatarFallback className={cn(
+          "font-bold text-base",
+          isTopRank 
+            ? "bg-purple-950/50 text-purple-200" 
+            : "bg-muted text-muted-foreground"
+        )}>
+          {name[0]?.toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      {isTopRank && (
+         <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+           {rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"}
+         </div>
+      )}
+    </div>
+  )
+}
+
 function PersonalStatsCard({ userRanking }: { userRanking: any }) {
   const stats = [
     {
-      label: "Global Rank",
-      value: userRanking.rank ? `#${userRanking.rank}` : "Not Ranked",
-      icon: <Trophy className="h-5 w-5" />,
-      bgColor: "bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30",
-      iconColor: "text-yellow-600 dark:text-yellow-400",
-      borderColor: "border-yellow-200 dark:border-yellow-800",
+      label: "Soul Rank",
+      value: userRanking.rank ? `#${userRanking.rank}` : "Lost Soul",
+      icon: <Trophy className="h-4 w-4" />,
+      bgColor: "bg-orange-500/5",
+      iconColor: "text-orange-600 dark:text-orange-500",
+      borderColor: "border-orange-500/10",
     },
     {
-      label: "Total Study Time",
+      label: "Haunt Time",
       value: formatDuration(userRanking.totalStudyTime || 0),
-      icon: <Clock className="h-5 w-5" />,
-      bgColor: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      borderColor: "border-blue-200 dark:border-blue-800",
+      icon: <Clock className="h-4 w-4" />,
+      bgColor: "bg-purple-500/5",
+      iconColor: "text-purple-600 dark:text-purple-500",
+      borderColor: "border-purple-500/10",
     },
     {
-      label: "Performance",
-      value: userRanking.rank && userRanking.rank <= 10 ? "Top 10" : "Growing",
-      icon: <TrendingUp className="h-5 w-5" />,
-      bgColor: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30",
-      iconColor: "text-green-600 dark:text-green-400",
-      borderColor: "border-green-200 dark:border-green-800",
+      label: "Spirit Power",
+      value: userRanking.rank && userRanking.rank <= 10 ? "Elite Ghost" : "Rising Spirit",
+      icon: <Ghost className="h-4 w-4" />,
+      bgColor: "bg-green-500/5",
+      iconColor: "text-green-600 dark:text-green-500",
+      borderColor: "border-green-500/10",
     },
   ]
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/50">
+    <Card className="border-border/40 bg-background/60 backdrop-blur-sm shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-xl font-gothic">
-          <div className="rounded-lg bg-primary/10 p-2">
-            <User className="h-6 w-6 text-primary" />
+        <CardTitle className="flex items-center gap-3 text-lg font-medium text-foreground">
+          <div className="rounded-md bg-orange-500/10 p-2">
+            <User className="h-5 w-5 text-orange-600 dark:text-orange-500" />
           </div>
-          Your Performance Dashboard
+          Your Haunt Stats
         </CardTitle>
-        <CardDescription className="text-base">
-          Track your progress and see how you rank globally
+        <CardDescription className="text-sm text-muted-foreground">
+          Track your spectral presence and competition rank
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -97,7 +133,7 @@ function PersonalStatsCard({ userRanking }: { userRanking: any }) {
             <Card
               key={index}
               className={cn(
-                "relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-1",
+                "relative overflow-hidden transition-all duration-200 hover:bg-accent/50 border shadow-none",
                 stat.bgColor,
                 stat.borderColor
               )}
@@ -105,14 +141,14 @@ function PersonalStatsCard({ userRanking }: { userRanking: any }) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-xs font-medium text-muted-foreground">
                       {stat.label}
                     </p>
-                    <p className="text-2xl font-bold tracking-tight">
+                    <p className="text-xl font-bold tracking-tight text-foreground">
                       {stat.value}
                     </p>
                   </div>
-                  <div className={cn("rounded-full p-3", stat.iconColor)}>
+                  <div className={cn("rounded-full p-2.5 bg-background/50", stat.iconColor)}>
                     {stat.icon}
                   </div>
                 </div>
@@ -136,22 +172,22 @@ function LeaderboardCard({
   const getRankBadge = (rank: number) => {
     const badges = {
       1: { 
-        icon: <Crown className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600",
-        textColor: "text-white",
-        borderColor: "border-yellow-400/50"
+        icon: <Crown className="h-3.5 w-3.5" />, 
+        bgColor: "bg-orange-100 dark:bg-orange-900/30",
+        textColor: "text-orange-600 dark:text-orange-400",
+        borderColor: "border-orange-200 dark:border-orange-800/30"
       },
       2: { 
-        icon: <Medal className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-slate-300 via-slate-400 to-slate-500",
-        textColor: "text-white",
-        borderColor: "border-slate-400/50"
+        icon: <Medal className="h-3.5 w-3.5" />, 
+        bgColor: "bg-purple-100 dark:bg-purple-900/30",
+        textColor: "text-purple-600 dark:text-purple-400",
+        borderColor: "border-purple-200 dark:border-purple-800/30"
       },
       3: { 
-        icon: <Medal className="h-4 w-4" />, 
-        bgColor: "bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800",
-        textColor: "text-white",
-        borderColor: "border-amber-600/50"
+        icon: <Medal className="h-3.5 w-3.5" />, 
+        bgColor: "bg-green-100 dark:bg-green-900/30",
+        textColor: "text-green-600 dark:text-green-400",
+        borderColor: "border-green-200 dark:border-green-800/30"
       },
     }
     return badges[rank as keyof typeof badges]
@@ -159,39 +195,39 @@ function LeaderboardCard({
 
   const getRowStyle = (rank: number) => {
     if (rank <= 3) {
-      return "bg-gradient-to-r from-primary/8 via-primary/5 to-transparent border-l-4 border-l-primary shadow-sm"
+      return "bg-gradient-to-r from-purple-500/5 to-transparent border-l-2 border-l-orange-500"
     }
-    return "hover:bg-muted/50 transition-all duration-200 hover:shadow-sm"
+    return "hover:bg-muted/40 transition-colors"
   }
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/50">
+    <Card className="border-border/40 bg-background/60 backdrop-blur-sm shadow-sm">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-3 text-xl font-gothic">
-              <div className="rounded-lg bg-primary/10 p-2">
+            <CardTitle className="flex items-center gap-3 text-lg font-medium text-foreground">
+              <div className="rounded-md bg-orange-500/10 p-2">
                 {icon}
               </div>
               {title}
             </CardTitle>
-            <CardDescription className="text-base ml-12">
+            <CardDescription className="text-sm text-muted-foreground ml-12">
               {description}
             </CardDescription>
           </div>
-          <Badge variant="secondary" className="px-3 py-1">
-            {data.length} Students
+          <Badge variant="outline" className="px-3 py-1 bg-background/50 font-normal">
+            {data.length} Spirits
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border bg-background/50 overflow-hidden">
+        <div className="rounded-lg border border-border/40 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/20 hover:bg-muted/20">
-                <TableHead className="w-[120px] font-semibold">Rank</TableHead>
-                <TableHead className="font-semibold">Student</TableHead>
-                <TableHead className="text-right font-semibold">Study Time</TableHead>
+              <TableRow className="bg-muted/30 hover:bg-muted/30 border-b-border/40">
+                <TableHead className="w-[100px] font-medium">Rank</TableHead>
+                <TableHead className="font-medium">Spirit Name</TableHead>
+                <TableHead className="text-right font-medium">Time in Limbo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -199,16 +235,16 @@ function LeaderboardCard({
                 <TableRow 
                   key={leader.userId}
                   className={cn(
-                    "transition-all duration-200",
+                    "border-b-border/40",
                     getRowStyle(leader.rank)
                   )}
                 >
-                  <TableCell className="py-4">
+                  <TableCell className="py-3">
                     <div className="flex items-center gap-3">
                       {getRankBadge(leader.rank) ? (
                         <div
                           className={cn(
-                            "rounded-full p-2 shadow-md border-2",
+                            "rounded-full p-1.5 border shadow-sm",
                             getRankBadge(leader.rank)?.bgColor,
                             getRankBadge(leader.rank)?.borderColor
                           )}
@@ -218,50 +254,36 @@ function LeaderboardCard({
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-muted to-muted/70 text-sm font-bold border-2 border-border">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/30 text-xs font-medium text-muted-foreground">
                           {leader.rank}
                         </div>
                       )}
-                      {leader.rank <= 3 && (
-                        <Badge 
-                          variant={leader.rank === 1 ? "default" : "secondary"}
-                          className="text-xs font-semibold"
-                        >
-                          {leader.rank === 1 ? "Champion" : leader.rank === 2 ? "Runner-up" : "3rd Place"}
-                        </Badge>
-                      )}
                     </div>
                   </TableCell>
-                  <TableCell className="py-4">
+                  <TableCell className="py-3">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-11 w-11 border-2 border-background shadow-md ring-2 ring-primary/10">
-                        <AvatarImage src={leader.avatar} alt={leader.name} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-bold text-base">
-                          {leader.name[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UndeadAvatar src={leader.avatar} name={leader.name} rank={leader.rank} />
                       <div>
-                        <span className="font-semibold text-base">{leader.name}</span>
+                        <span className={cn("font-medium text-sm", leader.rank <= 3 ? "text-foreground" : "text-muted-foreground")}>
+                          {leader.name}
+                        </span>
                         {leader.rank <= 3 && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <Zap className="h-3 w-3 text-yellow-500" />
-                            <span className="text-xs text-muted-foreground font-medium">Top Performer</span>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <Ghost className="h-3 w-3 text-purple-500/70" />
+                            <span className="text-[10px] text-purple-500/70 font-medium uppercase tracking-wider">Ancient Spirit</span>
                           </div>
                         )}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right py-4">
-                    <div className="space-y-1">
-                      <div className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  <TableCell className="text-right py-3">
+                    <div className="space-y-0.5">
+                      <div className={cn(
+                        "text-sm font-semibold",
+                        leader.rank <= 3 ? "text-foreground" : "text-muted-foreground"
+                      )}>
                         {formatDuration(leader.totalStudyTime)}
                       </div>
-                      {leader.rank <= 5 && (
-                        <Badge variant="outline" className="text-xs border-primary/50">
-                          <Target className="h-3 w-3 mr-1" />
-                          Elite
-                        </Badge>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -272,10 +294,10 @@ function LeaderboardCard({
         {pagination && pagination.totalPages > 1 && (
           <div className="mt-6 space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-sm text-muted-foreground">
-                Showing <span className="font-semibold text-foreground">{((pagination.currentPage - 1) * pagination.pageSize) + 1}</span> to{" "}
-                <span className="font-semibold text-foreground">{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)}</span> of{" "}
-                <span className="font-semibold text-foreground">{pagination.totalCount}</span> students
+              <div className="text-xs text-muted-foreground">
+                Showing <span className="font-medium text-foreground">{((pagination.currentPage - 1) * pagination.pageSize) + 1}</span> to{" "}
+                <span className="font-medium text-foreground">{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)}</span> of{" "}
+                <span className="font-medium text-foreground">{pagination.totalCount}</span> spirits
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -283,7 +305,7 @@ function LeaderboardCard({
                   size="sm"
                   onClick={() => onPageChange?.(1)}
                   disabled={!pagination.hasPrev}
-                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="h-8 w-8 p-0"
                 >
                   <ChevronsLeft className="h-4 w-4" />
                 </Button>
@@ -292,7 +314,7 @@ function LeaderboardCard({
                   size="sm"
                   onClick={() => onPageChange?.(pagination.currentPage - 1)}
                   disabled={!pagination.hasPrev}
-                  className="h-9 px-3 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="h-8 px-3"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Previous
@@ -312,14 +334,12 @@ function LeaderboardCard({
                     return (
                       <Button
                         key={pageNum}
-                        variant={pagination.currentPage === pageNum ? "default" : "outline"}
+                        variant={pagination.currentPage === pageNum ? "secondary" : "ghost"}
                         size="sm"
                         onClick={() => onPageChange?.(pageNum)}
                         className={cn(
-                          "h-9 w-9 p-0 transition-all",
-                          pagination.currentPage === pageNum
-                            ? "bg-gradient-to-br from-primary to-primary/80 shadow-md"
-                            : "hover:bg-primary/10 hover:text-primary"
+                          "h-8 w-8 p-0",
+                          pagination.currentPage === pageNum && "bg-orange-100 text-orange-900 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-100"
                         )}
                       >
                         {pageNum}
@@ -332,7 +352,7 @@ function LeaderboardCard({
                   size="sm"
                   onClick={() => onPageChange?.(pagination.currentPage + 1)}
                   disabled={!pagination.hasNext}
-                  className="h-9 px-3 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="h-8 px-3"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -342,7 +362,7 @@ function LeaderboardCard({
                   size="sm"
                   onClick={() => onPageChange?.(pagination.totalPages)}
                   disabled={!pagination.hasNext}
-                  className="h-9 w-9 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="h-8 w-8 p-0"
                 >
                   <ChevronsRight className="h-4 w-4" />
                 </Button>
@@ -438,9 +458,9 @@ export default function LeaderboardsPage() {
     return (
       <div className="space-y-8">
         <div className="space-y-2">
-          <PageTitle title="Leaderboards" />
+          <PageTitle title="Undead Leaderboard" />
           <p className="text-lg text-muted-foreground">
-            Track your ranking and compete with other students
+            Track your ranking and compete with other spirits to escape the haunted library
           </p>
         </div>
         
@@ -451,12 +471,12 @@ export default function LeaderboardsPage() {
             </div>
             <h3 className="mb-4 text-2xl font-bold font-gothic">Ready to Compete?</h3>
             <p className="text-muted-foreground text-lg mb-6 max-w-md">
-              Complete some study sessions to see the leaderboard and start competing with other students!
+              Complete some study sessions to see the leaderboard and start competing with other spirits!
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                <span>Study Time Tracking</span>
+                <span>Haunt Time Tracking</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -474,31 +494,38 @@ export default function LeaderboardsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-3">
-        <PageTitle title="Leaderboards" />
-        <div className="flex items-center justify-between">
-          <p className="text-lg text-muted-foreground">
-            Track your ranking and compete with other students
-          </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>{globalLeaderboard.pagination.totalCount} Active Students</span>
+    <>
+      <FloatingParticles className="fixed inset-0 z-0" />
+      <SpookyGhost className="fixed bottom-4 left-4 w-16 h-16 z-10" />
+      
+      <div className="relative z-10 space-y-8">
+        <div className="space-y-3">
+          <PageTitle>
+             <DrippingText text="Undead Leaderboard" color="#fb923c" />
+          </PageTitle>
+          <div className="flex items-center justify-between">
+            <p className="text-lg text-muted-foreground">
+              Track your ranking and compete with other spirits to escape the haunted library
+            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Ghost className="h-4 w-4 text-purple-400" />
+              <span>{globalLeaderboard.pagination.totalCount} Restless Spirits</span>
+            </div>
           </div>
         </div>
+        
+        <div className="space-y-8">
+          <PersonalStatsCard userRanking={userRanking} />
+          <LeaderboardCard
+            title="Top Spirits"
+            description="Most powerful spirits haunting the library"
+            icon={<Trophy className="h-5 w-5 text-orange-500" />}
+            data={globalLeaderboard.data}
+            pagination={globalLeaderboard.pagination}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
-      
-      <div className="space-y-8">
-        <PersonalStatsCard userRanking={userRanking} />
-        <LeaderboardCard
-          title="Global Rankings"
-          description="Top students across all groups and study sessions"
-          icon={<Trophy className="h-5 w-5 text-primary" />}
-          data={globalLeaderboard.data}
-          pagination={globalLeaderboard.pagination}
-          onPageChange={handlePageChange}
-        />
-      </div>
-    </div>
+    </>
   )
 }
