@@ -45,41 +45,28 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const GridBackgroundPattern = () => {
+const HalloweenChartPattern = () => {
   return (
     <>
-      <pattern
-        id="grid-pattern"
-        x="0"
-        y="0"
-        width="20"
-        height="20"
-        patternUnits="userSpaceOnUse"
-      >
-        <path
-          d="M 20 0 L 0 0 0 20"
-          fill="none"
-          stroke="oklch(var(--border))"
-          strokeWidth="0.5"
-          opacity="0.3"
-        />
+      <pattern id="completedPattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(45)">
+        <rect width="100%" height="100%" fill="#9333ea" fillOpacity="0.8" />
+        <circle cx="10" cy="10" r="2" fill="#fb923c" fillOpacity="0.5" />
       </pattern>
-      <pattern
-        id="fine-grid-pattern"
-        x="0"
-        y="0"
-        width="10"
-        height="10"
-        patternUnits="userSpaceOnUse"
-      >
-        <path
-          d="M 10 0 L 0 0 0 10"
-          fill="none"
-          stroke="oklch(var(--border))"
-          strokeWidth="0.25"
-          opacity="0.15"
-        />
+      
+      <pattern id="incompletePattern" patternUnits="userSpaceOnUse" width="20" height="20" patternTransform="rotate(-45)">
+        <rect width="100%" height="100%" fill="#fb923c" fillOpacity="0.2" />
+        <circle cx="10" cy="10" r="2" fill="#9333ea" fillOpacity="0.5" />
       </pattern>
+
+      <linearGradient id="completedGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#9333ea" stopOpacity="1" />
+        <stop offset="100%" stopColor="#7e22ce" stopOpacity="0.8" />
+      </linearGradient>
+
+      <linearGradient id="incompleteGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#fb923c" stopOpacity="0.8" />
+        <stop offset="100%" stopColor="#f97316" stopOpacity="0.6" />
+      </linearGradient>
     </>
   );
 };
@@ -206,7 +193,7 @@ export default function StudySessionDistribution({
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -254,11 +241,11 @@ export default function StudySessionDistribution({
               <span className="font-medium">{new Date(activeData.date).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}</span>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-chart-1"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#9333ea]"></div>
                   <span>Completed: {activeData.completed}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-chart-2"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#fb923c]"></div>
                   <span>Incomplete: {activeData.incomplete}</span>
                 </div>
               </div>
@@ -283,25 +270,8 @@ export default function StudySessionDistribution({
             barCategoryGap="25%"
           >
             <defs>
-              <GridBackgroundPattern />
-              <linearGradient id="completedGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(var(--chart-1))" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="oklch(var(--chart-1))" stopOpacity={0.4} />
-              </linearGradient>
-              <linearGradient id="incompleteGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(var(--chart-2))" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="oklch(var(--chart-2))" stopOpacity={0.4} />
-              </linearGradient>
+              <HalloweenChartPattern />
             </defs>
-            
-            {/* Grid Background */}
-            <rect
-              x="0"
-              y="0"
-              width="100%"
-              height="100%"
-              fill="url(#fine-grid-pattern)"
-            />
             
             {/* Cartesian Grid for better data reading */}
             <CartesianGrid
@@ -343,15 +313,17 @@ export default function StudySessionDistribution({
             />
             <Bar 
               dataKey="completed" 
-              fill="url(#completedGradient)" 
+              fill="url(#completedGradient)"
+              stroke="url(#completedPattern)" 
+              strokeWidth={2}
               radius={[4, 4, 0, 0]}
               maxBarSize={40}
             >
               {data.map((_, index) => (
                 <Cell
                   key={`cell-completed-${index}`}
-                  fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.4}
-                  stroke={activeIndex === index ? "oklch(var(--chart-1))" : "transparent"}
+                  fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.6}
+                  stroke={activeIndex === index ? "#d8b4fe" : "none"}
                   strokeWidth={activeIndex === index ? 2 : 0}
                   onMouseEnter={() => setActiveIndex(index)}
                   className="transition-all duration-300 ease-in-out cursor-pointer"
@@ -360,15 +332,17 @@ export default function StudySessionDistribution({
             </Bar>
             <Bar 
               dataKey="incomplete" 
-              fill="url(#incompleteGradient)" 
+              fill="url(#incompleteGradient)"
+              stroke="url(#incompletePattern)"
+              strokeWidth={2} 
               radius={[4, 4, 0, 0]}
               maxBarSize={40}
             >
               {data.map((_, index) => (
                 <Cell
                   key={`cell-incomplete-${index}`}
-                  fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.4}
-                  stroke={activeIndex === index ? "oklch(var(--chart-2))" : "transparent"}
+                  fillOpacity={activeIndex === null ? 1 : activeIndex === index ? 1 : 0.6}
+                  stroke={activeIndex === index ? "#fdba74" : "none"}
                   strokeWidth={activeIndex === index ? 2 : 0}
                   onMouseEnter={() => setActiveIndex(index)}
                   className="transition-all duration-300 ease-in-out cursor-pointer"
@@ -381,11 +355,11 @@ export default function StudySessionDistribution({
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2 text-sm">
-            <div className="w-3 h-3 rounded-sm bg-chart-1"></div>
+            <div className="w-3 h-3 rounded-sm bg-[#9333ea]"></div>
             <span className="text-muted-foreground">Completed Sessions</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <div className="w-3 h-3 rounded-sm bg-chart-2"></div>
+            <div className="w-3 h-3 rounded-sm bg-[#fb923c]"></div>
             <span className="text-muted-foreground">Incomplete Sessions</span>
           </div>
         </div>

@@ -33,7 +33,7 @@ function StatsCard({
     <Card
       className={
         halloweenGlow
-          ? "transition-all duration-300 border-orange-500/20 shadow-[0_0_15px_rgba(251,146,60,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] hover:border-purple-500/30"
+          ? "transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
           : ""
       }
     >
@@ -49,15 +49,11 @@ function StatsCard({
         {progress !== undefined && (
           <Progress
             value={progress}
-            className="mt-2"
-            style={{
-              background:
-                progress < 30
-                  ? "var(--red-100)"
-                  : progress < 70
-                    ? "var(--yellow-100)"
-                    : "var(--green-100)",
-            }}
+            className={
+              halloweenGlow
+                ? "mt-2 h-2 [&>div]:bg-gradient-to-r [&>div]:from-[#fb923c]/60 [&>div]:to-[#9333ea]/60 [&>div]:transition-all [&>div]:duration-1000 bg-primary/5"
+                : "mt-2 h-2"
+            }
           />
         )}
       </CardContent>

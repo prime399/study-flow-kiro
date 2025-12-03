@@ -21,12 +21,10 @@ import Link from "next/link";
 import { 
   CartesianGrid, 
   Line, 
-  LineChart, 
   XAxis, 
   YAxis, 
   Area, 
-  AreaChart,
-  ResponsiveContainer 
+  AreaChart 
 } from "recharts";
 
 const chartConfig = {
@@ -35,6 +33,26 @@ const chartConfig = {
     color: "oklch(var(--chart-1))",
   },
 } satisfies ChartConfig;
+
+const HalloweenChartPattern = () => {
+  return (
+    <>
+      {/* Professional Halloween Theme Pattern for Line/Area */}
+      <linearGradient id="durationGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="5%" stopColor="#9333ea" stopOpacity={0.8}/>
+        <stop offset="95%" stopColor="#fb923c" stopOpacity={0.1}/>
+      </linearGradient>
+      
+      <filter id="halloweenGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+        <feMerge> 
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </>
+  );
+};
 
 export default function StudyDurationChart({
   recentSessions,
@@ -158,7 +176,7 @@ export default function StudyDurationChart({
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -228,18 +246,7 @@ export default function StudyDurationChart({
             margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
           >
             <defs>
-              <linearGradient id="durationGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(var(--chart-1))" stopOpacity={0.3} />
-                <stop offset="50%" stopColor="oklch(var(--chart-1))" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="oklch(var(--chart-1))" stopOpacity={0} />
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge> 
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
+              <HalloweenChartPattern />
             </defs>
             
             <CartesianGrid 
@@ -292,29 +299,29 @@ export default function StudyDurationChart({
             <Area
               type="monotone"
               dataKey="duration"
-              stroke="oklch(var(--chart-1))"
-              strokeWidth={3}
+              stroke="none"
               fill="url(#durationGradient)"
-              filter="url(#glow)"
+              fillOpacity={0.8}
             />
             
             {/* Line with enhanced styling */}
             <Line
               type="monotone"
               dataKey="duration"
-              stroke="oklch(var(--chart-1))"
+              stroke="#fb923c"
               strokeWidth={3}
+              filter="url(#halloweenGlow)"
               dot={{
-                fill: "oklch(var(--chart-1))",
+                fill: "#9333ea",
                 strokeWidth: 2,
-                stroke: "oklch(var(--background))",
-                r: 4,
+                stroke: "#fb923c",
+                r: 5,
               }}
               activeDot={{
-                r: 6,
-                stroke: "oklch(var(--chart-1))",
+                r: 8,
+                stroke: "#fb923c",
                 strokeWidth: 2,
-                fill: "oklch(var(--background))",
+                fill: "#9333ea",
               }}
             />
           </AreaChart>
