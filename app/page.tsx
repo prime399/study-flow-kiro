@@ -640,7 +640,7 @@ export default function Home() {
                 © 2025 StudyFlow. All rights reserved.
               </p>
               <Link
-                href={"https://www.study-flow.tech/#"}
+                href={"https://halloween.study-flow.tech/#"}
                 className="text-sm text-gray-400 underline hover:text-white transition-colors"
                 target="_blank"
               >

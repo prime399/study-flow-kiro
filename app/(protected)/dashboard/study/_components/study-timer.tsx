@@ -23,6 +23,7 @@ export default function StudyTimer({
   onStudyTypeChange,
   onStartStop,
   onReset,
+  halloweenGlow = false,
 }: {
   studyTime: number
   studyDuration: number
@@ -32,6 +33,7 @@ export default function StudyTimer({
   onStudyTypeChange: (value: string) => void
   onStartStop: () => void
   onReset: () => void
+  halloweenGlow?: boolean
 }) {
   const { incrementTops, resetSessionTops } = useTopsStore()
   const progress = (studyTime / studyDuration) * 100
@@ -54,7 +56,11 @@ export default function StudyTimer({
     onReset()
   }
   return (
-    <Card className="border-2">
+    <Card className={
+        halloweenGlow
+          ? "border-2 transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : "border-2"
+      }>
       <CardHeader>
         <CardTitle className="flex items-center justify-center text-2xl font-gothic">
           <Clock className="mr-3 h-8 w-8" />
@@ -75,7 +81,14 @@ export default function StudyTimer({
             <NumberFlow value={seconds} format={{ minimumIntegerDigits: 2 }} />
           </div>
         </div>
-        <Progress value={Math.min(progress, 100)} className="h-3" />
+        <Progress 
+          value={Math.min(progress, 100)} 
+          className={
+            halloweenGlow
+              ? "h-3 [&>div]:bg-gradient-to-r [&>div]:from-[#fb923c]/60 [&>div]:to-[#9333ea]/60 [&>div]:transition-all [&>div]:duration-1000 bg-primary/5"
+              : "h-3"
+          }
+        />
         <div className="space-y-2 text-center">
           <p className="text-sm font-medium text-muted-foreground">Study type</p>
           <div className="flex justify-center">

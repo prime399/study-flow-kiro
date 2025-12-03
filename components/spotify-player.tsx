@@ -11,6 +11,7 @@ import Image from "next/image"
 
 interface SpotifyPlayerProps {
   autoStart?: boolean
+  halloweenGlow?: boolean
 }
 
 declare global {
@@ -20,7 +21,7 @@ declare global {
   }
 }
 
-export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps) {
+export default function SpotifyPlayer({ autoStart = false, halloweenGlow = false }: SpotifyPlayerProps) {
   const [player, setPlayer] = useState<any>(null)
   const [deviceId, setDeviceId] = useState<string | null>(null)
   const [currentTrack, setCurrentTrack] = useState<any>(null)
@@ -212,7 +213,11 @@ export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps)
 
   if (!selectedPlaylist) {
     return (
-      <Card className="border-2">
+      <Card className={
+        halloweenGlow
+          ? "border-2 transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : "border-2"
+      }>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Music className="h-5 w-5" />
@@ -228,7 +233,11 @@ export default function SpotifyPlayer({ autoStart = false }: SpotifyPlayerProps)
   }
 
   return (
-    <Card className="border-2">
+    <Card className={
+        halloweenGlow
+          ? "border-2 transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : "border-2"
+      }>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Music className="h-5 w-5" />

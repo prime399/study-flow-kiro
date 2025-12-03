@@ -14,12 +14,14 @@ export default function StudySettings({
   onDurationChange,
   onDailyGoalChange,
   onSave,
+  halloweenGlow = false,
 }: {
   studyDuration: number
   dailyGoal: number
   onDurationChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onDailyGoalChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onSave: () => void
+  halloweenGlow?: boolean
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -83,7 +85,11 @@ export default function StudySettings({
   return (
     <div className="space-y-6">
       {/* Study Duration Settings */}
-      <Card>
+      <Card className={
+        halloweenGlow
+          ? "transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : ""
+      }>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
             <Clock className="mr-2 h-5 w-5" />
@@ -151,7 +157,11 @@ export default function StudySettings({
       </Card>
 
       {/* Daily Goal Settings */}
-      <Card>
+      <Card className={
+        halloweenGlow
+          ? "transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : ""
+      }>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
             <Target className="mr-2 h-5 w-5" />
@@ -221,7 +231,11 @@ export default function StudySettings({
       </Card>
 
       {/* Settings Summary & Save */}
-      <Card>
+      <Card className={
+        halloweenGlow
+          ? "transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+          : ""
+      }>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
             <Settings className="mr-2 h-5 w-5" />

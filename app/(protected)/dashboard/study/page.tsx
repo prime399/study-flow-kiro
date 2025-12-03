@@ -1,21 +1,24 @@
 "use client"
+import { DrippingText } from "@/components/dripping-text"
+import { FloatingParticles } from "@/components/floating-particles"
+import { SpookyGhost } from "@/components/spooky-ghost"
 import PageTitle from "@/components/page-title"
-import { Card, CardContent } from "@/components/ui/card"
+import SpotifyPlayer from "@/components/spotify-player"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
 import { api } from "@/convex/_generated/api"
+import { formatTimeTimer } from "@/lib/utils"
+import { useSpotifyStore } from "@/store/use-spotify-store"
+import confetti from "canvas-confetti"
 import { useMutation, useQuery } from "convex/react"
 import { useQueryState } from "nuqs"
 import { useCallback, useEffect } from "react"
 import { toast } from "sonner"
-import confetti from "canvas-confetti"
+import NotificationPermission from "./_components/notification-permission"
 import RecentSessions from "./_components/recent-sessions"
 import StudySettings from "./_components/study-settings"
 import StudyStats from "./_components/study-stats"
 import StudyTimer from "./_components/study-timer"
-import NotificationPermission from "./_components/notification-permission"
-import { formatTimeTimer } from "@/lib/utils"
-import SpotifyPlayer from "@/components/spotify-player"
-import { useSpotifyStore } from "@/store/use-spotify-store"
 
 const STUDY_TYPE_OPTIONS = [
   { value: "study", label: "Study" },
@@ -221,65 +224,76 @@ export default function StudyPage() {
   const progress = (studyTime / studyDuration) * 100
 
   return (
-    <div className="">
-      <PageTitle title="Study Dashboard" />
-      <NotificationPermission />
-      <div className="grid gap-6">
-        <div className={`grid gap-6 ${autoplayEnabled && selectedPlaylist ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
-          <StudyTimer
-            studyTime={studyTime}
-            studyDuration={studyDuration}
-            studyType={studyType}
-            studyTypeOptions={STUDY_TYPE_OPTIONS}
-            onStudyTypeChange={handleStudyTypeChange}
-            isStudying={isStudying}
-            onStartStop={handleStartStop}
-            onReset={handleReset}
-          />
-          {autoplayEnabled && selectedPlaylist && (
-            <SpotifyPlayer autoStart={isStudying} />
-          )}
-        </div>
+    <>
+      {/* Halloween Effects Layer */}
+      <FloatingParticles className="fixed inset-0 z-0" />
+      <SpookyGhost className="fixed bottom-4 right-4 w-20 h-20 z-10" />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="stats">Statistics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stats" className="mt-6">
-            <StudyStats
+      <div className="relative z-10">
+        <PageTitle>
+          <DrippingText text="Study Dashboard" color="#fb923c" />
+        </PageTitle>
+        <NotificationPermission />
+        <div className="grid gap-6">
+          <div className={`grid gap-6 ${autoplayEnabled && selectedPlaylist ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
+            <StudyTimer
               studyTime={studyTime}
-              progress={progress}
-              totalStudyTime={stats?.totalStudyTime ?? 0}
-              coinsBalance={stats?.coinsBalance ?? 0}
-            />
-          </TabsContent>
-
-          <TabsContent value="settings" className="mt-6">
-            <StudySettings
               studyDuration={studyDuration}
-              dailyGoal={dailyGoal}
-              onDurationChange={handleDurationChange}
-              onDailyGoalChange={handleDailyGoalChange}
-              onSave={handleSaveSettings}
+              studyType={studyType}
+              studyTypeOptions={STUDY_TYPE_OPTIONS}
+              onStudyTypeChange={handleStudyTypeChange}
+              isStudying={isStudying}
+              onStartStop={handleStartStop}
+              onReset={handleReset}
+              halloweenGlow={true}
             />
-          </TabsContent>
-
-          <TabsContent value="history" className="mt-6">
-            {stats?.recentSessions && stats.recentSessions.length > 0 ? (
-              <RecentSessions sessions={stats.recentSessions} />
-            ) : (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  No study sessions recorded yet.
-                </CardContent>
-              </Card>
+            {autoplayEnabled && selectedPlaylist && (
+              <SpotifyPlayer autoStart={isStudying} halloweenGlow={true} />
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="stats">Statistics</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="stats" className="mt-6">
+              <StudyStats
+                studyTime={studyTime}
+                progress={progress}
+                totalStudyTime={stats?.totalStudyTime ?? 0}
+                coinsBalance={stats?.coinsBalance ?? 0}
+                halloweenGlow={true}
+              />
+            </TabsContent>
+
+            <TabsContent value="settings" className="mt-6">
+              <StudySettings
+                studyDuration={studyDuration}
+                dailyGoal={dailyGoal}
+                onDurationChange={handleDurationChange}
+                onDailyGoalChange={handleDailyGoalChange}
+                onSave={handleSaveSettings}
+                halloweenGlow={true}
+              />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-6">
+              {stats?.recentSessions && stats.recentSessions.length > 0 ? (
+                <RecentSessions sessions={stats.recentSessions} halloweenGlow={true} />
+              ) : (
+                <Card className="transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)]">
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    No study sessions recorded yet.
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

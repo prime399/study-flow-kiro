@@ -10,11 +10,13 @@ export default function StudyStats({
   progress,
   totalStudyTime,
   coinsBalance,
+  halloweenGlow = false,
 }: {
   studyTime: number
   progress: number
   totalStudyTime: number
   coinsBalance: number
+  halloweenGlow?: boolean
 }) {
   const hours = Math.floor(totalStudyTime / 3600)
   const minutes = Math.floor((totalStudyTime % 3600) / 60)
@@ -43,7 +45,11 @@ export default function StudyStats({
       {/* Main Statistics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Current Session */}
-        <Card className="relative overflow-hidden">
+        <Card className={
+          halloweenGlow
+            ? "relative overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+            : "relative overflow-hidden"
+        }>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -74,7 +80,11 @@ export default function StudyStats({
         </Card>
 
         {/* Total Study Time */}
-        <Card className="relative overflow-hidden">
+        <Card className={
+          halloweenGlow
+            ? "relative overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+            : "relative overflow-hidden"
+        }>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -101,7 +111,11 @@ export default function StudyStats({
         </Card>
 
         {/* Mentor Coins */}
-        <Card className="relative overflow-hidden">
+        <Card className={
+          halloweenGlow
+            ? "relative overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
+            : "relative overflow-hidden"
+        }>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
