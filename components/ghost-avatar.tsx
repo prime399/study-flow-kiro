@@ -91,6 +91,9 @@ export function GhostAvatar({ src, alt, className, showStatus = true }: GhostAva
           <mask id={`${uniqueId}-mask`}>
             <path d={bodyPath} fill="white" />
           </mask>
+          <filter id={`${uniqueId}-cheek-blur`}>
+            <feGaussianBlur stdDeviation="1.5" />
+          </filter>
         </defs>
 
         {/* 1. The Ghost Shape Background (Tinted) */}
@@ -155,9 +158,9 @@ export function GhostAvatar({ src, alt, className, showStatus = true }: GhostAva
           </g>
 
           {/* Cheeks (Rosy/Subtle) */}
-          <g fill="#ff9999" opacity="0.4" style={{ mixBlendMode: 'multiply' }}>
-             <circle cx="30" cy="50" r="5" blur="2" />
-             <circle cx="70" cy="50" r="5" blur="2" />
+          <g fill="#ff9999" opacity="0.4" style={{ mixBlendMode: 'multiply' }} filter={`url(#${uniqueId}-cheek-blur)`}>
+             <circle cx="30" cy="50" r="5" />
+             <circle cx="70" cy="50" r="5" />
           </g>
         </g>
 

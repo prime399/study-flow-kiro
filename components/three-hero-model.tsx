@@ -74,6 +74,7 @@ class ThreeErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
 
 interface ThreeHeroModelProps {
   className?: string;
+  onLoaded?: () => void;
 }
 
 interface SkeletonModelProps {
@@ -261,6 +262,7 @@ function PumpkinSpotlight({ position = [-1.10403, -0.752614, 0.623707] }: { posi
 // Skeleton model component that loads the GLB file with drag rotation
 interface DraggableSkeletonModelProps extends SkeletonModelProps {
   dragRotationY: number;
+  onLoaded?: () => void;
 }
 
 function SkeletonModel({
@@ -269,9 +271,20 @@ function SkeletonModel({
   position = SCENE_CONFIG.modelPosition,
   rotation = [0, SCENE_CONFIG.modelDefaultRotationY, 0],
   dragRotationY = 0,
+  onLoaded,
 }: DraggableSkeletonModelProps) {
   const { scene } = useGLTF(url);
   const groupRef = useRef<THREE.Group>(null);
+  
+  // Notify parent that model is loaded
+  useEffect(() => {
+    if (onLoaded) {
+      // Short delay to ensure first frame renders
+      requestAnimationFrame(() => {
+        onLoaded();
+      });
+    }
+  }, [onLoaded]);
   
   // Spring physics state for smooth bounce-back
   const springRef = useRef({
@@ -420,7 +433,7 @@ function useDragRotation(maxRotation: number = Math.PI) {
 }
 
 // Main ThreeHeroModel component
-export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
+export function ThreeHeroModel({ className, onLoaded }: ThreeHeroModelProps) {
   const [hasError, setHasError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -442,6 +455,8 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
   const handleError = (error: Error) => {
     console.error("ThreeHeroModel error:", error);
     setHasError(true);
+    // Ensure we unblock the loading screen even if model fails
+    if (onLoaded) onLoaded();
   };
 
   // Don't render on server
@@ -499,7 +514,11 @@ export function ThreeHeroModel({ className }: ThreeHeroModelProps) {
         >
           <SceneLighting />
           <Suspense fallback={null}>
-            <SkeletonModel url="/fourth scene with detailed textures-optimized.glb" dragRotationY={dragRotation} />
+            <SkeletonModel 
+              url="/fourth scene with detailed textures-optimized.glb" 
+              dragRotationY={dragRotation} 
+              onLoaded={onLoaded}
+            />
           </Suspense>
         </Canvas>
       </div>

@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils"
 interface CarouselProps {
   children: React.ReactNode[]
   className?: string
+  faceWidth?: number
+  gap?: number
 }
 
-export function SpookyCarousel({ children, className }: CarouselProps) {
+export function SpookyCarousel({ children, className, faceWidth = 320, gap = 20 }: CarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const itemsRef = useRef<(HTMLDivElement | null)[]>([])
   const [width, setWidth] = useState(1000)

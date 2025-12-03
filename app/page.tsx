@@ -16,6 +16,7 @@ import { WobblyGhosts } from "@/components/wobbly-ghosts"
 import { SpookyCarousel } from "@/components/spooky-carousel"
 import { GhostAvatar } from "@/components/ghost-avatar"
 import { HalloweenPath } from "@/components/halloween-path"
+import { InteractiveGhost } from "@/components/interactive-ghost"
 import { cn } from "@/lib/utils"
 import {
   BarChart,
@@ -36,7 +37,8 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import dynamic from "next/dynamic"
-import { Suspense } from "react"
+import { Suspense, useState, useCallback, useEffect } from "react"
+import { LoadingScreen } from "@/components/loading-screen"
 
 // Loading placeholder for 3D model
 function ModelLoadingPlaceholder() {
@@ -212,8 +214,24 @@ const pricingTiers = [
 ]
 
 export default function Home() {
+  const [isModelLoaded, setIsModelLoaded] = useState(false)
+
+  const handleModelLoaded = useCallback(() => {
+    setIsModelLoaded(true)
+  }, [])
+
+  // Safety timeout to ensure loading screen doesn't persist forever
+  // especially on mobile where model might be hidden or on slow connections
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsModelLoaded(true)
+    }, 5000) // 5s max wait time
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
     <div className="min-h-screen w-full bg-black relative overflow-x-hidden">
+      <LoadingScreen isReady={isModelLoaded} />
       {/* Midnight Mist */}
       <div
         className="absolute inset-0 z-0"
@@ -240,6 +258,9 @@ export default function Home() {
         <main className="relative flex-1 overflow-x-hidden">
 
         <section className="relative mx-auto py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+          {/* Ghost placed here to roam the hero section */}
+          <InteractiveGhost className="hidden lg:block absolute top-32 left-10 z-30" />
+          
           {/* Halloween themed background - spans full hero section */}
           <div 
             className="pointer-events-none absolute inset-0"
@@ -316,7 +337,7 @@ export default function Home() {
             {/* Right column: 3D Model (desktop only) */}
             <div className="hidden lg:block relative h-[480px] xl:h-[580px]">
               <Suspense fallback={<ModelLoadingPlaceholder />}>
-                <ThreeHeroModel className="w-full h-full" />
+                <ThreeHeroModel className="w-full h-full" onLoaded={handleModelLoaded} />
               </Suspense>
             </div>
           </div>
