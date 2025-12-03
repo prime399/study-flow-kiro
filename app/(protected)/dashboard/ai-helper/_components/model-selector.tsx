@@ -25,13 +25,11 @@ const getIconForModel = (id: string) => {
   switch (id) {
     case AUTO_MODEL_ID:
       return <Sparkles className="h-4 w-4" />
-    case "gpt-oss-120b":
-    case "nova-pro":
-      return <Brain className="h-4 w-4" />
-    case "nova-lite":
-      return <Zap className="h-4 w-4" />
-    case "claude-4-5-sonnet":
+    case "claude-sonnet-4-20250514":
       return <Cpu className="h-4 w-4" />
+    case "gpt-4o":
+    case "gpt-4o-mini":
+      return <Brain className="h-4 w-4" />
     default:
       return <Brain className="h-4 w-4" />
   }
@@ -50,35 +48,28 @@ const AUTO_MODEL_OPTION: ModelInfo = {
 const DEFAULT_MODELS: ModelInfo[] = [
   AUTO_MODEL_OPTION,
   {
-    id: "claude-4-5-sonnet",
-    name: "Claude 4.5 Sonnet",
-    description: "Balanced reasoning model recommended for most study help.",
+    id: "claude-sonnet-4-20250514",
+    name: "Claude Sonnet 4",
+    description: "Advanced reasoning model recommended for most study help.",
     icon: <Cpu className="h-4 w-4" />,
     badge: "Recommended",
     badgeVariant: "default",
   },
   {
-    id: "nova-lite",
-    name: "Nova Lite",
-    description: "Fast and efficient for quick responses",
+    id: "gpt-4o",
+    name: "GPT-4o",
+    description: "OpenAI's most capable model for complex tasks (BYOK only).",
+    icon: <Brain className="h-4 w-4" />,
+    badge: "BYOK",
+    badgeVariant: "outline",
+  },
+  {
+    id: "gpt-4o-mini",
+    name: "GPT-4o Mini",
+    description: "Fast and efficient OpenAI model (BYOK only).",
     icon: <Zap className="h-4 w-4" />,
-    badge: "Fast",
+    badge: "BYOK",
     badgeVariant: "secondary",
-  },
-  {
-    id: "nova-pro",
-    name: "Nova Pro",
-    description: "Balanced performance for most tasks",
-    icon: <Brain className="h-4 w-4" />,
-    badge: "Pro",
-    badgeVariant: "outline",
-  },
-  {
-    id: "gpt-oss-120b",
-    name: "GPT OSS 120B",
-    description: "OpenAI OSS model kept as a reliable fallback option",
-    icon: <Brain className="h-4 w-4" />,
-    badgeVariant: "outline",
   },
 ] as const
 

@@ -9,6 +9,7 @@ export interface Message {
   content: string
   toolInvocations?: any[]
   timestamp: number
+  isStreaming?: boolean
 }
 
 export const generateId = (): string => Math.random().toString(36).substring(2, 15)

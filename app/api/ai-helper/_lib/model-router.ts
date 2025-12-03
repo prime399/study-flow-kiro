@@ -1,5 +1,5 @@
 import { AIRequestBody, StudyStats } from "@/lib/types"
-import { getAvailableModels, SupportedModelId } from "./openai-client"
+import { getAvailableModels, SupportedModelId, DEFAULT_MODEL_ID } from "./models"
 
 export type UrgencyLevel = "low" | "medium" | "high"
 export type RequirementCategory = "analysis" | "planning" | "creative" | "motivation" | "general"
@@ -238,74 +238,72 @@ function buildPreferences(
 ): { model: SupportedModelId; source: "auto" | "fallback" } {
   const { urgency, requirement, condition } = analysis
 
+  // With Anthropic as primary provider, Claude Sonnet 4.5 is the default for most cases
+  // GPT-4o models are available for BYOK users only
+  
   if (urgency.value === "high") {
+    // For high urgency, prefer faster models if available via BYOK
     return pickFirstAvailable([
-      "nova-lite",
-      "nova-pro",
-      "claude-4-5-sonnet",
-      "gpt-oss-120b",
+      "gpt-4o-mini",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
     ], available)
   }
 
   if (requirement.value === "analysis") {
+    // For analysis, prefer Claude's advanced reasoning
     return pickFirstAvailable([
-      "claude-4-5-sonnet",
-      "gpt-oss-120b",
-      "nova-pro",
-      "nova-lite",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
   if (requirement.value === "planning") {
     return pickFirstAvailable([
-      "claude-4-5-sonnet",
-      "nova-pro",
-      "nova-lite",
-      "gpt-oss-120b",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
   if (requirement.value === "creative") {
     return pickFirstAvailable([
-      "nova-pro",
-      "claude-4-5-sonnet",
-      "gpt-oss-120b",
-      "nova-lite",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
   if (requirement.value === "motivation") {
     return pickFirstAvailable([
-      "claude-4-5-sonnet",
-      "nova-pro",
-      "gpt-oss-120b",
-      "nova-lite",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
   if (condition.value === "burnout") {
     return pickFirstAvailable([
-      "claude-4-5-sonnet",
-      "nova-pro",
-      "gpt-oss-120b",
-      "nova-lite",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
   if (condition.value === "struggling") {
     return pickFirstAvailable([
-      "claude-4-5-sonnet",
-      "nova-pro",
-      "gpt-oss-120b",
-      "nova-lite",
+      "claude-sonnet-4-20250514",
+      "gpt-4o",
+      "gpt-4o-mini",
     ], available)
   }
 
+  // Default: prefer Claude Sonnet 4
   return pickFirstAvailable([
-    "claude-4-5-sonnet",
-    "nova-pro",
-    "nova-lite",
-    "gpt-oss-120b",
+    "claude-sonnet-4-20250514",
+    "gpt-4o",
+    "gpt-4o-mini",
   ], available)
 }
 

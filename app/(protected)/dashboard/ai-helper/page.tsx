@@ -24,7 +24,9 @@ export default function AIHelperPage() {
     input,
     setInput,
     isLoading,
+    isStreaming,
     error,
+    partialContent,
     messagesEndRef,
     selectedModel,
     resolvedModel,
@@ -92,8 +94,10 @@ export default function AIHelperPage() {
                   user={user}
                   error={error}
                   isLoading={isLoading}
+                  isStreaming={isStreaming}
                   onRetry={reload}
                   onClearError={clearError}
+                  partialContent={partialContent ?? undefined}
                 />
                 <div ref={messagesEndRef} />
               </>

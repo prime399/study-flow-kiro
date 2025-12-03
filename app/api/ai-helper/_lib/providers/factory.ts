@@ -1,13 +1,19 @@
 /**
  * Provider factory
- * Creates the appropriate provider adapter based on configuration
+ * Creates the appropriate streaming-capable provider adapter based on configuration
  */
 
-import { ProviderAdapter, ProviderConfig } from "./types";
+import { StreamingProviderAdapter, ProviderConfig } from "./types";
 import { OpenAIProvider } from "./openai-provider";
 import { AnthropicProvider } from "./anthropic-provider";
 
-export function createProvider(config: ProviderConfig): ProviderAdapter {
+/**
+ * Creates a streaming-capable provider adapter based on the configuration.
+ * All providers (Anthropic, OpenAI, OpenRouter) support streaming responses.
+ *
+ * **Feature: anthropic-ai-migration, Property 6: Multi-provider streaming support**
+ */
+export function createProvider(config: ProviderConfig): StreamingProviderAdapter {
   switch (config.provider) {
     case "openai":
     case "openrouter": // OpenRouter uses OpenAI-compatible API

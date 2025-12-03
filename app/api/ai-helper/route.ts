@@ -1,508 +1,360 @@
 import { AIRequestBody } from "@/lib/types"
-import OpenAI from "openai"
 import { cookies } from "next/headers"
-import { ConvexHttpClient } from "convex/browser"
-import { api } from "@/convex/_generated/api"
 
 import { buildSystemPrompt } from "./_lib/system-prompt"
 import { sanitizeMessages } from "./_lib/message-sanitizer"
-import {
-  validateOpenAIConfig,
-  createOpenAIClient,
-  DEFAULT_COMPLETION_OPTIONS,
-  fetchChatCompletion,
-  type ChatCompletionOptions,
-} from "./_lib/openai-client"
-import { processAIResponse } from "./_lib/response-processor"
 import { resolveModelRouting } from "./_lib/model-router"
-import { injectUserTokensToMCP } from "@/lib/mcp-token-injector"
 import { getAIConfig, isBYOKConfig, recordBYOKUsage } from "./_lib/byok-helper"
 import { createProvider } from "./_lib/providers/factory"
-import { isTokenVaultError, formatTokenVaultError } from "@/lib/auth0-token-vault"
+import { ProviderConfig, ChatMessage, StreamCallbacks, APIError } from "./_lib/providers/types"
+import { DEFAULT_MAX_TOKENS } from "./_lib/providers/anthropic-provider"
 
-interface McpTool {
-  id: string
-  name: string
-  namespace: string
-  description: string
-  inputSchema?: any
+/**
+ * Default model for Anthropic API
+ * Requirements: 2.1 - Use Claude Sonnet 4.5 as default
+ */
+const DEFAULT_MODEL = "claude-sonnet-4-20250514"
+
+/**
+ * SSE Event types for streaming responses
+ * Requirements: 1.1, 1.3, 1.4
+ */
+interface SSETextDelta {
+  type: "text_delta"
+  text: string
 }
 
-async function fetchAvailableMcpTools(requestUrl?: string): Promise<McpTool[]> {
-  try {
-    // Skip MCP tools in production if no URL is available
-    // MCP tools are typically for local development with MCP servers
-    if (!requestUrl && !process.env.NEXT_PUBLIC_APP_URL) {
-      console.log('Skipping MCP tools fetch - no base URL available (production environment)')
-      return []
+interface SSEMessageStart {
+  type: "message_start"
+  model: string
+}
+
+interface SSEMessageStop {
+  type: "message_stop"
+  model: string
+  usage: {
+    input_tokens: number
+    output_tokens: number
+  }
+  isBYOK: boolean
+  provider: string
+}
+
+interface SSEError {
+  type: "error"
+  error: string
+  code?: number
+  isRetryable?: boolean
+}
+
+type SSEEvent = SSETextDelta | SSEMessageStart | SSEMessageStop | SSEError
+
+/**
+ * Formats an SSE event for transmission
+ */
+function formatSSEEvent(event: SSEEvent): string {
+  return `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
+}
+
+/**
+ * Maps API errors to user-friendly messages
+ * Requirements: 5.1, 5.2, 5.3 - Error handling for 401, 429, 503
+ */
+function mapErrorToUserMessage(error: Error, statusCode?: number): { message: string; code: number; isRetryable: boolean } {
+  // If it's an APIError from our providers, use its properties directly
+  if (error instanceof APIError) {
+    return {
+      message: error.message,
+      code: error.statusCode,
+      isRetryable: error.isRetryable
     }
-    
-    const baseUrl = requestUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    // Fetch all Heroku-registered MCP tools (including Google Calendar MCP addon)
-    const response = await fetch(`${baseUrl}/api/ai-helper/mcp-servers`, {
-      cache: 'no-store'
-    })
-    
-    if (!response.ok) {
-      console.warn('Failed to fetch MCP tools, continuing without them')
-      return []
+  }
+
+  const errorMessage = error.message.toLowerCase()
+
+  // 401 - Invalid/missing API key
+  // Requirements: 5.2 - Handle invalid/missing API key
+  if (statusCode === 401 || errorMessage.includes("unauthorized") || errorMessage.includes("invalid api key") || errorMessage.includes("authentication")) {
+    return {
+      message: "API key is invalid or missing. Please check your configuration.",
+      code: 401,
+      isRetryable: false
     }
-    
-    const data = await response.json()
-    return data.tools || []
-  } catch (error) {
-    console.warn('Error fetching MCP tools:', error)
-    return []
+  }
+
+  // 429 - Rate limiting
+  // Requirements: 5.3 - Handle rate limiting
+  if (statusCode === 429 || errorMessage.includes("rate limit") || errorMessage.includes("too many requests")) {
+    return {
+      message: "Too many requests. Please wait a moment and try again.",
+      code: 429,
+      isRetryable: true
+    }
+  }
+
+  // 503 - Service unavailable
+  // Requirements: 5.1 - Handle service unavailability
+  if (statusCode === 503 || errorMessage.includes("service unavailable") || errorMessage.includes("overloaded")) {
+    return {
+      message: "The AI service is temporarily unavailable. Please try again.",
+      code: 503,
+      isRetryable: true
+    }
+  }
+
+  // 400 - Bad request
+  if (statusCode === 400 || errorMessage.includes("bad request") || errorMessage.includes("invalid request")) {
+    return {
+      message: "Unable to process your request. Please try rephrasing.",
+      code: 400,
+      isRetryable: true
+    }
+  }
+
+  // Default error
+  return {
+    message: "An error occurred while processing your request. Please try again.",
+    code: 500,
+    isRetryable: true
   }
 }
 
-async function callHerokuAgentsEndpoint(
-  config: { herokuBaseUrl: string; herokuApiKey: string; herokuModelId: string },
-  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-  mcpTools: McpTool[],
-  retryCount = 0
-): Promise<any> {
-  const agentsUrl = `${config.herokuBaseUrl.replace(/\/$/, "")}/v1/agents/heroku`
-  const MAX_RETRIES = 2
 
-  // Filter out tools with missing IDs and deduplicate
-  const validTools = mcpTools.filter(tool => {
-    if (!tool.id || typeof tool.id !== 'string') {
-      console.warn(`[AI Helper] Skipping tool with missing or invalid id:`, tool)
-      return false
+/**
+ * Creates a streaming response using Server-Sent Events
+ * Requirements: 1.1, 1.3, 1.4 - Streaming responses
+ */
+function createStreamingResponse(
+  provider: ReturnType<typeof createProvider>,
+  messages: ChatMessage[],
+  modelId: string,
+  isBYOK: boolean,
+  providerName: string,
+  onComplete?: () => Promise<void>
+): Response {
+  const encoder = new TextEncoder()
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Send message_start event
+        const startEvent: SSEMessageStart = {
+          type: "message_start",
+          model: modelId
+        }
+        controller.enqueue(encoder.encode(formatSSEEvent(startEvent)))
+
+        let finalUsage = { input_tokens: 0, output_tokens: 0 }
+
+        const callbacks: StreamCallbacks = {
+          onTextDelta: (text: string) => {
+            const deltaEvent: SSETextDelta = {
+              type: "text_delta",
+              text
+            }
+            controller.enqueue(encoder.encode(formatSSEEvent(deltaEvent)))
+          },
+          onComplete: (usage) => {
+            finalUsage = usage
+          },
+          onError: (error: Error) => {
+            const { message, code, isRetryable } = mapErrorToUserMessage(error)
+            const errorEvent: SSEError = {
+              type: "error",
+              error: message,
+              code,
+              isRetryable
+            }
+            controller.enqueue(encoder.encode(formatSSEEvent(errorEvent)))
+            controller.close()
+          }
+        }
+
+        // Start streaming
+        await provider.streamChat(
+          {
+            messages,
+            model: modelId,
+            max_tokens: DEFAULT_MAX_TOKENS,
+            temperature: 0.7
+          },
+          callbacks
+        )
+
+        // Send message_stop event with usage and BYOK info
+        // Requirements: 6.4, 6.5 - BYOK indication
+        const stopEvent: SSEMessageStop = {
+          type: "message_stop",
+          model: modelId,
+          usage: finalUsage,
+          isBYOK,
+          provider: providerName
+        }
+        controller.enqueue(encoder.encode(formatSSEEvent(stopEvent)))
+
+        // Execute completion callback (e.g., record BYOK usage)
+        if (onComplete) {
+          await onComplete()
+        }
+
+        controller.close()
+      } catch (error) {
+        console.error("[AI Helper] Streaming error:", error)
+        const err = error instanceof Error ? error : new Error("Unknown error")
+        const { message, code, isRetryable } = mapErrorToUserMessage(err)
+        const errorEvent: SSEError = {
+          type: "error",
+          error: message,
+          code,
+          isRetryable
+        }
+        controller.enqueue(encoder.encode(formatSSEEvent(errorEvent)))
+        controller.close()
+      }
     }
-    return true
   })
 
-  const uniqueTools = validTools.reduce((acc, tool) => {
-    if (!acc.find(t => t.id === tool.id)) {
-      acc.push(tool)
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive"
     }
-    return acc
-  }, [] as McpTool[])
-
-  // Log filtering and deduplication stats
-  if (mcpTools.length !== validTools.length) {
-    console.log(`[AI Helper] Filtered ${mcpTools.length - validTools.length} invalid tools`)
-  }
-  if (validTools.length !== uniqueTools.length) {
-    console.log(`[AI Helper] Deduplicated ${validTools.length} tools to ${uniqueTools.length} unique tools`)
-  }
-
-  const toolsArray = uniqueTools.map(tool => ({
-    type: "mcp",
-    name: tool.id,
-  }))
-
-  const requestBody: any = {
-    model: config.herokuModelId,
-    messages,
-    tools: toolsArray,
-  }
-
-  console.log(`[AI Helper] Request body tools:`, JSON.stringify(toolsArray, null, 2))
-
-  console.log(`[AI Helper] Calling Heroku Agents API with ${toolsArray.length} tools (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`)
-
-  try {
-    const response = await fetch(agentsUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${config.herokuApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-
-      // Retry on 503 (Service Unavailable) errors
-      if (response.status === 503 && retryCount < MAX_RETRIES) {
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000) // Exponential backoff: 1s, 2s, 5s
-        console.warn(`[AI Helper] Got 503 error, retrying in ${delay}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`)
-        await new Promise(resolve => setTimeout(resolve, delay))
-        return callHerokuAgentsEndpoint(config, messages, mcpTools, retryCount + 1)
-      }
-
-      throw new Error(`Heroku Agents API error (${response.status}): ${errorText}`)
-    }
-
-    // Parse SSE response
-    const text = await response.text()
-    const lines = text.split('\n')
-    let lastCompletion: any = null
-    let toolCalls: any[] = []
-
-    for (const line of lines) {
-      if (line.startsWith('data:')) {
-        const data = line.slice(5).trim()
-        if (data === '[DONE]') break
-
-        try {
-          const parsed = JSON.parse(data)
-
-          // Log all SSE events for debugging
-          if (parsed.object) {
-            console.log(`[AI Helper] SSE event:`, JSON.stringify(parsed, null, 2))
-          }
-
-          // Log tool invocations for debugging
-          if (parsed.object === 'tool.completion') {
-            const toolName = parsed.choices?.[0]?.message?.name || parsed.tool?.name || parsed.name || 'unknown'
-            const toolContent = parsed.choices?.[0]?.message?.content || ''
-            console.log(`[AI Helper] Tool invoked: ${toolName}`)
-            console.log(`[AI Helper] Tool result:`, toolContent.substring(0, 500))
-            toolCalls.push(parsed)
-          }
-
-          // Collect chat completions (including tool calls and responses)
-          if (parsed.object === 'chat.completion' || parsed.object === 'tool.completion') {
-            lastCompletion = parsed
-          }
-        } catch (e) {
-          // Skip invalid JSON lines
-        }
-      }
-    }
-
-    if (toolCalls.length > 0) {
-      console.log(`[AI Helper] Total tools invoked: ${toolCalls.length}`)
-    }
-
-    if (!lastCompletion) {
-      throw new Error("No valid completion received from Heroku Agents API")
-    }
-
-    return lastCompletion
-  } catch (error) {
-    // Retry on network errors
-    if (retryCount < MAX_RETRIES && error instanceof Error &&
-        (error.message.includes('fetch') || error.message.includes('ECONNRESET'))) {
-      const delay = Math.min(1000 * Math.pow(2, retryCount), 5000)
-      console.warn(`[AI Helper] Network error, retrying in ${delay}ms...`, error.message)
-      await new Promise(resolve => setTimeout(resolve, delay))
-      return callHerokuAgentsEndpoint(config, messages, mcpTools, retryCount + 1)
-    }
-    throw error
-  }
+  })
 }
 
+
+/**
+ * POST handler for AI helper API
+ * Refactored to use direct Anthropic API with SSE streaming
+ * Requirements: 1.1, 2.1, 3.1, 3.2, 3.3, 3.4
+ */
 export async function POST(req: Request) {
   try {
-    // ===== OPTIONAL AUTHENTICATION FOR GOOGLE CALENDAR =====
-    // Extract Convex auth token from cookies (optional - only needed for Google Calendar)
+    // Extract Convex auth token from cookies
     const cookieStore = await cookies()
-    const isLocalhost = req.headers.get('host')?.includes('localhost')
-    const cookieName = isLocalhost ? '__convexAuthJWT' : '__Host-__convexAuthJWT'
+    const isLocalhost = req.headers.get("host")?.includes("localhost")
+    const cookieName = isLocalhost ? "__convexAuthJWT" : "__Host-__convexAuthJWT"
     const convexAuthToken = cookieStore.get(cookieName)?.value
 
-    // Get user ID if authenticated (for Google Calendar MCP token injection)
-    let userId: string | null = null
-    if (convexAuthToken) {
-      try {
-        const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
-        convexClient.setAuth(convexAuthToken)
-        userId = await convexClient.query(api.scheduling.getCurrentUserId)
-      } catch (error) {
-        console.warn('[AI Helper] Failed to get user ID from auth token:', error)
-        // Continue without user ID - calendar tools won't work but AI helper will
-      }
-    }
-
-    const { messages, userName, studyStats, groupInfo, modelId, mcpToolId }: AIRequestBody & { modelId?: string; mcpToolId?: string } =
+    // Parse request body
+    const { messages, userName, studyStats, groupInfo, modelId }: AIRequestBody & { modelId?: string } =
       await req.json()
 
+    // Resolve model routing
     const routingDecision = resolveModelRouting({
       messages,
       studyStats,
-      modelId,
+      modelId
     })
 
-    // ===== BYOK (Bring Your Own Key) CHECK =====
-    // Check if user has their own API key configured
-    // If yes, use BYOK (no coins charged)
-    // If no or error, fall back to platform keys (coins charged)
+    // Get AI configuration (BYOK or platform)
+    // Requirements: 6.1, 6.2, 6.3 - BYOK provider selection
     const aiConfig = await getAIConfig(
       convexAuthToken,
       process.env.NEXT_PUBLIC_CONVEX_URL!,
       routingDecision.resolvedModelId,
       () => {
-        // Platform config fallback
-        const platformConfig = validateOpenAIConfig(routingDecision.resolvedModelId);
-        return {
-          ...platformConfig,
-          isBYOK: false as const,
-        };
-      }
-    );
-
-    // Log which config is being used
-    if (isBYOKConfig(aiConfig)) {
-      console.log(`[BYOK] Using user's ${aiConfig.provider} key (model: ${aiConfig.modelId})`)
-      console.log('[BYOK] No coins will be charged for this query')
-    } else {
-      console.log(`[Platform] Using platform keys (model: ${aiConfig.herokuModelId})`)
-      console.log('[Platform] 100 coins will be charged for this query')
-    }
-
-    // Validate and get OpenAI configuration for the resolved model
-    const config = isBYOKConfig(aiConfig)
-      ? { herokuBaseUrl: aiConfig.baseUrl || '', herokuApiKey: aiConfig.apiKey, herokuModelId: aiConfig.modelId }
-      : aiConfig
-
-    // Get base URL from request for MCP tools fetch
-    const url = new URL(req.url)
-    const baseUrl = `${url.protocol}//${url.host}`
-
-    // Fetch all available MCP tools
-    let availableMcpTools = await fetchAvailableMcpTools(baseUrl)
-
-    // Filter tools if user selected a specific tool
-    if (mcpToolId && mcpToolId !== 'none') {
-      const selectedTool = availableMcpTools.find(tool => tool.id === mcpToolId)
-      if (selectedTool) {
-        availableMcpTools = [selectedTool]
-        console.log(`[AI Helper] User selected specific tool: ${mcpToolId}`)
-      }
-    }
-
-    // ===== GOOGLE CALENDAR MCP TOKEN INJECTION =====
-    // If Google Calendar MCP tools are available and user is authenticated, inject tokens
-    // Calendar tools can be under different namespaces: 'mcp', 'google-calendar', 'google-calendar-local'
-    const calendarToolNames = ['list-calendars', 'list-events', 'create-event', 'update-event',
-                                'delete-event', 'get-event', 'search-events', 'get-freebusy',
-                                'list-colors', 'get-current-time']
-    const hasGoogleCalendarTools = availableMcpTools.some(
-      tool => tool.namespace === 'mcp' ||
-              tool.namespace === 'google-calendar' ||
-              tool.namespace === 'google-calendar-local' ||
-              calendarToolNames.includes(tool.name)
-    )
-
-    if (hasGoogleCalendarTools && userId && convexAuthToken) {
-      try {
-        console.log(`[AI Helper] Injecting Google Calendar tokens for user: ${userId}`)
-        const injectionResult = await injectUserTokensToMCP(userId, convexAuthToken)
-
-        if (!injectionResult.success) {
-          console.warn(`[AI Helper] Token injection failed: ${injectionResult.message}`)
-          // Don't fail the request, but log the warning
-          // The user will get an error when they try to use calendar tools
-        } else {
-          console.log(`[AI Helper] Tokens injected successfully. Expires in: ${injectionResult.expiresIn}ms`)
+        // Platform config fallback - use Anthropic as default
+        // Requirements: 2.1, 2.2 - Use Anthropic as default provider
+        // Support both ANTHROPIC_API_KEY and ANTHROPIC_INFERENCE_KEY for backwards compatibility
+        const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_INFERENCE_KEY
+        if (!apiKey) {
+          throw new Error("ANTHROPIC_API_KEY is not configured. Please set ANTHROPIC_API_KEY in your environment.")
         }
-      } catch (error) {
-        console.error('[AI Helper] Error during token injection:', error)
-        // Continue with the request even if token injection fails
-        // The calendar tools will return appropriate errors if tokens are missing
+        return {
+          herokuBaseUrl: "", // Not used for Anthropic
+          herokuApiKey: apiKey,
+          herokuModelId: DEFAULT_MODEL,
+          isBYOK: false as const
+        }
       }
-    } else if (hasGoogleCalendarTools && !userId) {
-      console.log('[AI Helper] Google Calendar tools available but user not authenticated - calendar tools will not work')
-    }
-
-    // Build system prompt with user context
-    const baseSystemPrompt = buildSystemPrompt({ userName, studyStats, groupInfo })
-
-    // Check for calendar tools FIRST
-    const calendarTools = availableMcpTools.filter(t =>
-      t.namespace === 'mcp' || t.namespace === 'google-calendar' || t.namespace === 'google-calendar-local'
-    )
-    const otherTools = availableMcpTools.filter(t =>
-      t.namespace !== 'mcp' && t.namespace !== 'google-calendar' && t.namespace !== 'google-calendar-local'
     )
 
-    // Put userId requirement FIRST if calendar tools are available
-    let systemPrompt = ''
+    // Determine provider configuration
+    let providerConfig: ProviderConfig
+    let isBYOK: boolean
+    let providerName: string
 
-    if (calendarTools.length > 0 && userId) {
-      systemPrompt = `🚨🚨🚨 CRITICAL INSTRUCTION - READ THIS FIRST 🚨🚨🚨
+    if (isBYOKConfig(aiConfig)) {
+      // BYOK configuration
+      // Requirements: 6.1, 6.2, 6.3 - Use user's API key
+      console.log(`[BYOK] Using user's ${aiConfig.provider} key (model: ${aiConfig.modelId})`)
+      console.log("[BYOK] No coins will be charged for this query")
 
-WHEN CALLING ANY CALENDAR TOOL, THE VERY FIRST PARAMETER MUST ALWAYS BE:
-userId: "${userId}"
-
-DO NOT FORGET THIS! Every single calendar tool call needs userId as the first parameter.
-
-Examples of CORRECT tool calls:
-- get-current-time({ "userId": "${userId}" })
-- create-event({ "userId": "${userId}", "calendarId": "primary", "summary": "...", "start": "...", "end": "..." })
-- list-events({ "userId": "${userId}", "calendarId": "primary", "timeMin": "...", "timeMax": "..." })
-
-If you call a calendar tool WITHOUT userId, it will fail with error -32602.
-
-===========================================
-
-${baseSystemPrompt}`
+      providerConfig = {
+        provider: aiConfig.provider,
+        apiKey: aiConfig.apiKey,
+        baseUrl: aiConfig.baseUrl,
+        modelId: aiConfig.modelId
+      }
+      isBYOK = true
+      providerName = aiConfig.provider
     } else {
-      systemPrompt = baseSystemPrompt
-    }
+      // Platform configuration - use Anthropic
+      // Requirements: 2.1, 3.1 - Use Anthropic without Heroku
+      console.log(`[Platform] Using Anthropic (model: ${aiConfig.herokuModelId})`)
 
-    // Add MCP tool instruction if tools are available
-    if (availableMcpTools.length > 0) {
-      const toolsList = availableMcpTools
-        .map(tool => `- ${tool.name}: ${tool.description}`)
-        .join('\n')
-
-      let toolInstructions = `
-
-## Available MCP Tools
-
-You have access to the following tools to help users:
-${toolsList}`
-
-      toolInstructions += `
-
-## Tool Usage Guidelines
-
-**IMPORTANT: You MUST use these tools to perform actions. Simply describing what you would do is NOT sufficient.**`
-
-      if (calendarTools.length > 0 && userId) {
-        toolInstructions += `
-
-### Google Calendar Tools - ALWAYS START WITH userId!
-
-**Example Flow for "Create a study session tomorrow at 2 PM":**
-1. Call get-current-time with: { "userId": "${userId}" }
-2. Calculate tomorrow's date at 2 PM
-3. Call create-event with: { "userId": "${userId}", "calendarId": "primary", "summary": "Study Session", "start": "2025-11-06T14:00:00", "end": "2025-11-06T15:00:00" }
-
-**Quick Reference - ALWAYS include userId as first parameter:**
-- get-current-time({ "userId": "${userId}" })
-- list-events({ "userId": "${userId}", "calendarId": "primary", "timeMin": "...", "timeMax": "..." })
-- create-event({ "userId": "${userId}", "calendarId": "primary", "summary": "...", "start": "...", "end": "..." })
-- search-events({ "userId": "${userId}", "calendarId": "primary", "query": "..." })
-- update-event({ "userId": "${userId}", "calendarId": "primary", "eventId": "...", ... })
-- delete-event({ "userId": "${userId}", "calendarId": "primary", "eventId": "..." })
-
-**Requirements:**
-- Always use calendarId: "primary" for the user's main calendar
-- Use ISO 8601 format WITHOUT timezone: "2025-11-06T14:00:00"
-- After creating/updating an event, confirm with the user`
+      providerConfig = {
+        provider: "anthropic",
+        apiKey: aiConfig.herokuApiKey,
+        modelId: aiConfig.herokuModelId
       }
-
-      if (otherTools.length > 0) {
-        toolInstructions += `
-
-### Document Tools
-- Use html_to_markdown to fetch and read web pages when users share URLs
-- Use pdf_to_markdown to extract text from PDF documents`
-      }
-
-      toolInstructions += `
-
-**Remember:** ALWAYS actually call the tools. Don't just explain what you would do - DO IT!`
-
-      systemPrompt = systemPrompt + toolInstructions
+      isBYOK = false
+      providerName = "anthropic"
     }
 
-    // Log system prompt for debugging (show first 600 chars to verify userId warning is at top)
-    if (userId && hasGoogleCalendarTools) {
-      console.log(`[AI Helper] System prompt starts with:`)
-      console.log(systemPrompt.substring(0, 600))
-      console.log(`[AI Helper] System prompt begins with 🚨: ${systemPrompt.startsWith('🚨')}`)
-      console.log(`[AI Helper] System prompt includes userId "${userId}": ${systemPrompt.includes(userId)}`)
-    }
+    // Create provider adapter
+    // Requirements: 6.6 - Multi-provider streaming support
+    const provider = createProvider(providerConfig)
+
+    // Build system prompt (simplified - no MCP tool instructions)
+    // Requirements: 3.2, 3.3, 3.4 - Remove MCP dependencies
+    const systemPrompt = buildSystemPrompt({ userName, studyStats, groupInfo })
 
     // Prepare chat messages
-    const chatMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    const chatMessages: ChatMessage[] = [
       { role: "system", content: systemPrompt },
-      ...sanitizeMessages(messages),
+      ...sanitizeMessages(messages).map((m) => ({
+        role: m.role as "system" | "user" | "assistant",
+        content: typeof m.content === "string" ? m.content : JSON.stringify(m.content)
+      }))
     ]
 
-    let completion: OpenAI.Chat.Completions.ChatCompletion
-
-    // Use Heroku Agents endpoint with all registered MCP tools
-    if (availableMcpTools.length > 0) {
-      console.log(`[AI Helper] Using ${availableMcpTools.length} Heroku-registered MCP tools`)
-      completion = await callHerokuAgentsEndpoint(
-        config,
-        chatMessages,
-        availableMcpTools
-      )
-    } else {
-      // Fall back to standard OpenAI client if no MCP tools available
-      const client = createOpenAIClient(config)
-
-      const completionOptions: ChatCompletionOptions = {
-        model: config.herokuModelId,
-        messages: chatMessages,
-        ...DEFAULT_COMPLETION_OPTIONS,
+    // Create completion callback for BYOK usage recording
+    // Requirements: 6.4 - BYOK coin exemption (no coins charged)
+    const onComplete = async () => {
+      if (isBYOK && convexAuthToken) {
+        await recordBYOKUsage(
+          convexAuthToken,
+          process.env.NEXT_PUBLIC_CONVEX_URL!,
+          providerName
+        )
       }
-
-      completion = await fetchChatCompletion(client, completionOptions)
     }
 
-    // Process response and extract tables
-    const { choices, toolInvocations } = processAIResponse(completion)
-
-    // Record BYOK usage if applicable
-    if (isBYOKConfig(aiConfig) && convexAuthToken) {
-      await recordBYOKUsage(
-        convexAuthToken,
-        process.env.NEXT_PUBLIC_CONVEX_URL!,
-        aiConfig.provider
-      )
-    }
-
-    const responsePayload = {
-      ...completion,
-      choices,
-      toolInvocations,
-      routing: routingDecision,
-      selectedModel: routingDecision.resolvedModelId,
-      isBYOK: isBYOKConfig(aiConfig),
-      provider: isBYOKConfig(aiConfig) ? aiConfig.provider : 'platform',
-    }
-
-    return Response.json(responsePayload)
+    // Return streaming response
+    // Requirements: 1.1, 1.2, 1.3 - SSE streaming
+    return createStreamingResponse(
+      provider,
+      chatMessages,
+      providerConfig.modelId,
+      isBYOK,
+      providerName,
+      onComplete
+    )
   } catch (error) {
-    console.error("Error in AI helper API:", error)
+    console.error("[AI Helper] Error:", error)
 
-    // Handle Auth0 Token Vault errors specifically
-    if (isTokenVaultError(error)) {
-      const errorMessage = formatTokenVaultError(error)
-      return new Response(JSON.stringify({
-        error: errorMessage,
-        type: 'token_vault_error',
-        requiresAuth: true,
-        message: 'Please connect your Google Calendar to use calendar features.',
-      }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      })
-    }
+    const err = error instanceof Error ? error : new Error("Unknown error")
+    const { message, code } = mapErrorToUserMessage(err)
 
-    // Handle OpenAI API errors
-    if (error && typeof error === 'object' && 'status' in error && 'message' in error) {
-      const apiError = error as { status?: number; message: string }
-      return new Response(apiError.message, { status: apiError.status ?? 500 })
-    }
-
-    // Handle standard Error objects
-    if (error && typeof error === 'object' && 'message' in error) {
-      const err = error as Error
-      // Provide user-friendly error messages
-      let userMessage = err.message
-
-      if (err.message.includes('503')) {
-        userMessage = "The AI service is temporarily unavailable. Please try again in a moment."
-      } else if (err.message.includes('Heroku Agents API error')) {
-        userMessage = "AI service error. Please try again or contact support if the issue persists."
-      } else if (err.message.includes('No valid completion')) {
-        userMessage = "Failed to get a response from the AI. Please try again."
-      } else if (err.message.includes('Token Vault')) {
-        userMessage = "Authentication required. Please reconnect your Google Calendar."
+    return new Response(
+      JSON.stringify({ error: message }),
+      {
+        status: code,
+        headers: { "Content-Type": "application/json" }
       }
-
-      return new Response(JSON.stringify({ error: userMessage }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      })
-    }
-
-    return new Response(JSON.stringify({ error: "Error processing request" }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    )
   }
 }

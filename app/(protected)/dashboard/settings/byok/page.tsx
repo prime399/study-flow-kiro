@@ -72,13 +72,13 @@ const providers = [
   {
     id: "anthropic",
     name: "Anthropic",
-    description: "Claude 4.5 Sonnet, Claude 4.5 Haiku, and other Claude models",
+    description: "Claude Sonnet 4, Claude Haiku, and other Claude models",
     icon: <ClaudeLogo className="h-5 w-5" />, // Claude uses its own color internally
     iconLarge: <ClaudeLogo className="h-8 w-8" />,
     color: "text-[#C15F3C]",
     bgColor: "bg-[#C15F3C]/10",
     docs: "https://docs.anthropic.com/",
-    defaultModels: ["claude-sonnet-4-5-20250929", "claude-haiku-4-5-20251001", "claude-opus-4-1-20250805"],
+    defaultModels: ["claude-sonnet-4-20250514", "claude-haiku-4-5-20251001", "claude-opus-4-1-20250805"],
   },
   {
     id: "openrouter",
