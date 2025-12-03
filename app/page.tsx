@@ -12,6 +12,9 @@ import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button
 import { Marquee } from "@/components/ui/marquee"
 import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { SpookyGhost } from "@/components/spooky-ghost"
+import { WobblyGhosts } from "@/components/wobbly-ghosts"
+import { SpookyCarousel } from "@/components/spooky-carousel"
+import { GhostAvatar } from "@/components/ghost-avatar"
 import { cn } from "@/lib/utils"
 import {
   BarChart,
@@ -423,7 +426,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 w-full overflow-hidden">
+        <section className="relative py-12 sm:py-16 lg:py-20 w-full overflow-hidden">
+          <WobblyGhosts />
           <div className="w-full">
             <div className="text-center mb-8 sm:mb-12 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6 font-gothic">
@@ -434,61 +438,19 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Mobile: Horizontal Scroll */}
-            <div className="md:hidden px-4">
-              <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4">
+            <div className="overflow-visible">
+              <SpookyCarousel faceWidth={320} gap={20}>
                 {testimonials.map((review, idx) => (
                   <div
                     key={idx}
-                    className="flex-shrink-0 w-[85vw] max-w-sm snap-center rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)]"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="relative">
-                        <Image
-                          className="h-11 w-11 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
-                          src={review.img}
-                          alt={`${review.name} avatar`}
-                          width={56}
-                          height={56}
-                        />
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-black" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white tracking-tight">
-                          {review.name}
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium">
-                          {review.username}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-300 leading-relaxed font-light">
-                      &ldquo;{review.body}&rdquo;
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Desktop: Auto-play Marquee */}
-            <div className="hidden md:block overflow-x-hidden">
-              <Marquee pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
-                {testimonials.map((review, idx) => (
-                  <div
-                    key={idx}
-                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 sm:p-7 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.05] hover:-translate-y-1"
+                    className="w-full h-full rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 sm:p-7 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.05]"
                   >
                     <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
-                      <div className="relative">
-                        <Image
-                          className="h-11 w-11 sm:h-14 sm:w-14 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
-                          src={review.img}
-                          alt={`${review.name} avatar`}
-                          width={56}
-                          height={56}
-                        />
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-green-500 border-2 border-black" />
-                      </div>
+                      <GhostAvatar
+                        src={review.img}
+                        alt={`${review.name} avatar`}
+                        className="h-14 w-14 sm:h-16 sm:w-16 -ml-1"
+                      />
                       <div>
                         <div className="text-sm sm:text-base font-semibold text-white tracking-tight">
                           {review.name}
@@ -503,40 +465,7 @@ export default function Home() {
                     </p>
                   </div>
                 ))}
-              </Marquee>
-
-              <Marquee reverse pauseOnHover repeat={6} className="[--duration:60s] py-2 sm:py-4">
-                {testimonials.slice().reverse().map((review, idx) => (
-                  <div
-                    key={idx}
-                    className="mx-2 sm:mx-4 w-72 sm:w-80 md:w-96 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-5 sm:p-7 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.6)] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.05] hover:-translate-y-1"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
-                      <div className="relative">
-                        <Image
-                          className="h-11 w-11 sm:h-14 sm:w-14 rounded-full border-2 border-white/10 ring-2 ring-white/5 object-cover"
-                          src={review.img}
-                          alt={`${review.name} avatar`}
-                          width={56}
-                          height={56}
-                        />
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full bg-green-500 border-2 border-black" />
-                      </div>
-                      <div>
-                        <div className="text-sm sm:text-base font-semibold text-white tracking-tight">
-                          {review.name}
-                        </div>
-                        <div className="text-xs sm:text-sm text-gray-500 font-medium">
-                          {review.username}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm sm:text-base text-gray-300 leading-relaxed font-light">
-                      &ldquo;{review.body}&rdquo;
-                    </p>
-                  </div>
-                ))}
-              </Marquee>
+              </SpookyCarousel>
             </div>
           </div>
         </section>
