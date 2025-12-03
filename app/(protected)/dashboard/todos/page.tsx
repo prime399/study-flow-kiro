@@ -1,4 +1,4 @@
-﻿import { TodoBoard } from "./_components/todo-board"
+import { TodoBoard } from "./_components/todo-board"
 
 export default function TodosPage() {
   return (
@@ -7,3 +7,4 @@ export default function TodosPage() {
     </div>
   )
 }
+

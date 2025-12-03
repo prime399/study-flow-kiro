@@ -27,3 +27,4 @@ export function Auth0Wordmark({ className = "h-8" }: { className?: string }) {
     </svg>
   )
 }
+

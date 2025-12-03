@@ -1,0 +1,101 @@
+# Implementation Plan
+
+- [ ] 1. Create HalloweenHourglass component with SVG structure
+  - [ ] 1.1 Create the component file with TypeScript interface and props
+    - Define HalloweenHourglassProps interface with progress, active, halloweenGlow, className
+    - Set up component skeleton with proper exports
+    - _Requirements: 1.1_
+  - [ ] 1.2 Implement SVG container and gradient definitions
+    - Create SVG with viewBox "0 0 100 150"
+    - Define linearGradient for glass, sand, and frame
+    - Define filter for glow effect
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [ ] 1.3 Implement hourglass frame elements
+    - Create vertical pillar paths for frame sides
+    - Create top and bottom frame plates with gradient fill
+    - Add purple accent circles for Halloween glow mode
+    - _Requirements: 3.2, 5.1_
+  - [ ] 1.4 Implement glass container with reflections
+    - Create glass path with transparency gradient
+    - Add reflection paths for realistic appearance
+    - Apply conditional purple stroke for Halloween mode
+    - _Requirements: 3.4, 5.2_
+  - [ ]* 1.5 Write property test for Halloween color selection
+    - **Property 3: Halloween Color Selection**
+    - **Validates: Requirements 3.1**
+
+- [ ] 2. Implement sand level visualization
+  - [ ] 2.1 Create clip paths for top and bottom sand bulbs
+    - Define topSandClip path for upper bulb boundary
+    - Define bottomSandClip path for lower bulb boundary
+    - _Requirements: 1.1_
+  - [ ] 2.2 Implement sand level calculation based on progress
+    - Calculate topSandY from progress percentage
+    - Calculate bottomSandY from progress percentage
+    - Apply CSS transitions for smooth updates
+    - _Requirements: 1.2, 1.3, 1.4, 4.2_
+  - [ ] 2.3 Render top sand with elliptical surface
+    - Create rect element clipped to top bulb
+    - Add ellipse for 3D depth effect on sand surface
+    - Apply sand gradient fill
+    - _Requirements: 5.3, 5.4_
+  - [ ] 2.4 Render bottom sand mound
+    - Create rect element clipped to bottom bulb
+    - Position based on calculated bottomSandY
+    - Apply sand gradient fill
+    - _Requirements: 1.2_
+  - [ ]* 2.5 Write property test for sand level progress mapping
+    - **Property 1: Sand Level Progress Mapping**
+    - **Validates: Requirements 1.2**
+
+- [ ] 3. Implement sand stream animation
+  - [ ] 3.1 Create animated sand stream lines
+    - Add multiple line elements with stroke-dasharray for grainy effect
+    - Apply different animation speeds for visual variety
+    - Conditionally render when active and progress < 99%
+    - _Requirements: 2.1, 2.4_
+  - [ ] 3.2 Implement splash particle effects
+    - Add circle elements at bottom sand surface
+    - Apply splash animation with transform and opacity
+    - Position particles around stream landing point
+    - _Requirements: 2.3_
+  - [ ] 3.3 Add CSS keyframe animations
+    - Define sand-stream keyframe for flowing effect
+    - Define splash keyframe for particle burst
+    - Use styled-jsx for scoped animations
+    - _Requirements: 4.1_
+  - [ ]* 3.4 Write property test for sand stream visibility
+    - **Property 2: Sand Stream Visibility**
+    - **Validates: Requirements 2.1, 2.2**
+
+- [ ] 4. Integrate with StudyTimer component
+  - [ ] 4.1 Import and render HalloweenHourglass in StudyTimer
+    - Import component from halloween-hourglass
+    - Render conditionally when halloweenGlow is true
+    - Pass progress, active (isStudying), and halloweenGlow props
+    - _Requirements: 1.1, 1.2_
+  - [ ] 4.2 Apply Halloween styling to timer card
+    - Add gradient background and glow effects to Card
+    - Style Progress bar with Halloween colors
+    - Ensure visual cohesion with hourglass
+    - _Requirements: 3.3_
+
+- [ ] 5. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ]* 6. Write unit tests for component structure
+  - [ ]* 6.1 Test component renders without crashing
+    - Verify component mounts successfully
+    - Check SVG element is present
+    - _Requirements: 1.1_
+  - [ ]* 6.2 Test SVG structure contains required elements
+    - Verify glass container path exists
+    - Verify frame elements exist
+    - Verify sand elements exist
+    - _Requirements: 5.1, 5.2_
+  - [ ]* 6.3 Test glass reflections are present
+    - Verify reflection path elements exist
+    - _Requirements: 3.4_
+  - [ ]* 6.4 Test transition classes are applied
+    - Verify sand elements have transition classes
+    - _Requirements: 4.2_

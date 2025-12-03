@@ -33,3 +33,4 @@ export interface CalendarEvent {
   allDay: boolean
   resource: StudySession
 }
+

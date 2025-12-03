@@ -43,3 +43,4 @@ export function AITable({ headers, rows, caption }: DataTableProps) {
     </div>
   )
 }
+

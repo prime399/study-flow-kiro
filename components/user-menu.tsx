@@ -58,3 +58,4 @@ function SignOutButton() {
     <DropdownMenuItem onClick={() => void signOut()}>Sign out</DropdownMenuItem>
   )
 }
+

@@ -136,3 +136,4 @@ export async function getCurrentUserProfile(accessToken: string) {
     throw error;
   }
 }
+

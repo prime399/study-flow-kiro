@@ -449,3 +449,4 @@ export default function Auth0SettingsPage() {
     </div>
   )
 }
+

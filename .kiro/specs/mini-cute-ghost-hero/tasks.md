@@ -1,0 +1,79 @@
+# Implementation Plan
+
+- [ ] 1. Create MiniCuteGhost component with SVG structure
+  - [ ] 1.1 Create the component file with TypeScript interface and props
+    - Define MiniCuteGhostProps interface with className, size, delay
+    - Set up component skeleton with proper exports
+    - Implement size configuration mapping (sm, md, lg)
+    - _Requirements: 4.1, 4.2, 4.3_
+  - [ ] 1.2 Implement SVG container and ghost body
+    - Create SVG with viewBox "0 0 100 100"
+    - Define rounded ghost body path with wavy bottom edge
+    - Apply semi-transparent white fill with drop-shadow glow
+    - _Requirements: 1.1, 1.3_
+  - [ ] 1.3 Implement facial features - eyes with highlights
+    - Create left and right eye circles
+    - Add white highlight circles for reflection effect
+    - Group eyes for blink animation targeting
+    - _Requirements: 1.2, 3.1_
+  - [ ] 1.4 Implement facial features - blush and mouth
+    - Add pink blush ellipses on cheeks
+    - Create small circular mouth element
+    - _Requirements: 1.2, 3.2, 3.3_
+  - [ ]* 1.5 Write property test for size dimension mapping
+    - **Property 2: Size Dimension Mapping**
+    - **Validates: Requirements 4.2**
+
+- [ ] 2. Implement animations
+  - [ ] 2.1 Create float animation with wobble
+    - Define CSS keyframes for vertical floating motion
+    - Include subtle rotation wobble in keyframes
+    - Apply animation class to ghost container
+    - _Requirements: 2.1, 2.2, 2.3_
+  - [ ] 2.2 Create blink animation for eyes
+    - Define CSS keyframes for periodic eye blink
+    - Apply animation to eyes group with transform-origin
+    - _Requirements: 3.4_
+  - [ ] 2.3 Implement animation delay prop
+    - Apply delay prop to animation-delay CSS style
+    - Ensure delay works with float animation
+    - _Requirements: 4.3, 4.4_
+  - [ ] 2.4 Add performance optimizations
+    - Apply will-change CSS property for GPU acceleration
+    - Use CSS transforms for animations
+    - Add pointer-events-none to prevent interaction blocking
+    - _Requirements: 2.4, 5.1, 5.2_
+  - [ ]* 2.5 Write property test for prop application
+    - **Property 1: Prop Application**
+    - **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
+
+- [ ] 3. Integrate with hero section
+  - [ ] 3.1 Import and position MiniCuteGhost in hero section
+    - Import component in app/page.tsx
+    - Position ghost appropriately in hero section
+    - Set size and delay props for visual appeal
+    - _Requirements: 1.4_
+  - [ ] 3.2 Ensure visual harmony with existing elements
+    - Verify ghost complements InteractiveGhost and other elements
+    - Adjust positioning if needed to avoid content overlap
+    - _Requirements: 1.4_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ]* 5. Write unit tests for component structure
+  - [ ]* 5.1 Test component renders without crashing
+    - Verify component mounts successfully
+    - Check SVG element is present
+    - _Requirements: 1.1_
+  - [ ]* 5.2 Test SVG structure contains required elements
+    - Verify ghost body path exists
+    - Verify eyes with highlights exist
+    - Verify blush ellipses exist
+    - Verify mouth element exists
+    - _Requirements: 1.2, 3.1, 3.2, 3.3_
+  - [ ]* 5.3 Test animation classes are applied
+    - Verify float animation class is present
+    - Verify blink animation class is on eyes
+    - Verify will-change property is set
+    - _Requirements: 2.1, 3.4, 5.2_

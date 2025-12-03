@@ -50,3 +50,4 @@ export const formatHours = (time: number) => {
   const minutes = Math.floor((time % 3600) / 60)
   return `${hours}h ${minutes}m`
 }
+

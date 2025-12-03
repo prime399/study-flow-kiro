@@ -87,3 +87,4 @@ export async function verifyAuth0Request(request: Request): Promise<VerifiedAuth
 
   return verifyAuth0Token(token);
 }
+

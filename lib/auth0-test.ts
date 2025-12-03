@@ -52,3 +52,4 @@ export function checkAuth0Config() {
 if (process.env.NODE_ENV === 'development') {
   checkAuth0Config();
 }
+

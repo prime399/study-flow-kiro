@@ -64,3 +64,4 @@ export default function NotificationPermission() {
 
   return null
 }
+

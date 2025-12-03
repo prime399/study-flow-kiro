@@ -53,3 +53,4 @@ export function CalendarToolbar<TEvent extends object>(
     </div>
   )
 }
+

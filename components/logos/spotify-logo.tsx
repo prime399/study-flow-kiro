@@ -24,3 +24,4 @@ export function SpotifyWordmark({ className = "h-8" }: { className?: string }) {
     </svg>
   )
 }
+

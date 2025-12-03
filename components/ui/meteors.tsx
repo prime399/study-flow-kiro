@@ -46,3 +46,4 @@ export const Meteors = ({ number = 20, color = "slate-500" }: MeteorsProps) => {
 };
 
 export default Meteors;
+

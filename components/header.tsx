@@ -23,3 +23,4 @@ export default function Header({ showSidebarTrigger = false }: HeaderProps) {
     </header>
   )
 }
+

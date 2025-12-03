@@ -36,3 +36,4 @@ export async function getAuthenticatedConvexClient(
   client.setAuth(convexAuthToken);
   return client;
 }
+
