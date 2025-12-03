@@ -110,7 +110,7 @@ export default function StudyStats({
           </CardContent>
         </Card>
 
-        {/* Mentor Coins */}
+        {/* Corn Coins */}
         <Card className={
           halloweenGlow
             ? "relative overflow-hidden transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30 hover:-translate-y-0.5"
@@ -121,7 +121,7 @@ export default function StudyStats({
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Coins className="h-4 w-4" />
-                  Mentor Coins
+                  Corn Coins
                 </p>
                 <div className="text-2xl font-bold tracking-tight">
                   <NumberFlow value={coinsBalance} format={{ minimumIntegerDigits: 1 }} />

@@ -37,7 +37,7 @@ export function TopsDisplay() {
       </TooltipTrigger>
       <TooltipContent className="max-w-[250px]" side="right">
         <div className="space-y-2">
-          <p className="font-semibold">Mentor Coins</p>
+          <p className="font-semibold">Corn Coins</p>
           <p className="text-sm text-muted-foreground">
             Earn 1 coin for every second of focused study time. Use coins to ask questions to the AI Helper (100 coins per query).
           </p>

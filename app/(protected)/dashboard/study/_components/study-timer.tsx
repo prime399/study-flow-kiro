@@ -13,6 +13,7 @@ import { formatTimeTimer } from "@/lib/utils"
 import { Clock, Pause, Play, RotateCcw } from "lucide-react"
 import { useTopsStore } from "@/store/use-tops-store"
 import { useEffect } from "react"
+import { HalloweenHourglass } from "./halloween-hourglass"
 
 export default function StudyTimer({
   studyTime,
@@ -68,6 +69,15 @@ export default function StudyTimer({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {halloweenGlow && (
+          <div className="flex justify-center mb-4">
+            <HalloweenHourglass 
+              progress={progress} 
+              active={isStudying} 
+              halloweenGlow={halloweenGlow}
+            />
+          </div>
+        )}
         <div className="text-center text-7xl font-bold tracking-tighter">
           <div className="flex items-center justify-center">
             {hours > 0 && (
