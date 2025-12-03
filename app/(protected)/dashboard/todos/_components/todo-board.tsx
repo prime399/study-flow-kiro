@@ -41,6 +41,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DrippingText } from "@/components/dripping-text"
 
 const STATUS_CONFIG = [
   {
@@ -154,7 +155,7 @@ const defaultFormState: TaskFormState = {
   dueDate: "",
 }
 
-export function TodoBoard() {
+export function TodoBoard({ halloweenGlow = false }: { halloweenGlow?: boolean }) {
   const boardResponse = useQuery(api.todos.getBoard)
   const createTask = useMutation(api.todos.createTask)
   const updateTask = useMutation(api.todos.updateTask)
@@ -306,12 +307,23 @@ export function TodoBoard() {
     <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex-1">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground font-gothic">To-Do Board</h2>
+          <div className="flex items-center gap-2">
+            {halloweenGlow ? (
+              <DrippingText text="To-Do Board" color="#fb923c" className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight" />
+            ) : (
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground font-gothic">To-Do Board</h2>
+            )}
+          </div>
           <p className="mt-1 max-w-2xl text-xs sm:text-sm lg:text-base text-muted-foreground">
             Plan your study focus, drag tasks between columns, and keep your goals on track.
           </p>
         </div>
-        <Button onClick={() => openCreateDialog()} className="self-start sm:self-auto w-full sm:w-auto rounded-full bg-primary/90 px-4 sm:px-5 py-2.5 shadow-sm transition hover:bg-primary/80 hover:shadow-md touch-manipulation">
+        <Button onClick={() => openCreateDialog()} className={cn(
+          "self-start sm:self-auto w-full sm:w-auto rounded-full px-4 sm:px-5 py-2.5 shadow-sm transition hover:shadow-md touch-manipulation",
+          halloweenGlow 
+            ? "bg-orange-500 hover:bg-orange-600 text-white border-none shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:shadow-[0_0_20px_rgba(249,115,22,0.6)]" 
+            : "bg-primary/90 hover:bg-primary/80"
+        )}>
           <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
           <span className="font-medium">New Task</span>
         </Button>
@@ -323,14 +335,16 @@ export function TodoBoard() {
           value={totals.all}
           icon={ClipboardList}
           tone="primary"
+          halloweenGlow={halloweenGlow}
         />
         <SummaryCard
           title="In progress"
           value={Math.max(inProgressCount, 0)}
           icon={CircleDashed}
           tone="amber"
+          halloweenGlow={halloweenGlow}
         />
-        <SummaryCard title="Completed" value={totals.done} icon={CheckCircle2} tone="emerald" />
+        <SummaryCard title="Completed" value={totals.done} icon={CheckCircle2} tone="emerald" halloweenGlow={halloweenGlow} />
       </div>
 
       <div className="space-y-4 sm:space-y-6">
@@ -346,27 +360,50 @@ export function TodoBoard() {
               const tasks = board[column.id]
               return (
                 <KanbanColumn key={column.id} value={column.id} disabled className="flex flex-col">
-                  <Card className={cn("group flex h-full flex-col overflow-hidden border border-border/60 bg-card shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg")}>
-                    <CardHeader className={cn("space-y-2 sm:space-y-3 border-b border-border/60 pb-3 sm:pb-4 text-foreground", "bg-gradient-to-br", column.headerClass)}>
+                  <Card className={cn(
+                    "group flex h-full flex-col overflow-hidden border bg-card shadow-sm transition-all duration-300",
+                    halloweenGlow
+                      ? "border-white/20 bg-gradient-to-br from-card/90 to-purple-900/20 backdrop-blur-md shadow-[0_0_15px_-5px_rgba(147,51,234,0.25)] hover:shadow-[0_0_25px_-5px_rgba(251,146,60,0.35)] hover:border-orange-500/50"
+                      : "border-border/60 hover:border-primary/40 hover:shadow-lg"
+                  )}>
+                    <CardHeader className={cn(
+                      "space-y-2 sm:space-y-3 border-b pb-3 sm:pb-4 text-foreground", 
+                      "bg-gradient-to-br",
+                      halloweenGlow ? "border-white/20 from-purple-900/30 to-transparent" : `border-border/60 ${column.headerClass}`
+                    )}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base sm:text-lg lg:text-xl font-semibold text-foreground truncate">
+                          <CardTitle className={cn("text-base sm:text-lg lg:text-xl font-semibold truncate", halloweenGlow ? "text-orange-50" : "text-foreground")}>
                             {column.label}
                           </CardTitle>
-                          <p className="text-xs sm:text-sm text-muted-foreground truncate">{column.hint}</p>
+                          <p className={cn("text-xs sm:text-sm truncate", halloweenGlow ? "text-purple-200/80" : "text-muted-foreground")}>{column.hint}</p>
                         </div>
-                        <Badge variant="outline" className="rounded-lg border border-primary/30 bg-primary/10 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary-foreground shrink-0">
+                        <Badge variant="outline" className={cn(
+                          "rounded-lg border px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold shadow-sm shrink-0",
+                          halloweenGlow
+                            ? "border-orange-500/50 bg-orange-500/20 text-orange-200"
+                            : "border-primary/30 bg-primary/10 text-primary dark:border-primary/40 dark:bg-primary/15 dark:text-primary-foreground"
+                        )}>
                           {tasks.length}
                         </Badge>
                       </div>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                        <span className={cn("inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-2 text-xs sm:text-sm font-semibold text-foreground shadow-sm", column.accent)}>
+                        <span className={cn("inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-2 text-xs sm:text-sm font-semibold shadow-sm", 
+                          halloweenGlow 
+                            ? "border-purple-500/50 bg-purple-500/20 text-purple-100"
+                            : column.accent
+                        )}>
                           {column.label}
                         </span>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-9 sm:h-10 w-full sm:w-auto px-3 sm:px-4 border-border/70 text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary touch-manipulation"
+                          className={cn(
+                            "h-9 sm:h-10 w-full sm:w-auto px-3 sm:px-4 transition-colors touch-manipulation",
+                            halloweenGlow
+                              ? "border-white/20 text-orange-100/90 hover:border-orange-500/60 hover:bg-orange-500/20 hover:text-orange-50"
+                              : "border-border/70 text-foreground hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                          )}
                           onClick={() => openCreateDialog(column.id)}
                         >
                           <Plus className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -374,8 +411,11 @@ export function TodoBoard() {
                         </Button>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex h-full flex-col gap-2 sm:gap-3 bg-muted/30 pt-2 sm:pt-3">
-                      <KanbanColumnContent value={column.id} className="min-h-[250px] sm:min-h-[350px] lg:min-h-[450px] flex flex-1 flex-col gap-2 sm:gap-3 rounded-xl border border-dashed border-transparent bg-background/50 backdrop-blur-sm p-2 transition-colors duration-300">
+                    <CardContent className={cn("flex h-full flex-col gap-2 sm:gap-3 pt-2 sm:pt-3", halloweenGlow ? "bg-black/30" : "bg-muted/30")}>
+                      <KanbanColumnContent value={column.id} className={cn(
+                        "min-h-[250px] sm:min-h-[350px] lg:min-h-[450px] flex flex-1 flex-col gap-2 sm:gap-3 rounded-xl border border-dashed border-transparent p-2 transition-colors duration-300",
+                        halloweenGlow ? "bg-black/20" : "bg-background/50 backdrop-blur-sm"
+                      )}>
                         {isLoading && tasks.length === 0 ? (
                           <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border/60 bg-background/80 backdrop-blur-sm p-4 sm:p-6 text-xs sm:text-sm font-medium text-muted-foreground">
                             Loading tasks...
@@ -394,6 +434,7 @@ export function TodoBoard() {
                                   task={task}
                                   onEdit={openEditDialog}
                                   onDelete={handleDelete}
+                                  halloweenGlow={halloweenGlow}
                                 />
                               </KanbanItemHandle>
                             </KanbanItem>
@@ -415,7 +456,7 @@ export function TodoBoard() {
               return (
                 <div className="animate-in fade-in-0 zoom-in-95 duration-200">
                   <div className="transform rotate-2 scale-105 transition-transform duration-200">
-                    <TaskCard task={task} isOverlay />
+                    <TaskCard task={task} isOverlay halloweenGlow={halloweenGlow} />
                   </div>
                 </div>
               )
@@ -442,9 +483,10 @@ interface SummaryCardProps {
   value: number
   icon: React.ComponentType<{ className?: string }>
   tone: "primary" | "amber" | "emerald" | "neutral"
+  halloweenGlow?: boolean
 }
 
-function SummaryCard({ title, value, icon: Icon, tone }: SummaryCardProps) {
+function SummaryCard({ title, value, icon: Icon, tone, halloweenGlow }: SummaryCardProps) {
   const toneStyles: Record<SummaryCardProps["tone"], string> = {
     primary: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground",
     amber: "bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-100",
@@ -453,14 +495,22 @@ function SummaryCard({ title, value, icon: Icon, tone }: SummaryCardProps) {
   }
 
   return (
-    <Card className="border border-border/60 transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+    <Card className={cn(
+      "transition-all duration-300",
+      halloweenGlow 
+        ? "border-white/20 bg-gradient-to-br from-card/90 to-purple-900/20 backdrop-blur-md shadow-[0_0_15px_-5px_rgba(147,51,234,0.25)] hover:shadow-[0_0_25px_-5px_rgba(251,146,60,0.35)] hover:border-orange-500/50 hover:-translate-y-0.5" 
+        : "border-border/60 hover:border-primary/40 hover:shadow-md"
+    )}>
       <CardContent className="flex items-center gap-4 py-6">
-        <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg shadow-sm", toneStyles[tone])}>
+        <div className={cn(
+          "flex h-12 w-12 items-center justify-center rounded-lg shadow-sm", 
+          halloweenGlow ? "bg-white/10 text-orange-400 font-bold" : toneStyles[tone]
+        )}>
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold text-foreground">{value}</p>
+          <p className={cn("text-sm", halloweenGlow ? "text-purple-200/80" : "text-muted-foreground")}>{title}</p>
+          <p className={cn("text-2xl font-semibold", halloweenGlow ? "text-orange-50" : "text-foreground")}>{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -472,25 +522,33 @@ interface TaskCardProps {
   onEdit?: (task: TodoDoc) => void
   onDelete?: (taskId: Id<"todos">) => void
   isOverlay?: boolean
+  halloweenGlow?: boolean
 }
 
-function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
+function TaskCard({ task, onEdit, onDelete, isOverlay, halloweenGlow }: TaskCardProps) {
   const dueLabel = formatDueDate(task.dueDate)
   const priority = PRIORITY_CONFIG[task.priority as PriorityId] ?? PRIORITY_CONFIG.medium
 
   return (
     <div
       className={cn(
-        "group rounded-xl border border-border/60 bg-card/95 backdrop-blur-sm p-3 sm:p-4 shadow-md transition-all duration-300 touch-manipulation",
-        !isOverlay && "hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-2xl active:scale-[0.98]",
-        isOverlay && "border-primary/40 shadow-2xl rotate-3 scale-105 backdrop-blur bg-card"
+        "group rounded-xl border backdrop-blur-sm p-3 sm:p-4 shadow-md transition-all duration-300 touch-manipulation",
+        halloweenGlow 
+          ? "border-white/20 bg-card/90 shadow-[0_0_10px_-5px_rgba(147,51,234,0.2)]" 
+          : "border-border/60 bg-card/95",
+        !isOverlay && (halloweenGlow 
+          ? "hover:-translate-y-1.5 hover:border-orange-500/50 hover:shadow-[0_0_20px_-5px_rgba(251,146,60,0.3)]" 
+          : "hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-2xl active:scale-[0.98]"),
+        isOverlay && (halloweenGlow 
+          ? "border-orange-500/60 shadow-[0_0_30px_-5px_rgba(251,146,60,0.4)] bg-card rotate-3 scale-105"
+          : "border-primary/40 shadow-2xl rotate-3 scale-105 backdrop-blur bg-card")
       )}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
-          <p className="line-clamp-2 text-sm sm:text-base lg:text-lg font-semibold leading-tight text-foreground">{task.title}</p>
+          <p className={cn("line-clamp-2 text-sm sm:text-base lg:text-lg font-semibold leading-tight", halloweenGlow ? "text-orange-50" : "text-foreground")}>{task.title}</p>
           {task.description && (
-            <p className="line-clamp-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">{task.description}</p>
+            <p className={cn("line-clamp-3 text-xs sm:text-sm leading-relaxed", halloweenGlow ? "text-purple-200/70" : "text-muted-foreground")}>{task.description}</p>
           )}
         </div>
         {!isOverlay && (onEdit || onDelete) && (
@@ -499,9 +557,12 @@ function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full opacity-100 sm:opacity-0 transition-all duration-200 sm:group-hover:opacity-100 hover:bg-muted/60 shrink-0 touch-manipulation"
+                className={cn(
+                  "h-8 w-8 sm:h-9 sm:w-9 rounded-full opacity-100 sm:opacity-0 transition-all duration-200 sm:group-hover:opacity-100 shrink-0 touch-manipulation",
+                  halloweenGlow ? "hover:bg-white/20 text-orange-200/80" : "hover:bg-muted/60"
+                )}
               >
-                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -526,14 +587,17 @@ function TaskCard({ task, onEdit, onDelete, isOverlay }: TaskCardProps) {
         )}
       </div>
 
-      <Separator className="my-3 sm:my-4 bg-border/60" />
+      <Separator className={cn("my-3 sm:my-4", halloweenGlow ? "bg-white/20" : "bg-border/60")} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-        <Badge variant="outline" className={cn("rounded-lg px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium", priority.className)}>
+        <Badge variant="outline" className={cn(
+          "rounded-lg px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium", 
+          halloweenGlow ? "border-white/20 bg-white/10 text-purple-100" : priority.className
+        )}>
           {priority.label} priority
         </Badge>
         {dueLabel && (
-          <span className="inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
+          <span className={cn("inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm", halloweenGlow ? "text-orange-200/60" : "text-muted-foreground")}>
             <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
             {dueLabel}
           </span>
