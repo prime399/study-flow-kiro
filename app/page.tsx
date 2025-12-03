@@ -39,6 +39,7 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { Suspense, useState, useCallback, useEffect } from "react"
 import { LoadingScreen } from "@/components/loading-screen"
+import { FloatingParticles } from "@/components/floating-particles"
 
 // Loading placeholder for 3D model
 function ModelLoadingPlaceholder() {
@@ -232,6 +233,8 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full bg-black relative overflow-x-hidden">
       <LoadingScreen isReady={isModelLoaded} />
+      {/* Floating ghost particles for ambient Halloween effect */}
+      <FloatingParticles className="fixed inset-0 pointer-events-none z-0" />
       {/* Midnight Mist */}
       <div
         className="absolute inset-0 z-0"

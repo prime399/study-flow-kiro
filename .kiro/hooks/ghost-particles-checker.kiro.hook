@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Ghost Particles Checker",
+  "description": "When main pages in the app are updated, checks if floating ghost particles and scary interactive mini ghost components are present. If not, adds them to maintain the Halloween theme across the app.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "app/(protected)/dashboard/**/page.tsx",
+      "app/page.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A main page file was just edited. Check if this page includes the FloatingParticles component (from @/components/floating-particles) and the InteractiveGhost component (from @/components/interactive-ghost). If either component is missing from the page, add the missing import(s) and include the component(s) in the JSX. FloatingParticles should be added for ambient ghost particle effects, and InteractiveGhost should be added for a scary interactive mini ghost. Make sure to preserve the existing page structure and only add what's missing."
+  },
+  "workspaceFolderName": "StudyFlow",
+  "shortName": "ghost-particles-checker"
+}

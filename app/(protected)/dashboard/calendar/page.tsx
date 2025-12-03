@@ -18,6 +18,9 @@ import { SessionDialog } from "./_components/session-dialog"
 import "./styles.css"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { AlertCircle } from "lucide-react"
+import { FloatingParticles } from "@/components/floating-particles"
+import { SpookyGhost } from "@/components/spooky-ghost"
+import { DrippingText } from "@/components/dripping-text"
 
 const locales = {
   "en-US": enUS,
@@ -144,82 +147,92 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="">
-      <PageTitle title="Study Calendar" />
+    <>
+      {/* Halloween Effects Layer - positioned fixed behind content */}
+      <FloatingParticles className="fixed inset-0 z-0" />
 
-      {!googleCalendarConnected && (
-        <Alert className="mb-4 bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
-          <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription className="text-blue-800 dark:text-blue-200">
-            <strong>Sync with Google Calendar:</strong> Connect your Google Calendar in{' '}
-            <a href="/dashboard/settings/google-calendar" className="underline font-semibold hover:opacity-80">
-              settings
-            </a>
-            {' '}to automatically sync your study sessions to your calendar.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* SpookyGhost - positioned in bottom-right corner */}
+      <SpookyGhost className="fixed bottom-4 right-4 w-20 h-20 z-10" />
 
-      {googleCalendarConnected && (
-        <Alert className="mb-4 bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
-          <AlertCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <AlertDescription className="text-green-800 dark:text-green-200">
-            <strong>Google Calendar connected:</strong> Your study sessions are being synced to your calendar.{' '}
-            <a href="/dashboard/settings/google-calendar" className="underline font-semibold hover:opacity-80">
-              Manage settings
-            </a>
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="relative z-10">
+        <PageTitle>
+          <DrippingText text="Study Calendar" color="#fb923c" />
+        </PageTitle>
 
-      <Card className="w-[calc(100svw-50px)] p-4 md:w-full">
-        <ScrollArea>
-          <div className="h-[calc(100svh-150px)]">
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              view={view}
-              onView={handleViewChange}
-              date={date}
-              onNavigate={handleNavigate}
-              views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-              eventPropGetter={eventStyleGetter}
-              onSelectEvent={(event) => setSelectedSession(event.resource)}
-              components={{
-                toolbar: CalendarToolbar,
-                header: CalendarHeader,
-              }}
-              popup={true}
-              popupOffset={5}
-              selectable
-              className="calendar bg-background text-foreground"
-              dayPropGetter={(date) => ({
-                className: "bg-background text-foreground hover:bg-accent/50 transition-colors",
-              })}
-              slotPropGetter={() => ({
-                className: "bg-background text-foreground border-border",
-              })}
-              step={30}
-              timeslots={2}
-              min={new Date(2024, 0, 1, 6, 0, 0)}
-              max={new Date(2024, 0, 1, 22, 0, 0)}
-              scrollToTime={new Date(2024, 0, 1, 8, 0, 0)}
-              showMultiDayTimes={true}
-              rtl={false}
-            />
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </Card>
+        {!googleCalendarConnected && (
+          <Alert className="mb-4 bg-blue-50/80 border-blue-200/50 backdrop-blur-sm dark:bg-blue-950/50 dark:border-blue-800/50">
+            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              <strong>Sync with Google Calendar:</strong> Connect your Google Calendar in{' '}
+              <a href="/dashboard/settings/google-calendar" className="underline font-semibold hover:opacity-80">
+                settings
+              </a>
+              {' '}to automatically sync your study sessions to your calendar.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <SessionDialog
-        session={selectedSession}
-        isOpen={!!selectedSession}
-        onClose={() => setSelectedSession(null)}
-      />
-    </div>
+        {googleCalendarConnected && (
+          <Alert className="mb-4 bg-green-50/80 border-green-200/50 backdrop-blur-sm dark:bg-green-950/50 dark:border-green-800/50">
+            <AlertCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              <strong>Google Calendar connected:</strong> Your study sessions are being synced to your calendar.{' '}
+              <a href="/dashboard/settings/google-calendar" className="underline font-semibold hover:opacity-80">
+                Manage settings
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Card className="w-[calc(100svw-50px)] p-4 md:w-full transition-all duration-500 border-white/5 bg-gradient-to-br from-card/80 to-purple-900/10 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(147,51,234,0.1)] hover:shadow-[0_0_30px_-5px_rgba(251,146,60,0.2)] hover:border-orange-500/30">
+          <ScrollArea>
+            <div className="h-[calc(100svh-150px)]">
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                view={view}
+                onView={handleViewChange}
+                date={date}
+                onNavigate={handleNavigate}
+                views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+                eventPropGetter={eventStyleGetter}
+                onSelectEvent={(event) => setSelectedSession(event.resource)}
+                components={{
+                  toolbar: CalendarToolbar,
+                  header: CalendarHeader,
+                }}
+                popup={true}
+                popupOffset={5}
+                selectable
+                className="calendar bg-transparent text-foreground"
+                dayPropGetter={(date) => ({
+                  className: "bg-transparent text-foreground hover:bg-accent/30 transition-colors",
+                })}
+                slotPropGetter={() => ({
+                  className: "bg-transparent text-foreground border-border/50",
+                })}
+                step={30}
+                timeslots={2}
+                min={new Date(2024, 0, 1, 6, 0, 0)}
+                max={new Date(2024, 0, 1, 22, 0, 0)}
+                scrollToTime={new Date(2024, 0, 1, 8, 0, 0)}
+                showMultiDayTimes={true}
+                rtl={false}
+              />
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </Card>
+
+        <SessionDialog
+          session={selectedSession}
+          isOpen={!!selectedSession}
+          onClose={() => setSelectedSession(null)}
+        />
+      </div>
+    </>
   )
 }
 
