@@ -15,13 +15,13 @@ import { SpookyGhost } from "@/components/spooky-ghost"
 import { WobblyGhosts } from "@/components/wobbly-ghosts"
 import { SpookyCarousel } from "@/components/spooky-carousel"
 import { GhostAvatar } from "@/components/ghost-avatar"
+import { HalloweenPath } from "@/components/halloween-path"
 import { cn } from "@/lib/utils"
 import {
   BarChart,
   BookOpen,
   Check,
   Clock,
-  Crown,
   Github,
   Key,
   Rocket,
@@ -207,24 +207,6 @@ const pricingTiers = [
       "Dedicated necromancy support",
     ],
     cta: "Bind Your Soul",
-    popular: false,
-  },
-  {
-    name: "Immortal",
-    price: "Custom",
-    period: "",
-    description: "For those who seek eternal knowledge",
-    icon: Crown,
-    earlyBird: false,
-    features: [
-      "All dark powers unlocked",
-      "Eternal updates from beyond",
-      "Unlimited Librarian Ghost queries",
-      "Export your haunted progress",
-      "White-shroud implementation",
-      "Priority phantom support",
-    ],
-    cta: "Claim Immortality",
     popular: false,
   },
 ]
@@ -470,7 +452,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <div className="relative w-full">
+        <HalloweenPath className="max-w-7xl mx-auto inset-y-0 left-0 right-0 pt-4 sm:pt-12 pb-20 sm:pb-32" />
+        <section className="relative z-10 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="mx-auto max-w-7xl w-full">
             <div className="text-center mb-12 sm:mb-16 px-4">
               <h2 className="text-2xl font-bold sm:text-3xl lg:text-4xl xl:text-5xl text-white mb-4 sm:mb-6 font-gothic">
@@ -481,7 +465,7 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 max-w-7xl mx-auto w-full">
+            <div className="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto w-full relative z-10">
               {pricingTiers.map((tier, i) => {
                 const Icon = tier.icon
                 const button = (
@@ -526,7 +510,7 @@ export default function Home() {
                       {tier.earlyBird && (
                         <div className="mb-4 sm:mb-5 inline-flex items-center gap-1.5 sm:gap-2 self-start rounded-full bg-white text-black px-2.5 sm:px-3 py-1.5 text-[0.6rem] sm:text-[0.625rem] font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] shadow-[0_2px_8px_rgba(255,255,255,0.15)] border border-white/20">
                           <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
-                          <span className="whitespace-nowrap">Early Bird · 100% OFF</span>
+                          <span className="whitespace-nowrap">Black Friday · 100% OFF</span>
                         </div>
                       )}
                       <div
@@ -586,7 +570,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-12 sm:py-16 lg:py-20 xl:py-32 overflow-x-hidden">
+        <section className="relative z-10 py-12 sm:py-16 lg:py-20 xl:py-32 overflow-x-hidden">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 w-full">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-black via-purple-950/30 to-orange-950/20 border border-orange-500/20">
               <div className="absolute inset-0 h-full w-full opacity-50">
@@ -625,6 +609,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        </div>
         </main>
 
         <footer className="relative border-t bg-[#0a0a0a]/80 backdrop-blur-sm border-white/5 w-full">
