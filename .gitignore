@@ -41,6 +41,10 @@ prev.md
 # Ignore every readme file except README.md and readme.md
 /markdown
 AGENT.MD
+CLAUDE.md
+story.md
+.claude
+
 
 test-token-injection-real.js
 test-token-refresh-and-inject.js
@@ -52,3 +56,4 @@ scripts/generate-encryption-key.js
 
 # Ignore big GLB model scene
 public/third scene with animation.glb
+
